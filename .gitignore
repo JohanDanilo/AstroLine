@@ -1,34 +1,39 @@
+# ─── Compilados ───────────────────────────
+*.class
 target/
 build/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-.kotlin
 
-### IntelliJ IDEA ###
-/.idea/
+# ─── Empaquetados ─────────────────────────
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
 
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+# ─── Logs ────────────────────────────────
+*.log
 
-### NetBeans ###
+# ─── NetBeans ───────────────────────────
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
 
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
+# ─── IDEs ───────────────────────────────
 .vscode/
+.idea/
 
-### Mac OS ###
+# ─── Sistema operativo ───────────────────
 .DS_Store
+Thumbs.db
+desktop.ini
+
+# ─── Datos locales ──────────────────────
+data/
+
+# ─── Config sensible ────────────────────
+*.env
+config/properties.ini
