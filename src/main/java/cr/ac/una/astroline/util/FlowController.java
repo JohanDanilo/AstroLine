@@ -81,7 +81,7 @@ public class FlowController {
     public void goMain() {
     try {
         FXMLLoader loader = new FXMLLoader(
-            App.class.getResource("/cr/ac/una/astroline/view/PrimaryView.fxml"), 
+            App.class.getResource("/cr/ac/una/astroline/view/PrincipalView.fxml"), 
             this.idioma
         );
         Parent root = loader.load();
