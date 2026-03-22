@@ -69,7 +69,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <mainClass>cr.ac.una.astroline.App</mainClass>
+                    <mainClass>cr.ac.una.astroline/cr.ac.una.astroline.App</mainClass>
                 </configuration>
                 <executions>
                     <execution>
