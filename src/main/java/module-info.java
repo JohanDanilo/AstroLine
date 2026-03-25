@@ -17,14 +17,15 @@ module cr.ac.una.astroline {
     opens cr.ac.una.astroline to javafx.fxml;
 
     // Abre los subpaquetes a JavaFX y Gson según necesidad
-    //opens cr.ac.una.astroline.controller to javafx.fxml;
-    //opens cr.ac.una.astroline.model to com.google.gson;
+    opens cr.ac.una.astroline.controller to javafx.fxml;
+    opens cr.ac.una.astroline.model to com.google.gson;
 
     // Exporta los paquetes para que los demás módulos los vean
     exports cr.ac.una.astroline;
-    //exports cr.ac.una.astroline.controller;
-    //exports cr.ac.una.astroline.model;
+    exports cr.ac.una.astroline.controller;
+    exports cr.ac.una.astroline.model;
     //exports cr.ac.una.astroline.service;
     exports cr.ac.una.astroline.util;
     requires javafx.graphicsEmpty;
+    requires java.base;
 }
