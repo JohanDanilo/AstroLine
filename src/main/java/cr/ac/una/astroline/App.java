@@ -1,6 +1,7 @@
 package cr.ac.una.astroline;
 
 import atlantafx.base.theme.PrimerDark;
+import cr.ac.una.astroline.util.DataInitializer;
 import cr.ac.una.astroline.util.FlowController;
 import javafx.application.Application;
 import javafx.scene.image.Image;
@@ -16,6 +17,8 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+        
+        DataInitializer.inicializar();
 
         // Cargar el logo como ícono de la ventana
         Image logo = new Image(

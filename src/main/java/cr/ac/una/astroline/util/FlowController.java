@@ -102,6 +102,7 @@ public class FlowController {
 
     public void goView(String viewName) {
         goView(viewName, "Center", null);
+
     }
 
     public void goView(String viewName, String accion) {
@@ -133,6 +134,8 @@ public class FlowController {
             default:
                 break;
         }
+        stage.sizeToScene();
+        stage.centerOnScreen();
     }
 
     public void goViewInStage(String viewName, Stage stage) {

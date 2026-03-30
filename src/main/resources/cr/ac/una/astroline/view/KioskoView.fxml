@@ -1,11 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import io.github.palexdev.materialfx.controls.*?>
 
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="cr.ac.una.astroline.controller.KioskoController"
+      styleClass="kiosko-root"
+      spacing="24"
+      alignment="TOP_CENTER">
 
-<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/25" fx:controller="cr.ac.una.astroline.controller.KioskoController">
-   <children>
-      <Label alignment="CENTER" layoutX="189.0" layoutY="191.0" prefHeight="17.0" prefWidth="222.0" text="Módulo Kiosko — En desarrollo" />
-   </children>
-</AnchorPane>
+    <!-- HEADER: logo + nombre empresa -->
+    <HBox styleClass="kiosko-header" alignment="CENTER_LEFT" spacing="16">
+        <ImageView fx:id="imgLogo" fitHeight="56" fitWidth="56" preserveRatio="true"/>
+        <Label fx:id="lblNombreEmpresa" styleClass="kiosko-empresa-nombre" text="Empresa"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <!-- Botón discreto PIN admin — esquina superior derecha -->
+        <Button fx:id="btnPin" styleClass="kiosko-btn-pin" text="⚙"
+                onAction="#onPinAction"/>
+    </HBox>
+
+    <!-- CUERPO PRINCIPAL -->
+    <VBox styleClass="kiosko-body" alignment="CENTER" spacing="32" VBox.vgrow="ALWAYS">
+
+        <Label styleClass="kiosko-instruccion" text="Seleccioná tu trámite"/>
+
+        <!-- ComboBox de trámites con MaterialFX -->
+        <MFXComboBox fx:id="cmbTramite"
+                     styleClass="kiosko-combo"
+                     promptText="Elegí un trámite"
+                     prefWidth="380"/>
+
+        <Label styleClass="kiosko-instruccion-sub" text="Identificación (opcional)"/>
+
+        <!-- TextField cédula -->
+        <MFXTextField fx:id="txtCedula"
+                      styleClass="kiosko-input"
+                      promptText="Número de cédula o DIMEX"
+                      prefWidth="380"/>
+
+        <!-- Panel PIN — oculto por defecto -->
+        <VBox fx:id="panelPin" styleClass="kiosko-panel-pin"
+              alignment="CENTER" spacing="12" managed="false" visible="false">
+            <Label styleClass="kiosko-instruccion-sub" text="PIN de administrador"/>
+            <MFXPasswordField fx:id="txtPinAdmin"
+                              styleClass="kiosko-input"
+                              promptText="Ingresá el PIN"
+                              prefWidth="380"/>
+            <Button styleClass="kiosko-btn-secundario" text="Confirmar PIN"
+                    onAction="#onConfirmarPinAction"/>
+        </VBox>
+
+        <!-- Botón principal -->
+        <Button fx:id="btnGenerarFicha"
+                styleClass="kiosko-btn-principal"
+                text="Obtener ficha"
+                prefWidth="380" prefHeight="56"
+                onAction="#onGenerarFichaAction"/>
+
+    </VBox>
+    
+    <!-- FOOTER -->
+    <HBox styleClass="kiosko-footer" alignment="CENTER" spacing="16">
+        <Label fx:id="lblMensaje" styleClass="kiosko-mensaje" text=""/>
+        <Button fx:id="btnCancelarPreferencial"
+                styleClass="kiosko-btn-secundario"
+                text="✖ Cancelar preferencial"
+                managed="false" visible="false"
+                onAction="#onCancelarPreferencialAction"/>
+    </HBox>
+
+</VBox>

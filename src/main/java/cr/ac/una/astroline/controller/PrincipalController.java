@@ -10,6 +10,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Controller de la pantalla principal de selección de rol.
@@ -39,44 +40,40 @@ public class PrincipalController extends Controller {
      * Si el archivo no existe muestra los valores por defecto.
      */
     private void cargarDatosEmpresa() {
-        Empresa empresa = GsonUtil.leer("empresa.json", Empresa.class);
+        List<Empresa> lista = GsonUtil.leerLista("empresa.json", Empresa.class);
+        if (lista.isEmpty()) return;
 
-        if (empresa != null) {
-            // Guardar empresa en contexto global para que todos los módulos la usen
-            AppContext.getInstance().set("empresa", empresa);
+        Empresa empresa = lista.get(0);
+        AppContext.getInstance().set("empresa", empresa);
 
-            // Mostrar nombre
-            if (empresa.getNombre() != null && !empresa.getNombre().isEmpty()) {
-                lblNombreEmpresa.setText(empresa.getNombre());
-            }
+        // Solo asignar si el elemento existe en el FXML
+        if (lblNombreEmpresa != null && empresa.getNombre() != null) {
+            lblNombreEmpresa.setText(empresa.getNombre());
+        }
 
-            // Mostrar logo
-            if (empresa.getLogoPath() != null && !empresa.getLogoPath().isEmpty()) {
-                File archivoLogo = new File(empresa.getLogoPath());
-                if (archivoLogo.exists()) {
-                    imgLogo.setImage(new Image(archivoLogo.toURI().toString()));
-                }
+        if (imgLogo != null && empresa.getLogoPath() != null) {
+            File archivoLogo = new File(empresa.getLogoPath());
+            if (archivoLogo.exists()) {
+                imgLogo.setImage(new Image(archivoLogo.toURI().toString()));
             }
         }
     }
 
     @FXML
-    private void irAdministrador() {
-        FlowController.getInstance().goViewInWindow("AdminView");
-    }
+    private void irAdministrador() { FlowController.getInstance().goView("AdminView"); }
 
     @FXML
     private void irFuncionario() {
-        FlowController.getInstance().goViewInWindow("FuncionarioView");
+        FlowController.getInstance().goView("FuncionarioView");
     }
 
     @FXML
     private void irKiosko() {
-        FlowController.getInstance().goViewInWindow("KioskoView");
+        FlowController.getInstance().goView("KioskoView");
     }
 
     @FXML
     private void irProyeccion() {
-        FlowController.getInstance().goViewInWindow("ProyeccionView");
+        FlowController.getInstance().goView("ProyeccionView");
     }
 }
