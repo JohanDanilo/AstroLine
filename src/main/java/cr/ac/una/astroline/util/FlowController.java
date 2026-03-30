@@ -79,26 +79,54 @@ public class FlowController {
     }
 
     public void goMain() {
-    try {
-        FXMLLoader loader = new FXMLLoader(
-            App.class.getResource("/cr/ac/una/astroline/view/PrincipalView.fxml"), 
-            this.idioma
-        );
-        Parent root = loader.load();
-        
-        Controller controller = loader.getController();
-        controller.setStage(this.mainStage); // ← esta es la línea clave
-        controller.initialize();
-        
-        this.mainStage.setScene(new Scene(root));
-        applyIcon(this.mainStage);
-        MFXThemeManager.addOn(this.mainStage.getScene(), Themes.DEFAULT, Themes.LEGACY);
-        this.mainStage.show();
-    } catch (IOException ex) {
-        java.util.logging.Logger.getLogger(FlowController.class.getName())
-            .log(Level.SEVERE, "Error inicializando la vista base.", ex);
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                App.class.getResource("/cr/ac/una/astroline/view/PrincipalView.fxml"), 
+                this.idioma
+            );
+            Parent root = loader.load();
+
+            Controller controller = loader.getController();
+            controller.setStage(this.mainStage); // esta es la línea clave
+            controller.initialize();
+
+            this.mainStage.setScene(new Scene(root));
+            applyIcon(this.mainStage);
+            MFXThemeManager.addOn(this.mainStage.getScene(), Themes.DEFAULT, Themes.LEGACY);
+            this.mainStage.show();
+        } catch (IOException ex) {
+            java.util.logging.Logger.getLogger(FlowController.class.getName())
+                .log(Level.SEVERE, "Error inicializando la vista base.", ex);
+        }
     }
-}
+    
+    public void goMain(String acceso) {
+        try {
+            if (acceso == null || acceso.isBlank()) {
+                acceso = "Principal"; // fallback seguro
+            }
+
+            FXMLLoader loader = new FXMLLoader(
+                App.class.getResource("/cr/ac/una/astroline/view/" + acceso + "View.fxml"), 
+                this.idioma
+            );
+
+            Parent root = loader.load();
+
+            Controller controller = loader.getController();
+            controller.setStage(this.mainStage);
+            controller.initialize();
+
+            this.mainStage.setScene(new Scene(root));
+            applyIcon(this.mainStage);
+            MFXThemeManager.addOn(this.mainStage.getScene(), Themes.DEFAULT, Themes.LEGACY);
+            this.mainStage.show();
+
+        } catch (IOException ex) {
+            java.util.logging.Logger.getLogger(FlowController.class.getName())
+                .log(Level.SEVERE, "Error inicializando la vista base.", ex);
+        }
+    }
 
     public void goView(String viewName) {
         goView(viewName, "Center", null);
@@ -141,6 +169,8 @@ public class FlowController {
         controller.setStage(stage);
         stage.getScene().setRoot(loader.getRoot());
         MFXThemeManager.addOn(stage.getScene(), Themes.DEFAULT, Themes.LEGACY);
+        stage.sizeToScene();
+        stage.centerOnScreen();
     }
 
     public void goViewInWindow(String viewName) {

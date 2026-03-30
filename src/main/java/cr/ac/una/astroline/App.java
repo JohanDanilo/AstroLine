@@ -2,8 +2,11 @@ package cr.ac.una.astroline;
 
 import atlantafx.base.theme.PrimerDark;
 import cr.ac.una.astroline.util.FlowController;
+import java.io.IOException;
 import javafx.application.Application;
-import javafx.scene.image.Image;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 /**
@@ -12,29 +15,36 @@ import javafx.stage.Stage;
  *
  * @author JohanDanilo
  */
+
 public class App extends Application {
+
+    private static Scene scene;
+    private static String acceso = "";
 
     @Override
     public void start(Stage stage) throws Exception {
-
-        // Cargar el logo como ícono de la ventana
-        Image logo = new Image(
-            App.class.getResourceAsStream("/cr/ac/una/astroline/resource/logo.png")
-        );
-        stage.getIcons().add(logo);
+        DataInitializer.inicializar();
+        
         stage.setTitle("AstroLine");
-
-        // Aplicar tema visual de AtlantaFX
-        Application.setUserAgentStylesheet(new PrimerDark().getUserAgentStylesheet());
-
-        // Inicializar el FlowController con el stage principal
+        
         FlowController.getInstance().InitializeFlow(stage, null);
+        FlowController.getInstance().goMain(acceso);
+    }
 
-        // Navegar a la pantalla principal
-        FlowController.getInstance().goMain();
+    static void setRoot(String fxml) throws IOException {
+        scene.setRoot(loadFXML(fxml));
+    }
+
+    private static Parent loadFXML(String fxml) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(App.class.getResource("view/" + fxml + ".fxml"));
+        return fxmlLoader.load();
     }
 
     public static void main(String[] args) {
-        launch();
+        if (args.length > 0) {
+            acceso = args[0];
+        }
+        launch(args);
     }
+
 }
