@@ -1,12 +1,18 @@
 package cr.ac.una.astroline;
 
 import atlantafx.base.theme.PrimerDark;
+import cr.ac.una.astroline.util.DataInitializer;
 import cr.ac.una.astroline.util.FlowController;
 import java.io.IOException;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import static javafx.application.Application.launch;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 /**
@@ -17,7 +23,7 @@ import javafx.stage.Stage;
  */
 
 public class App extends Application {
-
+    
     private static Scene scene;
     private static String acceso = "";
 
@@ -25,8 +31,7 @@ public class App extends Application {
     public void start(Stage stage) throws Exception {
         DataInitializer.inicializar();
         
-        stage.setTitle("AstroLine");
-        
+        stage.setTitle("AstroLine");        
         FlowController.getInstance().InitializeFlow(stage, null);
         FlowController.getInstance().goMain(acceso);
     }

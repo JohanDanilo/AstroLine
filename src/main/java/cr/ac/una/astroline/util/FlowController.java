@@ -161,6 +161,8 @@ public class FlowController {
             default:
                 break;
         }
+        stage.sizeToScene();
+        stage.centerOnScreen();
     }
 
     public void goViewInStage(String viewName, Stage stage) {
