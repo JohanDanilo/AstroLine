@@ -1,7 +1,6 @@
 package cr.ac.una.astroline;
 
 import atlantafx.base.theme.PrimerDark;
-import cr.ac.una.astroline.util.DataInitializer;
 import cr.ac.una.astroline.util.FlowController;
 import java.io.IOException;
 import javafx.application.Application;
@@ -23,7 +22,7 @@ public class App extends Application {
     private static String acceso = "";
 
     @Override
-    public void start(Stage stage) throws IOException {
+    public void start(Stage stage) throws Exception {
         DataInitializer.inicializar();
         
         stage.setTitle("AstroLine");
