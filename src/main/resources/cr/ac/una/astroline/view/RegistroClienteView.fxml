@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import io.github.palexdev.materialfx.controls.MFXButton?>
+<?import io.github.palexdev.materialfx.controls.MFXDatePicker?>
+<?import io.github.palexdev.materialfx.controls.MFXTextField?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane id="AnchorPane" fx:id="root" prefHeight="749.0" prefWidth="500.0" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.RegistroClienteController">
+   <children>
+      <VBox alignment="CENTER" layoutY="-14.0" prefHeight="200.0" prefWidth="636.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <Label alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="50.0" prefWidth="511.0" text="Registro de Cliente ">
+               <padding>
+                  <Insets top="10.0" />
+               </padding>
+            </Label>
+            <ImageView fitHeight="125.0" fitWidth="134.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../resource/account.png" />
+               </image>
+            </ImageView>
+            <HBox alignment="CENTER" prefHeight="46.0" prefWidth="563.0" spacing="10.0">
+               <children>
+                  <MFXButton fx:id="btnCargar" onAction="#onActionBtnCargar" text="Cargar" />
+                  <MFXButton fx:id="btnCamara" onAction="#onActionBtnCamara" text="Camara" />
+               </children>
+            </HBox>
+            <Label alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="55.0" prefWidth="511.0" text="Datos Generales" />
+            <HBox prefHeight="52.0" prefWidth="563.0" spacing="10.0">
+               <children>
+                  <MFXTextField floatingText="Nombre" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin>
+                  </MFXTextField>
+                  <MFXTextField floatingText="Apellidos" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets right="10.0" />
+                     </HBox.margin>
+                  </MFXTextField>
+               </children>
+            </HBox>
+            <MFXTextField floatingText="Cedula " maxWidth="1.7976931348623157E308" prefHeight="51.0" prefWidth="491.0">
+               <VBox.margin>
+                  <Insets left="10.0" right="10.0" />
+               </VBox.margin>
+            </MFXTextField>
+            <MFXDatePicker fx:id="dpFechaDeNacimiento" floatMode="BORDER" floatingText="Fecha de Nacimiento" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="51.0" prefWidth="491.0">
+               <VBox.margin>
+                  <Insets left="10.0" right="10.0" />
+               </VBox.margin>
+            </MFXDatePicker>
+            <Label alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="55.0" prefWidth="511.0" text="Informacion de Contacto " />
+            <MFXTextField floatingText="Correo Electronico" maxWidth="1.7976931348623157E308">
+               <VBox.margin>
+                  <Insets left="10.0" right="10.0" />
+               </VBox.margin>
+            </MFXTextField>
+            <MFXTextField floatingText="Telefono" maxWidth="1.7976931348623157E308">
+               <VBox.margin>
+                  <Insets left="10.0" right="10.0" />
+               </VBox.margin>
+            </MFXTextField>
+            <HBox alignment="CENTER" prefHeight="66.0" prefWidth="563.0" spacing="10.0" />
+            <HBox alignment="CENTER" prefHeight="66.0" prefWidth="563.0" spacing="10.0">
+               <children>
+                  <MFXButton maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Agregar Cliente" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin>
+                  </MFXButton>
+                  <MFXButton maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Cancelar" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets right="10.0" />
+                     </HBox.margin>
+                  </MFXButton>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>
