@@ -25,13 +25,11 @@ public class DataInitializer {
     }
 
     private static void inicializarEmpresa() {
-        if (GsonUtil.existe("empresa.json")) return;
-
+        if(GsonUtil.existe("empresa.json")) return;
         Empresa empresa = new Empresa();
-        empresa.setNombre("AstroLine Corp");
+        empresa.setNombre("Astroline Corp");
         empresa.setLogoPath("assets/logo.png");
         GsonUtil.guardar(empresa, "empresa.json");
-
         System.out.println("[DataInitializer] empresa.json creado.");
     }
 

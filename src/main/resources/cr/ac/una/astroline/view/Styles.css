@@ -1,9 +1,63 @@
-/*
-Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
-Click nbfs://nbhost/SystemFileSystem/Templates/Other/CascadeStyleSheet.css to edit this template
-*/
-/* 
-    Created on : 5 mar 2026, 12:21:50 a. m.
-    Author     : USUARIO UNA PZ
-*/
+*{
+    -fx-base-color-unfocus:        #00d9ff;
+    -fx-base-color-focus:    #0099bb;
+    -fx-base-color-titulos:      #9d4edd;
+    -fx-base-color-etiquetas:  #6a4c93;
+    -fx-base-color-error:     #ff0080;
+    -fx-base-color-exito:      #00ff88;
+    -fx-base-color-texto:     #080435;
+    -mfx-main:-fx-base-color-focus;
+    -mfx-purple:-fx-base-color-focus;
+}
 
+.button.jfx-btn-preferencial,
+.jfx-btn-preferencial {
+    
+    -fx-background-color: #0099cc; 
+    
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    
+    /* Dimensiones fijas */
+    -fx-min-width: 50px; -fx-min-height: 50px;
+    -fx-pref-width: 50px; -fx-pref-height: 50px;
+    -fx-max-width: 50px; -fx-max-height: 50px;
+
+    /* Ocultar texto */
+    -fx-text-fill: transparent;
+    -fx-font-size: 0px;
+    
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+
+.button.jfx-btn-preferencial:hover,
+.jfx-btn-preferencial:hover {
+    
+    -fx-background-color: #6600cc; 
+    -fx-effect: dropshadow(gaussian, #6600cc, 15, 0.4, 0, 0);
+}
+
+.button.jfx-btn-preferencial:pressed,
+.jfx-btn-preferencial:pressed {
+    -fx-background-color: #5a189a; /* Color más oscuro al presionar */
+    -fx-opacity: 0.9;
+}
+
+.jfx-btn-preferencial > ImageView {
+    -fx-image: url(../resource/Preferencial.png);
+    -fx-fit-width: 35px; 
+    -fx-fit-height: 35px;
+}
+
+.mfx-button{
+    -fx-cursor: hand;
+}
+
+.mfx-button:hover{
+    -fx-font-weight:bold;
+    -fx-text-fill:white;
+    -fx-background-color: #0099cc; 
+    -fx-effect: dropshadow(gaussian, #0099cc, 15, 0.4, 0, 0);
+    
+}

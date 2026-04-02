@@ -116,7 +116,7 @@ public class FlowController {
             Controller controller = loader.getController();
             controller.setStage(this.mainStage);
             controller.initialize();
-
+            this.mainStage.setTitle(acceso);
             this.mainStage.setScene(new Scene(root));
             applyIcon(this.mainStage);
             MFXThemeManager.addOn(this.mainStage.getScene(), Themes.DEFAULT, Themes.LEGACY);

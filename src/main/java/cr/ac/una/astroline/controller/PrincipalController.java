@@ -26,9 +26,6 @@ public class PrincipalController extends Controller {
     @FXML
     private Label lblNombreEmpresa;
 
-    @FXML
-    private Label lblVersion;
-
     @Override
     public void initialize() {
         setNombreVista("AstroLine — Selección de acceso");
@@ -43,7 +40,7 @@ public class PrincipalController extends Controller {
         
         Empresa empresa = GsonUtil.leer("empresa.json", Empresa.class);
         if (empresa == null) return;
-
+        
         AppContext.getInstance().set("empresa", empresa);
 
         if (lblNombreEmpresa != null && empresa.getNombre() != null) {
@@ -59,20 +56,20 @@ public class PrincipalController extends Controller {
     }
 
     @FXML
-    private void irAdministrador() { FlowController.getInstance().goView("AdminView"); }
+    private void irAdministrador() { FlowController.getInstance().goMain("Admin"); }
 
     @FXML
     private void irFuncionario() {
-        FlowController.getInstance().goView("FuncionarioView");
+        FlowController.getInstance().goMain("Funcionario");
     }
 
     @FXML
     private void irKiosko() {
-        FlowController.getInstance().goView("KioskoView");
+        FlowController.getInstance().goMain("Kiosko");
     }
 
     @FXML
     private void irProyeccion() {
-        FlowController.getInstance().goView("ProyeccionView");
+        FlowController.getInstance().goMain("Proyeccion");
     }
 }

@@ -1,75 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.image.*?>
-<?import io.github.palexdev.materialfx.controls.*?>
+<?import io.github.palexdev.materialfx.controls.MFXButton?>
+<?import io.github.palexdev.materialfx.controls.MFXComboBox?>
+<?import io.github.palexdev.materialfx.controls.MFXPasswordField?>
+<?import io.github.palexdev.materialfx.controls.MFXTextField?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
 
-<VBox xmlns="http://javafx.com/javafx"
-      xmlns:fx="http://javafx.com/fxml"
-      fx:controller="cr.ac.una.astroline.controller.KioskoController"
-      styleClass="kiosko-root"
-      spacing="24"
-      alignment="TOP_CENTER">
-
-    <!-- HEADER: logo + nombre empresa -->
-    <HBox styleClass="kiosko-header" alignment="CENTER_LEFT" spacing="16">
-        <ImageView fx:id="imgLogo" fitHeight="56" fitWidth="56" preserveRatio="true"/>
-        <Label fx:id="lblNombreEmpresa" styleClass="kiosko-empresa-nombre" text="Empresa"/>
-        <Region HBox.hgrow="ALWAYS"/>
-        <!-- Botón discreto PIN admin — esquina superior derecha -->
-        <Button fx:id="btnPin" styleClass="kiosko-btn-pin" text="⚙"
-                onAction="#onPinAction"/>
-    </HBox>
-
-    <!-- CUERPO PRINCIPAL -->
-    <VBox styleClass="kiosko-body" alignment="CENTER" spacing="32" VBox.vgrow="ALWAYS">
-
-        <Label styleClass="kiosko-instruccion" text="Seleccioná tu trámite"/>
-
-        <!-- ComboBox de trámites con MaterialFX -->
-        <MFXComboBox fx:id="cmbTramite"
-                     styleClass="kiosko-combo"
-                     promptText="Elegí un trámite"
-                     prefWidth="380"/>
-
-        <Label styleClass="kiosko-instruccion-sub" text="Identificación (opcional)"/>
-
-        <!-- TextField cédula -->
-        <MFXTextField fx:id="txtCedula"
-                      styleClass="kiosko-input"
-                      promptText="Número de cédula o DIMEX"
-                      prefWidth="380"/>
-
-        <!-- Panel PIN — oculto por defecto -->
-        <VBox fx:id="panelPin" styleClass="kiosko-panel-pin"
-              alignment="CENTER" spacing="12" managed="false" visible="false">
-            <Label styleClass="kiosko-instruccion-sub" text="PIN de administrador"/>
-            <MFXPasswordField fx:id="txtPinAdmin"
-                              styleClass="kiosko-input"
-                              promptText="Ingresá el PIN"
-                              prefWidth="380"/>
-            <Button styleClass="kiosko-btn-secundario" text="Confirmar PIN"
-                    onAction="#onConfirmarPinAction"/>
-        </VBox>
-
-        <!-- Botón principal -->
-        <Button fx:id="btnGenerarFicha"
-                styleClass="kiosko-btn-principal"
-                text="Obtener ficha"
-                prefWidth="380" prefHeight="56"
-                onAction="#onGenerarFichaAction"/>
-
-    </VBox>
-    
-    <!-- FOOTER -->
-    <HBox styleClass="kiosko-footer" alignment="CENTER" spacing="16">
-        <Label fx:id="lblMensaje" styleClass="kiosko-mensaje" text=""/>
-        <Button fx:id="btnCancelarPreferencial"
-                styleClass="kiosko-btn-secundario"
-                text="✖ Cancelar preferencial"
-                managed="false" visible="false"
-                onAction="#onCancelarPreferencialAction"/>
-    </HBox>
-
-</VBox>
+<AnchorPane fx:id="root" prefHeight="600.0" prefWidth="800.0" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.KioskoController">
+   <children>
+      <VBox alignment="CENTER" prefHeight="400.0" prefWidth="600.0" spacing="20.0">
+         <children>
+            <HBox alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="600.0" spacing="15.0">
+               <children>
+                  <ImageView fx:id="imgLogo" fitHeight="56" fitWidth="56" preserveRatio="true" />
+                  <Label fx:id="lblNombreEmpresa" text="Empresa" />
+                  <Region HBox.hgrow="ALWAYS" />
+                  <Button mnemonicParsing="false" onAction="#onBtnPreferencial" styleClass="jfx-btn-preferencial">
+                     <graphic>
+                        <ImageView fitHeight="30.0" fitWidth="30.0" pickOnBounds="true" preserveRatio="true" />
+                     </graphic>
+                  </Button>
+               </children>
+               <VBox.margin>
+                  <Insets />
+               </VBox.margin>
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+            </HBox>
+            <VBox alignment="CENTER" spacing="20.0" VBox.vgrow="ALWAYS">
+               <children>
+                  <Label text="Seleccioná tu trámite" />
+                  <MFXComboBox fx:id="cmbTramite" floatMode="BORDER" onAction="#onCmbTramite" prefWidth="380" text="Elije un trámite" />
+                  <Label text="Identificación (opcional)" />
+                  <MFXTextField fx:id="txtCedula" floatMode="BORDER" floatingText="Número de cédula o DIMEX" prefWidth="380" />
+                  <VBox fx:id="panelPinAdmin" alignment="CENTER" managed="false" spacing="10.0" visible="false">
+                     <children>
+                        <Label text="PIN de administrador" />
+                        <MFXPasswordField fx:id="passwordFldAdmin" floatMode="BORDER" prefWidth="380" />
+                        <MFXButton fx:id="btnConfirmar" onAction="#onBtnConfirmar" text="Confirmar PIN" />
+                     </children>
+                  </VBox>
+                  <MFXButton fx:id="btnCancelar" managed="false" onAction="#onBtnCancelar" prefWidth="380.0" text="Cancelar preferencial" visible="false" />
+                  <MFXButton alignment="CENTER" onAction="#onBtnObtenerFicha" prefWidth="380.0" text="Obtener ficha" textAlignment="CENTER" />
+               </children>
+            </VBox>
+            <HBox fx:id="panelMensaje" alignment="CENTER" layoutX="10.0" layoutY="10.0" managed="false" spacing="16" visible="false">
+               <children>
+                  <Label fx:id="lblMensaje" />
+               </children></HBox>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>
