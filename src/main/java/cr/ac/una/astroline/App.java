@@ -25,7 +25,7 @@ import javafx.stage.Stage;
 public class App extends Application {
     
     private static Scene scene;
-    private static String acceso = "";
+    private static String acceso = "LoginFuncionario";
 
     @Override
     public void start(Stage stage) throws Exception {

@@ -27,12 +27,22 @@ public class FuncionarioController extends Controller implements Initializable {
         // TODO
     }    
     @FXML
-    private void onActionBtnFicha(ActionEvent event) {
+    private void onBtnFicha(ActionEvent event) {
         FlowController.getInstance().goView("FichaFuncionarioView");
     }
 
     @FXML
     private void onBtnRegistro(ActionEvent event) {
         FlowController.getInstance().goView("RegistroFuncionarioView");
+    }
+    
+    @FXML
+    private void onBtnSeleccionarFicha(ActionEvent event) {
+        FlowController.getInstance().goViewInWindow("FuncionarioSeleccionarFichaView");
+    }
+    
+    @FXML
+    private void onBtnCerrarSesion(ActionEvent event) {
+        FlowController.getInstance().goMain("LoginFuncionario");
     }
 }
