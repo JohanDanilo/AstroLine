@@ -3,8 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
@@ -14,67 +12,46 @@
             fx:controller="cr.ac.una.astroline.controller.PrincipalController"
             styleClass="principal-root">
 
-    <!-- HEADER -->
-    <top>
-        <HBox styleClass="header" alignment="CENTER_LEFT">
-            <padding><Insets top="12" right="24" bottom="12" left="24"/></padding>
-            <ImageView fx:id="imgLogo" fitWidth="48" fitHeight="48" preserveRatio="true"/>
-            <Label fx:id="lblNombreEmpresa" text="AstroLine" styleClass="header-titulo"/>
-        </HBox>
-    </top>
-
-    <!-- CONTENIDO CENTRAL -->
     <center>
         <VBox alignment="CENTER" spacing="40">
-            <padding><Insets top="60" right="40" bottom="60" left="40"/></padding>
+            <padding>
+                <Insets top="40" right="40" bottom="40" left="40"/>
+            </padding>
 
             <Label text="Seleccione su acceso" styleClass="titulo-bienvenida"/>
 
             <HBox alignment="CENTER" spacing="30">
 
-                <VBox alignment="CENTER" spacing="10" styleClass="access-card">
-                    <Label text="🛡" styleClass="access-icon"/>
-                    <Label text="Administrador" styleClass="access-label"/>
-                    <Button fx:id="btnAdmin" text="Ingresar"
-                            onAction="#irAdministrador"
-                            styleClass="btn-acceso"/>
+                <VBox alignment="CENTER" spacing="10">
+                    <Label text="🛡" />
+                    <Label text="Administrador"/>
+                    <Button text="Ingresar"
+                            onAction="#irAdministrador"/>
                 </VBox>
 
-                <VBox alignment="CENTER" spacing="10" styleClass="access-card">
-                    <Label text="👔" styleClass="access-icon"/>
-                    <Label text="Funcionario" styleClass="access-label"/>
-                    <Button fx:id="btnFuncionario" text="Ingresar"
-                            onAction="#irFuncionario"
-                            styleClass="btn-acceso"/>
+                <VBox alignment="CENTER" spacing="10">
+                    <Label text="👔" />
+                    <Label text="Funcionario"/>
+                    <Button text="Ingresar"
+                            onAction="#irFuncionario"/>
                 </VBox>
 
-                <VBox alignment="CENTER" spacing="10" styleClass="access-card">
-                    <Label text="🖥" styleClass="access-icon"/>
-                    <Label text="Kiosko" styleClass="access-label"/>
-                    <Button fx:id="btnKiosko" text="Ingresar"
-                            onAction="#irKiosko"
-                            styleClass="btn-acceso"/>
+                <VBox alignment="CENTER" spacing="10">
+                    <Label text="🖥" />
+                    <Label text="Kiosko"/>
+                    <Button text="Ingresar"
+                            onAction="#irKiosko"/>
                 </VBox>
 
-                <VBox alignment="CENTER" spacing="10" styleClass="access-card">
-                    <Label text="📺" styleClass="access-icon"/>
-                    <Label text="Proyección" styleClass="access-label"/>
-                    <Button fx:id="btnProyeccion" text="Ingresar"
-                            onAction="#irProyeccion"
-                            styleClass="btn-acceso"/>
+                <VBox alignment="CENTER" spacing="10">
+                    <Label text="📺" />
+                    <Label text="Proyección"/>
+                    <Button text="Ingresar"
+                            onAction="#irProyeccion"/>
                 </VBox>
 
             </HBox>
         </VBox>
     </center>
-
-    <!-- FOOTER -->
-    <bottom>
-        <HBox alignment="CENTER">
-            <padding><Insets top="10" bottom="10"/></padding>
-            <Label fx:id="lblVersion" text="AstroLine v1.0 · Universidad Nacional de Costa Rica"
-                   styleClass="footer-texto"/>
-        </HBox>
-    </bottom>
 
 </BorderPane>

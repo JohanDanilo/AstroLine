@@ -10,6 +10,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Controller de la pantalla principal de selección de rol.
@@ -40,43 +41,36 @@ public class PrincipalController extends Controller {
      */
     private void cargarDatosEmpresa() {
         Empresa empresa = GsonUtil.leer("empresa.json", Empresa.class);
+        if (empresa == null) return;
 
-        if (empresa != null) {
-            // Guardar empresa en contexto global para que todos los módulos la usen
-            AppContext.getInstance().set("empresa", empresa);
+        AppContext.getInstance().set("empresa", empresa);
 
-            // Mostrar nombre
-            if (empresa.getNombre() != null && !empresa.getNombre().isEmpty()) {
-                lblNombreEmpresa.setText(empresa.getNombre());
-            }
-
-            // Mostrar logo
-            if (empresa.getLogoPath() != null && !empresa.getLogoPath().isEmpty()) {
-                File archivoLogo = new File(empresa.getLogoPath());
-                if (archivoLogo.exists()) {
-                    imgLogo.setImage(new Image(archivoLogo.toURI().toString()));
-                }
+        if (lblNombreEmpresa != null && empresa.getNombre() != null) {
+            lblNombreEmpresa.setText(empresa.getNombre());
+        }
+        if (imgLogo != null && empresa.getLogoPath() != null) {
+            File archivoLogo = new File(empresa.getLogoPath());
+            if (archivoLogo.exists()) {
+                imgLogo.setImage(new Image(archivoLogo.toURI().toString()));
             }
         }
     }
 
     @FXML
-    private void irAdministrador() {
-        FlowController.getInstance().goViewInWindow("AdminView");
-    }
+    private void irAdministrador() { FlowController.getInstance().goView("AdminView"); }
 
     @FXML
     private void irFuncionario() {
-        FlowController.getInstance().goViewInWindow("FuncionarioView");
+        FlowController.getInstance().goView("FuncionarioView");
     }
 
     @FXML
     private void irKiosko() {
-        FlowController.getInstance().goViewInWindow("KioskoView");
+        FlowController.getInstance().goView("KioskoView");
     }
 
     @FXML
     private void irProyeccion() {
-        FlowController.getInstance().goViewInWindow("ProyeccionView");
+        FlowController.getInstance().goView("ProyeccionView");
     }
 }
