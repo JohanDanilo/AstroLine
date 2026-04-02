@@ -30,10 +30,7 @@ public class DataInitializer {
         Empresa empresa = new Empresa();
         empresa.setNombre("AstroLine Corp");
         empresa.setLogoPath("assets/logo.png");
-
-        List<Empresa> lista = new ArrayList<>();
-        lista.add(empresa);
-        GsonUtil.guardar(lista, "empresa.json");
+        GsonUtil.guardar(empresa, "empresa.json");
 
         System.out.println("[DataInitializer] empresa.json creado.");
     }
