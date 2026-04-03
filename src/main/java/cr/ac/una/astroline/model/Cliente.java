@@ -5,6 +5,8 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Representa un cliente registrado en el sistema.
@@ -21,7 +23,7 @@ public class Cliente {
     private String correo;
     private String fotoPath;
     private String fechaNacimiento; // formato: "dd-MM-yyyy"
-
+    private List<Tramite> historialTramites;
     public Cliente() {
     }
 
@@ -35,6 +37,7 @@ public class Cliente {
         this.correo = correo;
         this.fotoPath = fotoPath;
         this.fechaNacimiento = fechaNacimiento;
+        this.historialTramites = new ArrayList<>();
     }
 
     /**
@@ -91,4 +94,5 @@ public class Cliente {
     public String toString() {
         return "Cliente{cedula='" + cedula + "', nombre='" + getNombreCompleto() + "'}";
     }
+   
 }
