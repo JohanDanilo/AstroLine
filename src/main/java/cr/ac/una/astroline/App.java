@@ -29,6 +29,9 @@ public class App extends Application {
     public void start(Stage stage) throws Exception {
         DataInitializer.inicializar();        
         FlowController.getInstance().InitializeFlow(stage, null);
+        if ("Funcionario".equals(acceso)) {
+            acceso = "Login" + acceso;
+        }
         FlowController.getInstance().goMain(acceso);
     }
 

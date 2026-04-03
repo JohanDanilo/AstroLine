@@ -7,6 +7,7 @@ import cr.ac.una.astroline.model.Ficha;
 import cr.ac.una.astroline.model.Tramite;
 import cr.ac.una.astroline.service.FichaService;
 import cr.ac.una.astroline.util.GsonUtil;
+import cr.ac.una.astroline.util.Mensaje;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXComboBox;
 import io.github.palexdev.materialfx.controls.MFXPasswordField;
@@ -19,6 +20,7 @@ import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -31,7 +33,7 @@ import javafx.scene.layout.VBox;
 /**
  * FXML Controller class
  *
- * @author USUARIO UNA PZ
+ * @author JohanDanilo
  */
 public class KioskoController extends Controller implements Initializable {
 
@@ -62,6 +64,7 @@ public class KioskoController extends Controller implements Initializable {
     private Label lblMensaje;
     
     private final FichaService fichaService = new FichaService();
+    private final Mensaje utilMensaje = new Mensaje();
     private String pinAdminCorrecto;
     private boolean preferencialPorPin = false;
 
@@ -133,7 +136,7 @@ public class KioskoController extends Controller implements Initializable {
         if (respuesta.getEstado()) {
             Ficha ficha = (Ficha) respuesta.getResultado("ficha");
             String mensaje = "Tu ficha es: " + ficha.getCodigo();
-            if (ficha.isPreferencial()) mensaje += "  ⭐ Preferencial";
+            if (ficha.isPreferencial()) mensaje += "  Preferencial";
             mostrarExito(mensaje);
             limpiarFormulario();
         } else {
@@ -155,7 +158,7 @@ public class KioskoController extends Controller implements Initializable {
         String pinIngresado = passwordFldAdmin.getText().trim();
 
         if (pinAdminCorrecto == null || pinAdminCorrecto.isBlank()) {
-            mostrarError("No hay PIN de administrador configurado.");
+            mostrarErrorPin("No hay PIN de administrador configurado.");
             return;
         }
 
@@ -164,9 +167,9 @@ public class KioskoController extends Controller implements Initializable {
             panelPinAdmin.setVisible(false);
             panelPinAdmin.setManaged(false);
             passwordFldAdmin.clear();
-            mostrarExito(" Atención preferencial activada.");
+            mostrarExitoPin("Atención preferencial activada.");
         } else {
-            mostrarError("PIN incorrecto.");
+            mostrarErrorPin("PIN incorrecto.");
             passwordFldAdmin.clear();
         }
     }
@@ -241,6 +244,20 @@ public class KioskoController extends Controller implements Initializable {
     }
     
     private void mostrarExito(String mensaje) {
+        // Llamamos a la ventana emergente de éxito
+        utilMensaje.show(AlertType.INFORMATION, "Trámite Exitoso", mensaje);
+
+        // Mantenemos tu lógica de la interfaz
+        btnCancelar.setVisible(preferencialPorPin);
+        btnCancelar.setManaged(preferencialPorPin);
+    }
+
+    private void mostrarError(String mensaje) {
+        // Llamamos a la ventana emergente de error
+        utilMensaje.show(AlertType.ERROR, "Atención", mensaje);
+    }
+    
+    private void mostrarExitoPin(String mensaje) {
         /** Usar para limpiar clase de error y poner la de éxito cuando esté en el css
         lblMensaje.getStyleClass().remove("kiosko-mensaje-error");
         if (!lblMensaje.getStyleClass().contains("kiosko-mensaje-exito")) {
@@ -255,7 +272,7 @@ public class KioskoController extends Controller implements Initializable {
         btnCancelar.setManaged(preferencialPorPin);
     }
 
-    private void mostrarError(String mensaje) {
+    private void mostrarErrorPin(String mensaje) {
         /** Usar para limpiar clase de exito y poner la de error cuando esté en el css
         lblMensaje.getStyleClass().remove("kiosko-mensaje-exito");
         if (!lblMensaje.getStyleClass().contains("kiosko-mensaje-error")) {
@@ -263,7 +280,6 @@ public class KioskoController extends Controller implements Initializable {
         }
         */
         lblMensaje.setText(mensaje);
-
         panelMensaje.setVisible(true);
         panelMensaje.setManaged(true);
     }

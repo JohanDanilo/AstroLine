@@ -92,7 +92,7 @@ public class FlowController {
 
             this.mainStage.setScene(new Scene(root));
             applyIcon(this.mainStage);
-            MFXThemeManager.addOn(this.mainStage.getScene(), Themes.DEFAULT, Themes.LEGACY);
+            this.mainStage.centerOnScreen();
             this.mainStage.show();
         } catch (IOException ex) {
             java.util.logging.Logger.getLogger(FlowController.class.getName())
@@ -119,7 +119,7 @@ public class FlowController {
             this.mainStage.setTitle(acceso);
             this.mainStage.setScene(new Scene(root));
             applyIcon(this.mainStage);
-            MFXThemeManager.addOn(this.mainStage.getScene(), Themes.DEFAULT, Themes.LEGACY);
+            this.mainStage.centerOnScreen();
             this.mainStage.show();
 
         } catch (IOException ex) {
@@ -171,9 +171,6 @@ public class FlowController {
         Controller controller = loader.getController();
         controller.setStage(stage);
         stage.getScene().setRoot(loader.getRoot());
-        MFXThemeManager.addOn(stage.getScene(), Themes.DEFAULT, Themes.LEGACY);
-        //stage.sizeToScene();
-        //stage.centerOnScreen();
     }
 
     public void goViewInWindow(String viewName) {
@@ -195,7 +192,7 @@ public class FlowController {
             controller.setStage(stage);
 
             Scene scene = new Scene(root);
-            stage.setScene(scene);   // ← esto faltaba
+            stage.setScene(scene);
             stage.centerOnScreen();
             stage.show();
 
@@ -220,7 +217,6 @@ public class FlowController {
         controller.setStage(stage);
         Parent root = loader.getRoot();
         Scene scene = new Scene(root);
-        MFXThemeManager.addOn(scene, Themes.DEFAULT, Themes.LEGACY);
         stage.setScene(scene);
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(parentStage);

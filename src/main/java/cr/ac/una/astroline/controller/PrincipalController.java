@@ -8,9 +8,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-
 import java.io.File;
-import java.util.List;
 
 /**
  * Controller de la pantalla principal de selección de rol.
@@ -28,7 +26,6 @@ public class PrincipalController extends Controller {
 
     @Override
     public void initialize() {
-        setNombreVista("AstroLine — Selección de acceso");
         cargarDatosEmpresa();
     }
 
@@ -56,11 +53,13 @@ public class PrincipalController extends Controller {
     }
 
     @FXML
-    private void irAdministrador() { FlowController.getInstance().goMain("Admin"); }
+    private void irAdministrador() { 
+        FlowController.getInstance().goMain("Admin"); 
+    }
 
     @FXML
     private void irFuncionario() {
-        FlowController.getInstance().goMain("Funcionario");
+        FlowController.getInstance().goMain("LoginFuncionario");
     }
 
     @FXML

@@ -56,8 +56,25 @@
 
 .mfx-button:hover{
     -fx-font-weight:bold;
+    -fx-font-size: 14px;
     -fx-text-fill:white;
-    -fx-background-color: #0099cc; 
-    -fx-effect: dropshadow(gaussian, #0099cc, 15, 0.4, 0, 0);
+    -fx-background-color: #38E815; 
+    -fx-effect: dropshadow(gaussian, #38E815, 15, 0.4, 0, 0);
+}
+
+/* Inputs estándar JavaFX */
+.text-field,
+.password-field,
+
+/* Inputs MaterialFX */
+.mfx-text-field,
+.mfx-password-field {
     
+    /* Tamaño fijo */
+    -fx-pref-height: 45px;
+    -fx-pref-width: 250px;
+
+    /* Opcional: consistencia */
+    -fx-font-size: 14px;
+    -fx-font-fill: -fx-base-color-texto;
 }
