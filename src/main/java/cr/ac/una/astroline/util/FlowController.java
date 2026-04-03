@@ -130,7 +130,6 @@ public class FlowController {
 
     public void goView(String viewName) {
         goView(viewName, "Center", null);
-
     }
 
     public void goView(String viewName, String accion) {
@@ -162,8 +161,9 @@ public class FlowController {
             default:
                 break;
         }
-        stage.sizeToScene();
-        stage.centerOnScreen();
+        //stage.sizeToScene();
+        //stage.centerOnScreen();
+        stage.show();
     }
 
     public void goViewInStage(String viewName, Stage stage) {
@@ -172,28 +172,37 @@ public class FlowController {
         controller.setStage(stage);
         stage.getScene().setRoot(loader.getRoot());
         MFXThemeManager.addOn(stage.getScene(), Themes.DEFAULT, Themes.LEGACY);
-        stage.sizeToScene();
-        stage.centerOnScreen();
+        //stage.sizeToScene();
+        //stage.centerOnScreen();
     }
 
     public void goViewInWindow(String viewName) {
-        FXMLLoader loader = getLoader(viewName);
-        Controller controller = loader.getController();
-        controller.initialize();
-        Stage stage = new Stage();
-        stage.getIcons().add(new Image(App.class.getResourceAsStream("/cr/ac/una/astroline/resource/logo.png")));
-        stage.setTitle(controller.getNombreVista());
-        stage.setOnHidden((WindowEvent event) -> {
-            controller.getStage().getScene().setRoot(new Pane());
-            controller.setStage(null);
-        });
-        controller.setStage(stage);
-        Parent root = loader.getRoot();
-        Scene scene = new Scene(root);
-        MFXThemeManager.addOn(scene, Themes.DEFAULT, Themes.LEGACY);
-        stage.setScene(scene);
-        stage.centerOnScreen();
-        stage.show();
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                App.class.getResource("/cr/ac/una/astroline/view/" + viewName + ".fxml"),
+                this.idioma
+            );
+            Parent root = loader.load();
+            Controller controller = loader.getController();
+            controller.initialize();
+
+            Stage stage = new Stage();
+            applyIcon(stage);
+            stage.setTitle(controller.getNombreVista());
+            stage.setOnHidden((WindowEvent event) -> {
+                controller.setStage(null);
+            });
+            controller.setStage(stage);
+
+            Scene scene = new Scene(root);
+            stage.setScene(scene);   // ← esto faltaba
+            stage.centerOnScreen();
+            stage.show();
+
+        } catch (IOException ex) {
+            java.util.logging.Logger.getLogger(FlowController.class.getName())
+                .log(Level.SEVERE, "Error abriendo ventana [" + viewName + "].", ex);
+        }
     }
 
     public void goViewInWindowModal(String viewName, Stage parentStage, Boolean resizable) {
@@ -217,21 +226,6 @@ public class FlowController {
         stage.initOwner(parentStage);
         stage.centerOnScreen();
         stage.showAndWait();
-    }
-    
-    public Controller goViewInPane(String viewName, Pane container){
-         try{
-            FXMLLoader loader = getLoader(viewName);
-            Controller controller = loader.getController();
-            controller.initialize();
-
-            Parent root = loader.getRoot();
-
-            container.getChildren().clear();
-            container.getChildren().add(root);
-            return controller;
-         }
-         catch(Exception e){ return null; }
     }
 
     public Controller getController(String viewName) {

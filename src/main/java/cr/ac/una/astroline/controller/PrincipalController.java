@@ -40,17 +40,14 @@ public class PrincipalController extends Controller {
      * Si el archivo no existe muestra los valores por defecto.
      */
     private void cargarDatosEmpresa() {
-        List<Empresa> lista = GsonUtil.leerLista("empresa.json", Empresa.class);
-        if (lista.isEmpty()) return;
+        Empresa empresa = GsonUtil.leer("empresa.json", Empresa.class);
+        if (empresa == null) return;
 
-        Empresa empresa = lista.get(0);
         AppContext.getInstance().set("empresa", empresa);
 
-        // Solo asignar si el elemento existe en el FXML
         if (lblNombreEmpresa != null && empresa.getNombre() != null) {
             lblNombreEmpresa.setText(empresa.getNombre());
         }
-
         if (imgLogo != null && empresa.getLogoPath() != null) {
             File archivoLogo = new File(empresa.getLogoPath());
             if (archivoLogo.exists()) {
