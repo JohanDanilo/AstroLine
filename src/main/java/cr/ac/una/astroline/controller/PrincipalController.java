@@ -8,7 +8,6 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-
 import java.io.File;
 import java.util.List;
 
@@ -26,12 +25,8 @@ public class PrincipalController extends Controller {
     @FXML
     private Label lblNombreEmpresa;
 
-    @FXML
-    private Label lblVersion;
-
     @Override
     public void initialize() {
-        setNombreVista("AstroLine — Selección de acceso");
         cargarDatosEmpresa();
     }
 
@@ -40,9 +35,10 @@ public class PrincipalController extends Controller {
      * Si el archivo no existe muestra los valores por defecto.
      */
     private void cargarDatosEmpresa() {
+        
         Empresa empresa = GsonUtil.leer("empresa.json", Empresa.class);
         if (empresa == null) return;
-
+        
         AppContext.getInstance().set("empresa", empresa);
 
         if (lblNombreEmpresa != null && empresa.getNombre() != null) {
@@ -57,20 +53,22 @@ public class PrincipalController extends Controller {
     }
 
     @FXML
-    private void irAdministrador() { FlowController.getInstance().goView("AdminView"); }
+    private void irAdministrador() { 
+        FlowController.getInstance().goMain("Admin"); 
+    }
 
     @FXML
     private void irFuncionario() {
-        FlowController.getInstance().goView("FuncionarioView");
+        FlowController.getInstance().goMain("LoginFuncionario");
     }
 
     @FXML
     private void irKiosko() {
-        FlowController.getInstance().goView("KioskoView");
+        FlowController.getInstance().goMain("Kiosko");
     }
 
     @FXML
     private void irProyeccion() {
-        FlowController.getInstance().goView("ProyeccionView");
+        FlowController.getInstance().goMain("Proyeccion");
     }
 }
