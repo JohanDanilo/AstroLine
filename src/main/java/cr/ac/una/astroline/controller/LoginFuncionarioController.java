@@ -1,4 +1,3 @@
-
 package cr.ac.una.astroline.controller;
 
 import cr.ac.una.astroline.util.FlowController;
@@ -11,7 +10,7 @@ import javafx.fxml.Initializable;
 
 /**
  *
- * @author USUARIO UNA PZ
+ * @author JekaCordero
  */
 public class LoginFuncionarioController extends Controller implements Initializable {
     

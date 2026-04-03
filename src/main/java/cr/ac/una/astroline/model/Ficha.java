@@ -113,6 +113,16 @@ public class Ficha {
     public String getFechaHoraLlamado() { return fechaHoraLlamado; }
     public void setFechaHoraLlamado(String fechaHoraLlamado) { this.fechaHoraLlamado = fechaHoraLlamado; }
 
+    /**
+    * Retorna el código completo de la ficha: prefijo del trámite + número.
+    * Ejemplo: "A-001", "B-023"
+    * El tramiteId ya es la letra (A, B, C...)
+    *
+    * @return código legible de la ficha
+    */
+    public String getCodigo() {
+       return tramiteId + "-" + getNumeroFormateado();
+    }
     @Override
     public String toString() {
         return "Ficha{numero=" + getNumeroFormateado() +
