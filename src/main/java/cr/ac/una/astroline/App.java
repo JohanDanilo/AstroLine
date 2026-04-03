@@ -23,8 +23,7 @@ import javafx.application.Application;
 public class App extends Application {
     
     private static Scene scene;
-    private static String acceso = "Kiosko";
-
+    private static String acceso = "";
     @Override
     public void start(Stage stage) throws Exception {
         DataInitializer.inicializar();        
