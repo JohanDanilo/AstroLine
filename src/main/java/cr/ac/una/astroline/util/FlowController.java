@@ -255,4 +255,9 @@ public class FlowController {
     public void salir() {
         this.mainStage.close();
     }
+    
+      public Stage getMainStage(){
+        return mainStage;
+    }
+
 }

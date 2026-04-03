@@ -16,17 +16,19 @@ public class Estacion {
     private String nombre;
     private String sucursalId;
     private boolean preferencial;
+    private boolean estaActiva;
     private List<String> tramiteIds; // IDs de los trámites que atiende
 
     public Estacion() {
         this.tramiteIds = new ArrayList<>();
     }
 
-    public Estacion(String id, String nombre, String sucursalId, boolean preferencial) {
+    public Estacion(String id, String nombre, String sucursalId, boolean preferencial, boolean estaActiva) {
         this.id = id;
         this.nombre = nombre;
         this.sucursalId = sucursalId;
         this.preferencial = preferencial;
+        this.estaActiva = estaActiva;
         this.tramiteIds = new ArrayList<>();
     }
 
@@ -52,6 +54,9 @@ public class Estacion {
     public boolean isPreferencial() { return preferencial; }
     public void setPreferencial(boolean preferencial) { this.preferencial = preferencial; }
 
+    public boolean isEstaActiva() { return estaActiva; }
+    public void setEstaActiva(boolean estaActiva) { this.estaActiva = estaActiva; }
+    
     public List<String> getTramiteIds() { return tramiteIds; }
     public void setTramiteIds(List<String> tramiteIds) { this.tramiteIds = tramiteIds; }
 
