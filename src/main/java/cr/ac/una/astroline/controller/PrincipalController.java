@@ -9,6 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import java.io.File;
+import java.util.List;
 
 /**
  * Controller de la pantalla principal de selección de rol.
@@ -43,7 +44,6 @@ public class PrincipalController extends Controller {
         if (lblNombreEmpresa != null && empresa.getNombre() != null) {
             lblNombreEmpresa.setText(empresa.getNombre());
         }
-
         if (imgLogo != null && empresa.getLogoPath() != null) {
             File archivoLogo = new File(empresa.getLogoPath());
             if (archivoLogo.exists()) {
