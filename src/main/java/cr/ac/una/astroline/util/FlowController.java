@@ -228,6 +228,26 @@ public class FlowController {
         stage.showAndWait();
     }
 
+        public Controller goViewInPane(String viewName, Pane container){
+	
+	try {
+	
+	FXMLLoader loader = getLoader(viewName);
+
+	Controller controller = loader.getController();	
+        controller.initialize();
+        
+        Parent root = loader.getRoot();
+	container.getChildren().clear();
+	container.getChildren().add(root);
+	
+	return controller;
+	
+	}
+	
+	
+	catch(Exception e){return null;}
+    }
     public Controller getController(String viewName) {
         return getLoader(viewName).getController();
     }
