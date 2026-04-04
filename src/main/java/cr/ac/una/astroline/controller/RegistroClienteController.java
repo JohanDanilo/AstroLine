@@ -1,8 +1,8 @@
 package cr.ac.una.astroline.controller;
 
 import cr.ac.una.astroline.model.Cliente;
+import cr.ac.una.astroline.service.ClienteService;
 import cr.ac.una.astroline.util.FlowController;
-import cr.ac.una.astroline.util.GsonUtil;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXDatePicker;
 import io.github.palexdev.materialfx.controls.MFXTextField;
@@ -89,22 +89,29 @@ public class RegistroClienteController extends Controller implements Initializab
     
     //Guardar y Verificar informacion del Cliente 
     
-   private boolean guardarCliente(){
-       if(!esValidoCliente())
-           return false;
-       
-       Cliente nuevoCliente = new Cliente();
-       nuevoCliente.setNombre(txtNombre.getText());
-       nuevoCliente.setApellidos(txtApellidos.getText());
-       nuevoCliente.setCedula(txtCedula.getText());
-       nuevoCliente.setCorreo(txtCorreoElectronico.getText());
-       nuevoCliente.setTelefono(txtTelefono.getText());  
-       nuevoCliente.setFechaNacimiento(dpFechaDeNacimiento.getValue().toString());
-       
-       GsonUtil.guardar(nuevoCliente, "Clientes.json");
-       
-       return true;
-   } 
+   private boolean guardarCliente() {
+        if (!esValidoCliente()) return false;
+
+        Cliente nuevoCliente = new Cliente();
+        nuevoCliente.setNombre(txtNombre.getText().trim());
+        nuevoCliente.setApellidos(txtApellidos.getText().trim());
+        nuevoCliente.setCedula(txtCedula.getText().trim());
+        nuevoCliente.setCorreo(txtCorreoElectronico.getText().trim());
+        nuevoCliente.setTelefono(txtTelefono.getText().trim());
+
+        nuevoCliente.setFechaNacimiento(
+                dpFechaDeNacimiento.getValue().format(FORMATO_FECHA)
+        );
+
+        boolean agregado = ClienteService.getInstancia().agregar(nuevoCliente);
+
+        if (!agregado) {
+            abrirAviso("Ya existe un cliente con esa cédula.");
+            return false;
+        }
+
+        return true;
+    }
        
     private boolean esValidoCliente(){
         
@@ -176,7 +183,7 @@ public class RegistroClienteController extends Controller implements Initializab
     
     private boolean esValidaCedula(){
         
-        String formatoCedula = "[\\d]*";
+        String formatoCedula = "[\\d{9}]*";
         return txtCedula.getText().matches(formatoCedula);
         
     }

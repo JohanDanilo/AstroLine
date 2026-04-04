@@ -24,6 +24,9 @@ public class AdminController extends Controller implements Initializable {
     private MFXButton btnRankings;
     @FXML
     private MFXButton btnClientes1;
+    
+    @FXML
+    private MFXButton btnConfiguracion;
 
     @Override
     public void initialize() {
@@ -33,8 +36,13 @@ public class AdminController extends Controller implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
     }    
-    
 
+
+    @FXML
+    private void onBtnConfiguracion(ActionEvent event) {
+        FlowController.getInstance().goView("ConfiguracionView");
+    }
+    
     @FXML
     private void onActionBtnClientes(ActionEvent event) {
         FlowController.getInstance().goView("MantenimientoClientesView");

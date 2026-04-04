@@ -60,6 +60,31 @@ public class Estacion {
     public List<String> getTramiteIds() { return tramiteIds; }
     public void setTramiteIds(List<String> tramiteIds) { this.tramiteIds = tramiteIds; }
 
+    /**
+     * Agrega un trámite a los que atiende esta estación.
+     * Evita duplicados.
+     * Usado por el drag and drop del módulo de administrador.
+     *
+     * @param tramiteId id del trámite a agregar
+     * @return true si se agregó, false si ya existía
+     */
+    public boolean agregarTramite(String tramiteId) {
+        if (tramiteId == null || atiendeTramite(tramiteId)) return false;
+        tramiteIds.add(tramiteId);
+        return true;
+    }
+
+    /**
+     * Quita un trámite de los que atiende esta estación.
+     * Usado por el drag and drop del módulo de administrador.
+     *
+     * @param tramiteId id del trámite a quitar
+     * @return true si se quitó, false si no existía
+     */
+    public boolean quitarTramite(String tramiteId) {
+        return tramiteIds.remove(tramiteId);
+    }
+
     @Override
     public String toString() {
         return "Estacion{id='" + id + "', nombre='" + nombre + 

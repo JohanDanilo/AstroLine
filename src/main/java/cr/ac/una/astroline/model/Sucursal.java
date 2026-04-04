@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Representa una sucursal de la empresa.
- * Contiene las estaciones de atención y el texto de avisos para Proyección.
+ * Representa una sucursal de atención.
+ * Contiene una lista de estaciones propias y un texto de avisos
+ * que se muestra corriendo en ciclo en la pantalla de Proyección.
  * Se persiste en data/sucursales.json
  *
  * @author JohanDanilo
@@ -14,35 +15,59 @@ public class Sucursal {
 
     private String id;
     private String nombre;
-    private String direccion;
-    private String textoAvisos; // texto que corre en la pantalla Proyección
+    private String textoAviso; // se muestra en Proyección corriendo en ciclo
     private List<Estacion> estaciones;
 
     public Sucursal() {
         this.estaciones = new ArrayList<>();
+        this.textoAviso = "";
     }
 
-    public Sucursal(String id, String nombre, String direccion, String textoAvisos) {
+    public Sucursal(String id, String nombre) {
         this.id = id;
         this.nombre = nombre;
-        this.direccion = direccion;
-        this.textoAvisos = textoAvisos;
+        this.textoAviso = "";
         this.estaciones = new ArrayList<>();
     }
 
     /**
-     * Busca una estación por su ID dentro de esta sucursal.
+     * Busca una estación dentro de esta sucursal por su id.
      *
-     * @param estacionId el ID de la estación a buscar
-     * @return la estación encontrada o null si no existe
+     * @param estacionId id de la estación
+     * @return la Estacion encontrada o null si no existe
      */
     public Estacion buscarEstacion(String estacionId) {
-        for (Estacion estacion : estaciones) {
-            if (estacion.getId().equals(estacionId)) {
-                return estacion;
-            }
+        if (estacionId == null) return null;
+        for (Estacion e : estaciones) {
+            if (e.getId().equals(estacionId)) return e;
         }
         return null;
+    }
+
+    /**
+     * Agrega una estación a esta sucursal.
+     * No agrega duplicados por id.
+     *
+     * @param estacion la estación a agregar
+     * @return true si se agregó, false si ya existía
+     */
+    public boolean agregarEstacion(Estacion estacion) {
+        if (estacion == null || buscarEstacion(estacion.getId()) != null) return false;
+        estaciones.add(estacion);
+        return true;
+    }
+
+    /**
+     * Elimina una estación de esta sucursal por su id.
+     *
+     * @param estacionId id de la estación a eliminar
+     * @return true si se eliminó, false si no existía
+     */
+    public boolean eliminarEstacion(String estacionId) {
+        Estacion encontrada = buscarEstacion(estacionId);
+        if (encontrada == null) return false;
+        estaciones.remove(encontrada);
+        return true;
     }
 
     public String getId() { return id; }
@@ -51,17 +76,19 @@ public class Sucursal {
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
 
-    public String getDireccion() { return direccion; }
-    public void setDireccion(String direccion) { this.direccion = direccion; }
-
-    public String getTextoAvisos() { return textoAvisos; }
-    public void setTextoAvisos(String textoAvisos) { this.textoAvisos = textoAvisos; }
+    public String getTextoAviso() { return textoAviso; }
+    public void setTextoAviso(String textoAviso) {
+        this.textoAviso = textoAviso != null ? textoAviso : "";
+    }
 
     public List<Estacion> getEstaciones() { return estaciones; }
-    public void setEstaciones(List<Estacion> estaciones) { this.estaciones = estaciones; }
+    public void setEstaciones(List<Estacion> estaciones) {
+        this.estaciones = estaciones != null ? estaciones : new ArrayList<>();
+    }
 
     @Override
     public String toString() {
-        return "Sucursal{id='" + id + "', nombre='" + nombre + "'}";
+        return "Sucursal{id='" + id + "', nombre='" + nombre +
+                "', estaciones=" + estaciones.size() + "}";
     }
 }

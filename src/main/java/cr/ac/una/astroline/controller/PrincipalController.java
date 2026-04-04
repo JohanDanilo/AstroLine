@@ -9,7 +9,6 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import java.io.File;
-import java.util.List;
 
 /**
  * Controller de la pantalla principal de selección de rol.
@@ -44,6 +43,7 @@ public class PrincipalController extends Controller {
         if (lblNombreEmpresa != null && empresa.getNombre() != null) {
             lblNombreEmpresa.setText(empresa.getNombre());
         }
+
         if (imgLogo != null && empresa.getLogoPath() != null) {
             File archivoLogo = new File(empresa.getLogoPath());
             if (archivoLogo.exists()) {
@@ -54,21 +54,25 @@ public class PrincipalController extends Controller {
 
     @FXML
     private void irAdministrador() { 
-        FlowController.getInstance().goMain("Admin"); 
+        FlowController.getInstance().goMain("Admin");
+        getStage().close();
     }
 
     @FXML
     private void irFuncionario() {
-        FlowController.getInstance().goMain("LoginFuncionario");
+        FlowController.getInstance().goViewInWindow("LoginFuncionarioView");
+        getStage().close();
     }
 
     @FXML
     private void irKiosko() {
         FlowController.getInstance().goMain("Kiosko");
+        getStage().close();
     }
 
     @FXML
     private void irProyeccion() {
         FlowController.getInstance().goMain("Proyeccion");
+        getStage().close();
     }
 }
