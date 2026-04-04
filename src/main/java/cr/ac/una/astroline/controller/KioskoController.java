@@ -5,7 +5,9 @@ import cr.ac.una.astroline.model.Cliente;
 import cr.ac.una.astroline.model.Empresa;
 import cr.ac.una.astroline.model.Ficha;
 import cr.ac.una.astroline.model.Tramite;
+import cr.ac.una.astroline.service.ClienteService;
 import cr.ac.una.astroline.service.FichaService;
+import cr.ac.una.astroline.service.TramiteService;
 import cr.ac.una.astroline.util.GsonUtil;
 import cr.ac.una.astroline.util.Mensaje;
 import io.github.palexdev.materialfx.controls.MFXButton;
@@ -144,15 +146,6 @@ public class KioskoController extends Controller implements Initializable {
         }
     }
     
-
-    @Override
-    public void initialize() {
-        setNombreVista("Kiosko");
-        cargarEmpresa();
-        cargarTramites();
-        limpiarFormulario();
-    }
-    
     @FXML
     private void onBtnConfirmar(ActionEvent event){
         String pinIngresado = passwordFldAdmin.getText().trim();
@@ -172,6 +165,14 @@ public class KioskoController extends Controller implements Initializable {
             mostrarErrorPin("PIN incorrecto.");
             passwordFldAdmin.clear();
         }
+    }
+
+    @Override
+    public void initialize() {
+        setNombreVista("Kiosko");
+        cargarEmpresa();
+        cargarTramites();
+        limpiarFormulario();
     }
     
     // -------------------------------------------------------------------------//
@@ -198,20 +199,14 @@ public class KioskoController extends Controller implements Initializable {
     }
     
     private void cargarTramites() {
-        List<Tramite> tramites = GsonUtil.leerLista("tramites.json", Tramite.class);
-        List<Tramite> activos = tramites.stream()
-                .filter(Tramite::isActivo)
-                .toList();
+        List<Tramite> activos = TramiteService.getInstancia().getTramitesActivos();
         cmbTramite.setConverter(new javafx.util.StringConverter<Tramite>() {
-        @Override
-        public String toString(Tramite tramite) {
-            return tramite == null ? "" : tramite.getId() + " — " + tramite.getNombre();
-        }
-
-        @Override
-        public Tramite fromString(String string) {
-            return null;
-        }
+            @Override
+            public String toString(Tramite tramite) {
+                return tramite == null ? "" : tramite.getId() + " — " + tramite.getNombre();
+            }
+            @Override
+            public Tramite fromString(String string) { return null; }
         });
         cmbTramite.getItems().addAll(activos);
     }
@@ -219,16 +214,6 @@ public class KioskoController extends Controller implements Initializable {
     // -------------------------------------------------------------------------//
     // Utilidades                                                               //
     // -------------------------------------------------------------------------//
-    
-        private void onPinAction() {
-        boolean visible = !panelPinAdmin.isVisible();
-        panelPinAdmin.setVisible(visible);
-        panelPinAdmin.setManaged(visible);
-        if (!visible) {
-            passwordFldAdmin.clear();
-            preferencialPorPin = false;
-        }
-    }
     
     private void limpiarFormulario() {
         cmbTramite.clearSelection();
@@ -287,11 +272,11 @@ public class KioskoController extends Controller implements Initializable {
     
 
     private boolean cedulaValida(String cedula) {
-        return cedula.matches("\\d{9}") || cedula.matches("\\d{12}");
+        return cedula.matches("\\d{9}");
     }
     
     // -------------------------------------------------------------------------
-    // LÓGICA DE NEGOCIO LOCAL
+    // LÓGICA DE NEGOCIO
     // -------------------------------------------------------------------------
 
     /**
@@ -299,15 +284,9 @@ public class KioskoController extends Controller implements Initializable {
      * buscando su fecha de nacimiento en clientes.json por cédula.
      */
     private boolean detectarPreferencial(String cedula) {
-    if (cedula == null || cedula.isBlank()) return false;
-
-    List<Cliente> clientes = GsonUtil.leerLista("clientes.json", Cliente.class);
-
-    return clientes.stream()
-            .filter(c -> cedula.equals(c.getCedula()))
-            .findFirst()
-            .map(Cliente::esMayorDe65)
-            .orElse(false);
+        if (cedula == null || cedula.isBlank()) return false;
+        Cliente cliente = ClienteService.getInstancia().buscarPorCedula(cedula);
+        return cliente != null && cliente.esMayorDe65();
     }
 
 }

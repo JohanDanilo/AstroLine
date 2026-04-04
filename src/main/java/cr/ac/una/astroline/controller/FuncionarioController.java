@@ -43,6 +43,7 @@ public class FuncionarioController extends Controller implements Initializable {
     
     @FXML
     private void onBtnCerrarSesion(ActionEvent event) {
-        FlowController.getInstance().goMain("LoginFuncionario");
+        FlowController.getInstance().goViewInWindow("LoginFuncionarioView");
+        getStage().close();
     }
 }
