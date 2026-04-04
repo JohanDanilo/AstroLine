@@ -26,12 +26,15 @@ public class App extends Application {
     private static String acceso = "";
     @Override
     public void start(Stage stage) throws Exception {
-        DataInitializer.inicializar();        
+        DataInitializer.inicializar();    
+        
         FlowController.getInstance().InitializeFlow(stage, null);
-        if ("Funcionario".equals(acceso)) {
-            acceso = "Login" + acceso;
+        
+        if (acceso == null || acceso.isBlank()) {
+            FlowController.getInstance().goViewInWindow("PrincipalView");
+        } else {
+            FlowController.getInstance().goMain(acceso);
         }
-        FlowController.getInstance().goMain(acceso);
     }
 
     public static void main(String[] args) {

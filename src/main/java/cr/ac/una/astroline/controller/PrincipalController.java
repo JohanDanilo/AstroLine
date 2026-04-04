@@ -54,21 +54,25 @@ public class PrincipalController extends Controller {
 
     @FXML
     private void irAdministrador() { 
-        FlowController.getInstance().goMain("Admin"); 
+        FlowController.getInstance().goMain("Admin");
+        getStage().close();
     }
 
     @FXML
     private void irFuncionario() {
-        FlowController.getInstance().goMain("LoginFuncionario");
+        FlowController.getInstance().goViewInWindow("LoginFuncionarioView");
+        getStage().close();
     }
 
     @FXML
     private void irKiosko() {
         FlowController.getInstance().goMain("Kiosko");
+        getStage().close();
     }
 
     @FXML
     private void irProyeccion() {
         FlowController.getInstance().goMain("Proyeccion");
+        getStage().close();
     }
 }

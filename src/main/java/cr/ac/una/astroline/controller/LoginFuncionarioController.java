@@ -30,6 +30,7 @@ public class LoginFuncionarioController extends Controller implements Initializa
     @FXML
     private void onBtnIngresarLoginFuncionario(ActionEvent event) {
         FlowController.getInstance().goMain("Funcionario");
+        getStage().close();
     }
 
 }
