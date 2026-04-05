@@ -106,7 +106,7 @@ public class FlowController {
             if (acceso == null || acceso.isBlank()) {
                 acceso = "Principal"; // fallback seguro
             }
-
+            
             FXMLLoader loader = new FXMLLoader(
                 App.class.getResource("/cr/ac/una/astroline/view/" + acceso + "View.fxml"), 
                 this.idioma

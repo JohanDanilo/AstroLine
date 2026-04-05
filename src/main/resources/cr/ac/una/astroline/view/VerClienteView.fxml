@@ -1,27 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.ListView?>
-<?import javafx.scene.image.ImageView?>
+<?import io.github.palexdev.materialfx.controls.MFXButton?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-
-<AnchorPane id="AnchorPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="749.0" prefWidth="500.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/25" fx:controller="cr.ac.una.astroline.controller.VerClienteController">
+<AnchorPane id="AnchorPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="411.0" prefWidth="567.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.VerClienteController">
    <children>
-      <VBox layoutX="169.0" layoutY="196.0" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <VBox layoutX="140.0" layoutY="55.0" prefHeight="200.0" prefWidth="100.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <HBox prefHeight="100.0" prefWidth="200.0">
+            <Label text="Registro de Clientes" />
+            <TableView prefHeight="327.0" prefWidth="437.0">
+              <columns>
+                <TableColumn prefWidth="75.0" text="ID (Cedula)" />
+                <TableColumn prefWidth="75.0" text="Nombre" />
+                  <TableColumn prefWidth="75.0" text="Apellido" />
+                  <TableColumn prefWidth="112.00001525878906" text="Fecha Nacimiento" />
+                  <TableColumn prefWidth="133.33331298828125" text="Correo" />
+                  <TableColumn prefWidth="75.33328247070312" text="Telefono" />
+              </columns>
+            </TableView>
+            <HBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="31.0" prefWidth="437.0" spacing="10.0" VBox.vgrow="ALWAYS">
                <children>
-                  <VBox prefHeight="200.0" prefWidth="100.0">
-                     <children>
-                        <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
-                     </children>
-                  </VBox>
+                  <MFXButton onAction="#OnActionEditarClientes" text="Editar Lista De Clientes" />
                </children>
             </HBox>
-            <ListView prefHeight="565.0" prefWidth="500.0" VBox.vgrow="ALWAYS" />
          </children>
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </padding>
       </VBox>
    </children>
 </AnchorPane>

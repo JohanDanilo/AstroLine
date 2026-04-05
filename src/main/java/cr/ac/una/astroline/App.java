@@ -30,8 +30,14 @@ public class App extends Application {
         
         FlowController.getInstance().InitializeFlow(stage, null);
         
+        if( (!acceso.equals("Admin")) && (!acceso.equals("Funcionario")) && (!acceso.equals("Kiosko")) && (!acceso.equals("Proyeccion")) ){
+            acceso = null;
+        }
+        
         if (acceso == null || acceso.isBlank()) {
             FlowController.getInstance().goViewInWindow("PrincipalView");
+        } else if ("Funcionario".equals(acceso)) {
+            FlowController.getInstance().goViewInWindow("LoginFuncionarioView");
         } else {
             FlowController.getInstance().goMain(acceso);
         }
