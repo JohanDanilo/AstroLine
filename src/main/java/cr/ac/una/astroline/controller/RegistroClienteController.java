@@ -1,8 +1,8 @@
 package cr.ac.una.astroline.controller;
 
 import cr.ac.una.astroline.model.Cliente;
+import cr.ac.una.astroline.service.ClienteService;
 import cr.ac.una.astroline.util.FlowController;
-import cr.ac.una.astroline.util.GsonUtil;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXDatePicker;
 import io.github.palexdev.materialfx.controls.MFXTextField;
@@ -14,7 +14,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 /*
@@ -23,9 +22,9 @@ import javafx.stage.Stage;
 *       encargada de la vista de registro del cliente
 *
 *
- */
+*/
 public class RegistroClienteController extends Controller implements Initializable {
-
+    
     @FXML
     private AnchorPane root;
     @FXML
@@ -48,18 +47,16 @@ public class RegistroClienteController extends Controller implements Initializab
     private MFXButton btnAgregarCliente;
     @FXML
     private MFXButton btnCancelar;
-
+    
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-
-    private Pane panePadre;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-    }
+        }    
 
     @Override
     public void initialize() {
-
+      
     }
 
     @FXML
@@ -68,132 +65,137 @@ public class RegistroClienteController extends Controller implements Initializab
 
     @FXML
     private void onActionBtnCamara(ActionEvent event) {
-
+        
+        
     }
 
     @FXML
     private void onActionBtnAgregarCliente(ActionEvent event) {
-
-        if (guardarCliente()) {
+        
+        if (guardarCliente()){
             limpiarVistaDeRegistro();
-            FlowController.getInstance().goViewInDividePane("", panePadre, false);
+            
         }
-
+            
     }
 
     @FXML
     private void onActionBtnCancelar(ActionEvent event) {
-
+        
         limpiarVistaDeRegistro();
-        FlowController.getInstance().goViewInDividePane("", panePadre, false);
-
-
+       
+        
     }
-
+    
     //Guardar y Verificar informacion del Cliente 
-    private boolean guardarCliente() {
-        if (!esValidoCliente()) {
+    
+   private boolean guardarCliente() {
+        if (!esValidoCliente()) return false;
+
+        Cliente nuevoCliente = new Cliente();
+        nuevoCliente.setNombre(txtNombre.getText().trim());
+        nuevoCliente.setApellidos(txtApellidos.getText().trim());
+        nuevoCliente.setCedula(txtCedula.getText().trim());
+        nuevoCliente.setCorreo(txtCorreoElectronico.getText().trim());
+        nuevoCliente.setTelefono(txtTelefono.getText().trim());
+
+        nuevoCliente.setFechaNacimiento(
+                dpFechaDeNacimiento.getValue().format(FORMATO_FECHA)
+        );
+
+        boolean agregado = ClienteService.getInstancia().agregar(nuevoCliente);
+
+        if (!agregado) {
+            abrirAviso("Ya existe un cliente con esa cédula.");
             return false;
         }
 
-        Cliente nuevoCliente = new Cliente();
-        nuevoCliente.setNombre(txtNombre.getText());
-        nuevoCliente.setApellidos(txtApellidos.getText());
-        nuevoCliente.setCedula(txtCedula.getText());
-        nuevoCliente.setCorreo(txtCorreoElectronico.getText());
-        nuevoCliente.setTelefono(txtTelefono.getText());
-        nuevoCliente.setFechaNacimiento(dpFechaDeNacimiento.getValue().toString());
-
-        GsonUtil.guardar(nuevoCliente, "clientes.json");
-
         return true;
     }
-
-    private boolean esValidoCliente() {
-
-        if (!esValidoNombreYApellidos()) {
+       
+    private boolean esValidoCliente(){
+        
+        if(!esValidoNombreYApellidos()){
             abrirAviso(" Revisar : Nombre y Apellidos ");
             return false;
         }
-        if (!esValidaCedula()) {
+           if(!esValidaCedula()){
             abrirAviso("Revisar : Cedula ");
             return false;
-        }
-        if (!esValidaFechaDeNacimiento()) {
+        }     
+         if(!esValidaFechaDeNacimiento()){
             abrirAviso("Revisar : Fecha de Nacimiento");
             return false;
         }
-        if (!esValidoCorreoElectronico()) {
+             if(!esValidoCorreoElectronico()){
             abrirAviso("Revisar : Correo Electronico ");
             return false;
-        }
-        if (!esValidoTelefono()) {
+        }   
+        if(!esValidoTelefono()){
             abrirAviso("Revisar : Telefono ");
             return false;
         }
-
+       
+        
         return true;
-
+        
     }
-
-    private void abrirAviso(String msg) {
-
-        Controller controller = FlowController.getInstance().getController("AvisoView");
-
-        if (controller instanceof AvisoController avisoController) {
-            avisoController.cambiarInformacionDeAviso(msg);
-        }
-
+    
+    private void abrirAviso(String msg){
+        
+       Controller controller = FlowController.getInstance().getController("AvisoView");
+        
+       if(controller instanceof AvisoController avisoController)
+           avisoController.cambiarInformacionDeAviso(msg);
+       
         FlowController.getInstance().goViewInWindowModal("AvisoView", FlowController.getInstance().getMainStage(), true);
-
+       
     }
-
+    
     //Validaciones de espacios
-    private boolean esValidoNombreYApellidos() {
-
+     
+    private boolean esValidoNombreYApellidos(){
+        
         String formatoNombreYApellidos = "[A-Za-z\\s]{4,30}";
-
+        
         return txtApellidos.getText().matches(formatoNombreYApellidos) && txtNombre.getText().matches(formatoNombreYApellidos);
     }
-
-    private boolean esValidoCorreoElectronico() {
-
+    
+    private boolean esValidoCorreoElectronico(){
+        
         String formantoCorreoElectronico = "^[a-zA-Z0-9._^\\-]{4,50}@[a-zA-Z.]{4,30}\\.[a-z]{2,3}$";
         return txtCorreoElectronico.getText().matches(formantoCorreoElectronico);
-
+        
     }
-
-    private boolean esValidoTelefono() {
-
+    
+    private boolean esValidoTelefono(){
+        
         String formatoTelefono = "\\d{8}";
         return txtTelefono.getText().matches(formatoTelefono);
-
+        
     }
-
-    private boolean esValidaFechaDeNacimiento() {
-
+    
+    private boolean esValidaFechaDeNacimiento(){
+        
         return dpFechaDeNacimiento.getValue() != null;
-
+        
     }
-
-    private boolean esValidaCedula() {
-
-        String formatoCedula = "[\\d]*";
+    
+    private boolean esValidaCedula(){
+        
+        String formatoCedula = "[\\d{9}]*";
         return txtCedula.getText().matches(formatoCedula);
-
+        
     }
-
-    //Funciones de UI
-    private void limpiarVistaDeRegistro() {
+    
+   //Funciones de UI
+    
+    private void limpiarVistaDeRegistro(){
         txtApellidos.clear();
         txtNombre.clear();
         txtCedula.clear();
         txtTelefono.clear();
         txtCorreoElectronico.clear();
         dpFechaDeNacimiento.clear();
-    }
-
-    public void setPanePadre(Pane pane) {
-        this.panePadre = pane;
     }
 }

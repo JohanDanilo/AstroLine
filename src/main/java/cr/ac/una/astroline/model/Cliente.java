@@ -5,8 +5,6 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Representa un cliente registrado en el sistema.
@@ -16,14 +14,14 @@ import java.util.List;
  */
 public class Cliente {
 
-    private String cedula; // formato: "x-xxxx-xxxx"
+    private String cedula;
     private String nombre;
     private String apellidos;
     private String telefono;
     private String correo;
     private String fotoPath;
     private String fechaNacimiento; // formato: "dd-MM-yyyy"
-    private List<Tramite> historialTramites;
+
     public Cliente() {
     }
 
@@ -40,27 +38,23 @@ public class Cliente {
     }
 
     /**
-    * Calcula si el cliente es mayor de 65 años usando la zona horaria
-    * de Costa Rica para evitar errores por configuración incorrecta del sistema.
-    *
-    * @return true si el cliente tiene 65 años o más
-    */
-   public boolean esMayorDe65() {
-       if (fechaNacimiento == null || fechaNacimiento.isEmpty()) {
-           return false;
-       }
-       LocalDate nacimiento = LocalDate.parse(
-           fechaNacimiento,
-           DateTimeFormatter.ofPattern("dd-MM-yyyy")
-       );
-       LocalDate hoy = ZonedDateTime.now(ZoneId.of("America/Costa_Rica")).toLocalDate();
-       return Period.between(nacimiento, hoy).getYears() >= 65;
-   }
+     * Calcula si el cliente es mayor de 65 años usando la zona horaria
+     * de Costa Rica para evitar errores por configuración del sistema.
+     *
+     * @return true si el cliente tiene 65 años o más
+     */
+    public boolean esMayorDe65() {
+        if (fechaNacimiento == null || fechaNacimiento.isEmpty()) return false;
+        LocalDate nacimiento = LocalDate.parse(
+                fechaNacimiento,
+                DateTimeFormatter.ofPattern("dd-MM-yyyy")
+        );
+        LocalDate hoy = ZonedDateTime.now(ZoneId.of("America/Costa_Rica")).toLocalDate();
+        return Period.between(nacimiento, hoy).getYears() >= 65;
+    }
 
     /**
      * Retorna el nombre completo del cliente.
-     *
-     * @return nombre y apellidos concatenados
      */
     public String getNombreCompleto() {
         return nombre + " " + apellidos;
@@ -85,13 +79,12 @@ public class Cliente {
     public void setFotoPath(String fotoPath) { this.fotoPath = fotoPath; }
 
     public String getFechaNacimiento() { return fechaNacimiento; }
-    public void setFechaNacimiento(String fechaNacimiento) { 
-        this.fechaNacimiento = fechaNacimiento; 
+    public void setFechaNacimiento(String fechaNacimiento) {
+        this.fechaNacimiento = fechaNacimiento;
     }
 
     @Override
     public String toString() {
         return "Cliente{cedula='" + cedula + "', nombre='" + getNombreCompleto() + "'}";
     }
-   
 }

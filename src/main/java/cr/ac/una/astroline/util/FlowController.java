@@ -16,7 +16,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import cr.ac.una.astroline.controller.Controller;
-import cr.ac.una.astroline.controller.RegistroClienteController;
 import io.github.palexdev.materialfx.css.themes.MFXThemeManager;
 import io.github.palexdev.materialfx.css.themes.Themes;
 import javafx.scene.layout.HBox;
@@ -93,6 +92,7 @@ public class FlowController {
 
             this.mainStage.setScene(new Scene(root));
             applyIcon(this.mainStage);
+            MFXThemeManager.addOn(this.mainStage.getScene(), Themes.DEFAULT, Themes.LEGACY);
             this.mainStage.centerOnScreen();
             this.mainStage.show();
         } catch (IOException ex) {
@@ -120,6 +120,7 @@ public class FlowController {
             this.mainStage.setTitle(acceso);
             this.mainStage.setScene(new Scene(root));
             applyIcon(this.mainStage);
+            MFXThemeManager.addOn(this.mainStage.getScene(), Themes.DEFAULT, Themes.LEGACY);
             this.mainStage.centerOnScreen();
             this.mainStage.show();
 
@@ -143,6 +144,7 @@ public class FlowController {
         Controller controller = loader.getController();
         controller.initialize();
         Stage stage = controller.getStage();
+        MFXThemeManager.addOn(this.mainStage.getScene(), Themes.DEFAULT, Themes.LEGACY);
         if (stage == null) {
             stage = this.mainStage;
             controller.setStage(stage);
@@ -163,7 +165,7 @@ public class FlowController {
             default:
                 break;
         }
-        
+        stage.centerOnScreen();
         stage.show();
     }
 
@@ -172,6 +174,7 @@ public class FlowController {
         Controller controller = loader.getController();
         controller.setStage(stage);
         stage.getScene().setRoot(loader.getRoot());
+        stage.centerOnScreen();
     }
 
     public void goViewInWindow(String viewName) {
@@ -193,6 +196,7 @@ public class FlowController {
             controller.setStage(stage);
 
             Scene scene = new Scene(root);
+            MFXThemeManager.addOn(scene, Themes.DEFAULT, Themes.LEGACY);
             stage.setScene(scene);
             stage.centerOnScreen();
             stage.show();
@@ -208,7 +212,7 @@ public class FlowController {
         Controller controller = loader.getController();
         controller.initialize();
         Stage stage = new Stage();
-        stage.getIcons().add(new Image(App.class.getResourceAsStream("/cr/ac/una/astroline/resource/logo.png")));
+        applyIcon(stage);
         stage.setTitle(controller.getNombreVista());
         stage.setResizable(resizable);
         stage.setOnHidden((WindowEvent event) -> {
@@ -218,6 +222,7 @@ public class FlowController {
         controller.setStage(stage);
         Parent root = loader.getRoot();
         Scene scene = new Scene(root);
+        MFXThemeManager.addOn(this.mainStage.getScene(), Themes.DEFAULT, Themes.LEGACY);
         stage.setScene(scene);
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initOwner(parentStage);
@@ -225,25 +230,25 @@ public class FlowController {
         stage.showAndWait();
     }
 
-    public void goViewInDividePane(String viewNameToShow, Pane pane, boolean isActiveDividePane){
+        public Controller goViewInPane(String viewName, Pane container){
 	
-        if(isActiveDividePane){
-            FXMLLoader loader = getLoader(viewNameToShow);
-            Controller controller = loader.getController();	
-            controller.initialize();
-            
-            // guarda la referencia del paneprincipal en el registro para poder cerrar la vista desde el registro 
-            // Diseño fragil y rigido
-            
-            if (controller instanceof RegistroClienteController registroController)
-                registroController.setPanePadre(pane);
-            
-            Parent root = loader.getRoot();
-            pane.getChildren().clear();
-            pane.getChildren().add(root);
-        }
-        else pane.getChildren().clear();
+	try {
+	
+	FXMLLoader loader = getLoader(viewName);
+
+	Controller controller = loader.getController();	
+        controller.initialize();
         
+        Parent root = loader.getRoot();
+	container.getChildren().clear();
+	container.getChildren().add(root);
+	
+	return controller;
+	
+	}
+	
+	
+	catch(Exception e){return null;}
     }
     public Controller getController(String viewName) {
         return getLoader(viewName).getController();
