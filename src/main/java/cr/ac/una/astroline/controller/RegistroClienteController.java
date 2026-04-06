@@ -25,7 +25,7 @@ import javafx.stage.Stage;
 */
 public class RegistroClienteController extends Controller implements Initializable {
     
-    @FXML
+    /*@FXML
     private AnchorPane root;
     @FXML
     private MFXButton btnCargar;
@@ -49,7 +49,7 @@ public class RegistroClienteController extends Controller implements Initializab
     private MFXButton btnCancelar;
     
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-
+*/
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         }    
@@ -58,8 +58,13 @@ public class RegistroClienteController extends Controller implements Initializab
     public void initialize() {
       
     }
-
+    
     @FXML
+    private void OnActionRegresarRegistroCliente(ActionEvent event) {
+        FlowController.getInstance().goView("VerClienteView");
+    }
+
+   /* @FXML
     private void onActionBtnCargar(ActionEvent event) {
     }
 
@@ -70,13 +75,10 @@ public class RegistroClienteController extends Controller implements Initializab
     }
 
     @FXML
-    private void onActionBtnAgregarCliente(ActionEvent event) {
-        
+    private void onActionBtnAgregarCliente(ActionEvent event) {      
         if (guardarCliente()){
-            limpiarVistaDeRegistro();
-            
-        }
-            
+            limpiarVistaDeRegistro();          
+        }       
     }
 
     @FXML
@@ -197,5 +199,5 @@ public class RegistroClienteController extends Controller implements Initializab
         txtTelefono.clear();
         txtCorreoElectronico.clear();
         dpFechaDeNacimiento.clear();
-    }
+    }*/
 }

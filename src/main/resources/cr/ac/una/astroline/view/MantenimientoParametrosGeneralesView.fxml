@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import io.github.palexdev.materialfx.controls.MFXButton?>
+<?import io.github.palexdev.materialfx.controls.MFXTextField?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="423.0" prefWidth="471.0" tabClosingPolicy="UNAVAILABLE" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/25" fx:controller="cr.ac.una.astroline.controller.MantenimientoParametrosGeneralesController">
+  <tabs>
+    <Tab text="General">
+      <content>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="371.0" prefWidth="527.0">
+               <children>
+                  <VBox layoutX="136.0" layoutY="62.0" prefHeight="200.0" prefWidth="100.0" spacing="10.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+                     <children>
+                        <MFXTextField floatingText="Nombre de la empresa" prefHeight="28.0" prefWidth="239.0" />
+                        <Label text="Logo" />
+                        <HBox prefHeight="109.0" prefWidth="277.0" spacing="10.0">
+                           <children>
+                              <ImageView fitHeight="133.0" fitWidth="143.0" pickOnBounds="true" preserveRatio="true" />
+                              <VBox alignment="TOP_CENTER" prefHeight="133.0" prefWidth="116.0" spacing="10.0">
+                                 <children>
+                                    <MFXButton maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="129.0" text="Almacenamiento" />
+                                    <MFXButton maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="140.0" text="Camara" />
+                                    <MFXButton maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Tomar Foto" />
+                                    <MFXButton maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Guardar" />
+                                 </children>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </VBox>
+               </children></AnchorPane>
+      </content>
+    </Tab>
+      <Tab text="Funcionario">
+        <content>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+               <children>
+                  <TableView layoutY="1.0" prefHeight="392.0" prefWidth="303.0" AnchorPane.bottomAnchor="0.3333333333333144" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="168.0" AnchorPane.topAnchor="1.0">
+                    <columns>
+                      <TableColumn prefWidth="150.00000512599945" text="Usuario Funcionario" />
+                      <TableColumn minWidth="0.0" prefWidth="149.3332977294922" text="Contraseña Funcionario" />
+                    </columns>
+                  </TableView>
+                  <VBox layoutX="299.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="394.0" prefWidth="163.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.rightAnchor="2.0" AnchorPane.topAnchor="0.0">
+                     <children>
+                        <MFXButton maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Agregar Funcionario" />
+                        <MFXButton maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="143.0" text="Editar Funcionario" />
+                        <MFXButton maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Eliminar Funcionario" />
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                  </VBox>
+               </children>
+            </AnchorPane>
+        </content>
+      </Tab>
+    <Tab text="Administrador">
+      <content>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+               <children>
+                  <SplitPane layoutX="129.0" layoutY="60.0" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <items>
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
+                           <children>
+                              <TableView layoutY="-4.0" prefHeight="192.0" prefWidth="303.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="168.0" AnchorPane.topAnchor="0.0">
+                                <columns>
+                                  <TableColumn prefWidth="150.0" text="Usuario Administrador" />
+                                  <TableColumn prefWidth="150.0" text="Pin Administrador" />
+                                </columns>
+                              </TableView>
+                              <VBox layoutX="304.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="192.0" prefWidth="165.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="304.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                 <children>
+                                    <MFXButton text="Agregar Administrador" />
+                                    <MFXButton prefHeight="25.0" prefWidth="143.0" text="Editar Administrador" />
+                                    <MFXButton text="Eliminar Administrador" />
+                                 </children>
+                                 <padding>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                 </padding>
+                              </VBox>
+                           </children>
+                        </AnchorPane>
+                    </items>
+                  </SplitPane>
+               </children></AnchorPane>
+      </content>
+    </Tab>
+  </tabs>
+</TabPane>
