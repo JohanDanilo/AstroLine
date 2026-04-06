@@ -43,8 +43,9 @@
                         <Insets left="5.0" right="5.0" />
                      </VBox.margin>
                   </HBox>
+                  <MFXButton fx:id="BtnConfiguracionEstacion" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onBtnConfiguracionEstacion" prefHeight="1.0" prefWidth="225.0" text="Confuración de Estación" />
+                  <MFXButton fx:id="BtnRegistroClientes" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onBtnRegistroClientes" prefHeight="1.0" prefWidth="225.0" text="Registro de Clientes" VBox.vgrow="ALWAYS" />
                   <MFXButton fx:id="BtnAtencionDeClientes" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onBtnFicha" prefHeight="17.0" prefWidth="225.0" text="Atendiendo" VBox.vgrow="ALWAYS" />
-                  <MFXButton fx:id="BtnRegistroClientes" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onBtnRegistro" prefHeight="1.0" prefWidth="225.0" text="Registro de Clientes" VBox.vgrow="ALWAYS" />
                </children>
             </VBox>
             <VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="50.0" prefWidth="225.0" VBox.vgrow="ALWAYS">

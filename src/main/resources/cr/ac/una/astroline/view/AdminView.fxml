@@ -14,13 +14,13 @@
          <children>
             <MFXButton fx:id="btnConfiguracionGeneral" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onActionBtnGeneral" prefHeight="0.0" prefWidth="136.0" text="Config. General" VBox.vgrow="ALWAYS" />
             <MFXButton fx:id="btnTramites" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Tramites" VBox.vgrow="ALWAYS" />
-            <MFXButton maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onActionBtnVerClientes" prefWidth="67.0" text="Clientes" VBox.vgrow="ALWAYS" />
+            <MFXButton fx:id="btnClientes" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onActionBtnVerClientes" prefWidth="67.0" text="Clientes" VBox.vgrow="ALWAYS" />
             <MFXButton fx:id="btnRankings" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Rankings" VBox.vgrow="ALWAYS">
                <VBox.margin>
                   <Insets />
                </VBox.margin>
             </MFXButton>
-            <MFXButton layoutX="10.0" layoutY="411.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onBtnConfiguracion" text="Config. Estación" textOverrun="CENTER_ELLIPSIS" VBox.vgrow="ALWAYS" />
+            <MFXButton fx:id="btnEstacion" layoutX="10.0" layoutY="411.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onBtnConfiguracion" text="Config. Estación" textOverrun="CENTER_ELLIPSIS" VBox.vgrow="ALWAYS" />
          </children>
          <padding>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -33,8 +33,8 @@
    <top>
       <HBox alignment="CENTER_LEFT" prefHeight="51.0" prefWidth="647.0" spacing="10.0" BorderPane.alignment="CENTER">
          <children>
-            <ImageView fitHeight="42.0" fitWidth="47.0" pickOnBounds="true" preserveRatio="true" />
-            <Label text="Nombre de la empresa" />
+            <ImageView fx:id="logoEmpresa" fitHeight="42.0" fitWidth="47.0" pickOnBounds="true" preserveRatio="true" />
+            <Label fx:id="nombreEmpresa" text="Nombre de la empresa" />
          </children>
          <padding>
             <Insets left="5.0" />
