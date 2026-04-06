@@ -4,34 +4,35 @@
  */
 package cr.ac.una.astroline.controller;
 
+import io.github.palexdev.materialfx.controls.MFXButton;
+import io.github.palexdev.materialfx.controls.MFXCheckbox;
 import io.github.palexdev.materialfx.controls.MFXTextField;
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 
 /**
  * FXML Controller class
  *
  * @author takka_sama
  */
-public class VerClienteController implements Initializable {
+public class RegistroEstacionController extends Controller implements Initializable {
 
     @FXML
-    private ImageView imgFotoPerfil;
+    private AnchorPane root;
     @FXML
     private MFXTextField txtNombre;
     @FXML
-    private MFXTextField txtApellidos;
+    private MFXCheckbox checkActivo;
     @FXML
-    private MFXTextField txtCedula;
+    private MFXCheckbox chekPreferencial;
     @FXML
-    private MFXTextField txtFechaDeNacimiento;
+    private MFXButton btnAgregar;
     @FXML
-    private MFXTextField txtCorreoElectronico;
-    @FXML
-    private MFXTextField txtTelefono;
+    private MFXButton btnCancelar;
 
     /**
      * Initializes the controller class.
@@ -40,5 +41,17 @@ public class VerClienteController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
     }    
-   
+
+    @FXML
+    private void onActionBttnAgregar(ActionEvent event) {
+    }
+
+    @FXML
+    private void onActionBtnCancelar(ActionEvent event) {
+    }
+
+    @Override
+    public void initialize() {
+    }
+    
 }
