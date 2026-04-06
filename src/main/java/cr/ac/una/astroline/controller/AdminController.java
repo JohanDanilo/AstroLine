@@ -37,7 +37,7 @@ public class AdminController extends Controller implements Initializable {
         // TODO
     }    
 
-/*
+
     @FXML
     private void onBtnConfiguracion(ActionEvent event) {
         FlowController.getInstance().goView("ConfiguracionView");
@@ -47,7 +47,7 @@ public class AdminController extends Controller implements Initializable {
     private void onActionBtnClientes(ActionEvent event) {
         FlowController.getInstance().goView("MantenimientoClientesView");
     }
-*/
+
     @FXML
     private void onActionBtnVerClientes(ActionEvent event) {
         FlowController.getInstance().goView("VerClienteView");

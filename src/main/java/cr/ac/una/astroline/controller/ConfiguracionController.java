@@ -1,5 +1,6 @@
 package cr.ac.una.astroline.controller;
 
+import cr.ac.una.astroline.model.ConfiguracionLocal;
 import cr.ac.una.astroline.model.Estacion;
 import cr.ac.una.astroline.model.Sucursal;
 import cr.ac.una.astroline.service.ConfiguracionService;
@@ -29,6 +30,7 @@ public class ConfiguracionController extends Controller implements Initializable
 
     @Override
     public void initialize() {
+        configurarConverters();
         cargarSucursales();
         cargarConfiguracionActual();
     }
@@ -85,8 +87,8 @@ public class ConfiguracionController extends Controller implements Initializable
             mostrarError(r.getMensaje());
         }
     }
-
-    private void cargarSucursales() {
+    
+    private void configurarConverters() {
         cmbSucursal.setConverter(new StringConverter<Sucursal>() {
             @Override public String toString(Sucursal s) {
                 return s == null ? "" : s.getNombre();
@@ -99,19 +101,26 @@ public class ConfiguracionController extends Controller implements Initializable
             }
             @Override public Estacion fromString(String s) { return null; }
         });
+    }
 
+    private void cargarSucursales() {
         cmbSucursal.getItems().addAll(SucursalService.getInstancia().getListaDeSucursales());
     }
 
     private void cargarConfiguracionActual() {
-        String sucursalId = ConfiguracionService.getInstancia().getSucursalId();
-        String estacionId = ConfiguracionService.getInstancia().getEstacionId();
+        ConfiguracionLocal config = ConfiguracionService.getInstancia().getConfiguracion();
+
+        // Primera vez: archivo vacío, no preseleccionar nada
+        if (config == null || config.getSucursalId() == null) return;
+
+        String sucursalId = config.getSucursalId();
+        String estacionId = config.getEstacionId();
 
         for (int i = 0; i < cmbSucursal.getItems().size(); i++) {
             Sucursal s = cmbSucursal.getItems().get(i);
             if (s.getId().equals(sucursalId)) {
-                cmbSucursal.getSelectionModel().selectIndex(i);
                 cmbEstacion.getItems().addAll(s.getEstaciones());
+                cmbSucursal.getSelectionModel().selectIndex(i);
                 break;
             }
         }
@@ -122,13 +131,13 @@ public class ConfiguracionController extends Controller implements Initializable
         } else {
             for (int i = 0; i < cmbEstacion.getItems().size(); i++) {
                 if (cmbEstacion.getItems().get(i).getId().equals(estacionId)) {
-                    cmbEstacion.getSelectionModel().selectIndex(i); // ✅ por índice
+                    cmbEstacion.getSelectionModel().selectIndex(i);
                     break;
                 }
             }
         }
     }
-
+    
     private void mostrarError(String mensaje) {
         Controller controller = FlowController.getInstance().getController("AvisoView");
         if (controller instanceof AvisoController avisoController)
