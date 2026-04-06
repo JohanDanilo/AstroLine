@@ -16,6 +16,9 @@ import javafx.fxml.Initializable;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
+
+import cr.ac.una.astroline.model.ClienteDTO;
+import javafx.scene.control.Alert;
 /*
 *
 *
@@ -24,32 +27,34 @@ import javafx.stage.Stage;
 *
 */
 public class RegistroClienteController extends Controller implements Initializable {
-    
-    /*@FXML
+   
     private AnchorPane root;
     @FXML
-    private MFXButton btnCargar;
+    private MFXButton btnSubirFoto;
     @FXML
-    private MFXButton btnCamara;
+    private MFXButton btnAbrirCamara;
     @FXML
-    private MFXDatePicker dpFechaDeNacimiento;
+    private MFXButton btnTomarFoto;
     @FXML
-    private MFXTextField txtNombre;
-    @FXML
-    private MFXTextField txtApellidos;
+    private MFXDatePicker dpFechaNacimiento;
     @FXML
     private MFXTextField txtCedula;
     @FXML
-    private MFXTextField txtCorreoElectronico;
+    private MFXTextField txtNombre;
+    @FXML
+    private MFXTextField txtApellido;
     @FXML
     private MFXTextField txtTelefono;
     @FXML
-    private MFXButton btnAgregarCliente;
+    private MFXTextField txtCorreo;
     @FXML
-    private MFXButton btnCancelar;
+    private MFXButton btnGuardarCambiosClientes;
+    @FXML
+    private MFXButton btnRegresarAListaClientes;
     
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-*/
+    private final ClienteService clienteService = ClienteService.getInstancia();
+    
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         }    
@@ -58,146 +63,116 @@ public class RegistroClienteController extends Controller implements Initializab
     public void initialize() {
       
     }
+    private Cliente EditandoCliente = null;
+
+    public void cargarClienteParaEditar(Cliente cliente) {
+        if (cliente == null) return;
+
+        EditandoCliente = cliente;
+
+        // Cargar los datos 
+        ClienteDTO dto = new ClienteDTO();
+        clienteService.cargarEnDTO(cliente, dto);
+
+        txtCedula.setText(dto.getCedula());
+        txtNombre.setText(dto.getNombre());
+        txtApellido.setText(dto.getApellidos());
+        txtTelefono.setText(dto.getTelefono());
+        txtCorreo.setText(dto.getCorreo());
+        dpFechaNacimiento.setValue(dto.getFechaNacimiento());
+        txtCedula.setEditable(false); //La cedula no se puede cambiar
+    }
     
     @FXML
     private void OnActionRegresarRegistroCliente(ActionEvent event) {
         FlowController.getInstance().goView("VerClienteView");
     }
 
-   /* @FXML
-    private void onActionBtnCargar(ActionEvent event) {
-    }
-
     @FXML
-    private void onActionBtnCamara(ActionEvent event) {
-        
-        
-    }
+    private void OnActionGuardarCambiosClientes(ActionEvent event) {
+        if (!camposValidos()) return;
+        ClienteDTO dto = new ClienteDTO();
+        dto.setCedula(txtCedula.getText().trim());
+        dto.setNombre(txtNombre.getText().trim());
+        dto.setApellidos(txtApellido.getText().trim());
+        dto.setTelefono(txtTelefono.getText().trim());
+        dto.setCorreo(txtCorreo.getText().trim());
+        dto.setFotoPath("");  // Sin foto
+        LocalDate fecha = dpFechaNacimiento.getValue();
+        dto.setFechaNacimiento(fecha);  
 
-    @FXML
-    private void onActionBtnAgregarCliente(ActionEvent event) {      
-        if (guardarCliente()){
-            limpiarVistaDeRegistro();          
-        }       
-    }
+        Cliente cliente = clienteService.dtoACliente(dto);
 
-    @FXML
-    private void onActionBtnCancelar(ActionEvent event) {
-        
-        limpiarVistaDeRegistro();
-       
-        
+    if (EditandoCliente != null) {
+        // Editando
+        boolean actualizado = clienteService.actualizar(cliente);
+        if (actualizado) {
+            mostrarAlerta(Alert.AlertType.INFORMATION,
+                "Éxito", "Modificación realizada correctamente.");
+            limpiarFormulario();
+            FlowController.getInstance().goView("VerClienteView");    
+        } else {
+            mostrarAlerta(Alert.AlertType.ERROR,
+                    "Error", "No se pudo modificar el cliente.");
+        }
+    } else {
+        // Registrando
+        boolean guardado = clienteService.agregar(cliente);
+        if (guardado) {
+            mostrarAlerta(Alert.AlertType.INFORMATION,
+                    "Éxito", "Cliente registrado correctamente.");
+            limpiarFormulario();
+            FlowController.getInstance().goView("VerClienteView");
+        } else {
+            mostrarAlerta(Alert.AlertType.WARNING,
+                    "Error", "Ya existe un cliente con esa cédula.");
+        }
     }
+ }
     
-    //Guardar y Verificar informacion del Cliente 
     
-   private boolean guardarCliente() {
-        if (!esValidoCliente()) return false;
-
-        Cliente nuevoCliente = new Cliente();
-        nuevoCliente.setNombre(txtNombre.getText().trim());
-        nuevoCliente.setApellidos(txtApellidos.getText().trim());
-        nuevoCliente.setCedula(txtCedula.getText().trim());
-        nuevoCliente.setCorreo(txtCorreoElectronico.getText().trim());
-        nuevoCliente.setTelefono(txtTelefono.getText().trim());
-
-        nuevoCliente.setFechaNacimiento(
-                dpFechaDeNacimiento.getValue().format(FORMATO_FECHA)
-        );
-
-        boolean agregado = ClienteService.getInstancia().agregar(nuevoCliente);
-
-        if (!agregado) {
-            abrirAviso("Ya existe un cliente con esa cédula.");
+    private boolean esFormatoCorreoValido(String correo) {
+        if (correo == null || correo.trim().isEmpty()) return true; 
+        return correo.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$");
+    }
+    private boolean camposValidos() {
+        if (txtCedula.getText().trim().isEmpty()) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Campo requerido", "La cédula es obligatoria.");
             return false;
         }
-
+        if (txtNombre.getText().trim().isEmpty()) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Campo requerido", "El nombre es obligatorio.");
+            return false;
+        }
+        if (txtApellido.getText().trim().isEmpty()) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Campo requerido", "El apellido es obligatorio.");
+            return false;
+        }
+        if (!esFormatoCorreoValido(txtCorreo.getText().trim())) {
+        mostrarAlerta(Alert.AlertType.WARNING, "Correo inválido",
+                "El correo debe tener el formato de correo electrónico");
+        return false;
+    }
         return true;
     }
-       
-    private boolean esValidoCliente(){
-        
-        if(!esValidoNombreYApellidos()){
-            abrirAviso(" Revisar : Nombre y Apellidos ");
-            return false;
-        }
-           if(!esValidaCedula()){
-            abrirAviso("Revisar : Cedula ");
-            return false;
-        }     
-         if(!esValidaFechaDeNacimiento()){
-            abrirAviso("Revisar : Fecha de Nacimiento");
-            return false;
-        }
-             if(!esValidoCorreoElectronico()){
-            abrirAviso("Revisar : Correo Electronico ");
-            return false;
-        }   
-        if(!esValidoTelefono()){
-            abrirAviso("Revisar : Telefono ");
-            return false;
-        }
-       
-        
-        return true;
-        
-    }
-    
-    private void abrirAviso(String msg){
-        
-       Controller controller = FlowController.getInstance().getController("AvisoView");
-        
-       if(controller instanceof AvisoController avisoController)
-           avisoController.cambiarInformacionDeAviso(msg);
-       
-        FlowController.getInstance().goViewInWindowModal("AvisoView", FlowController.getInstance().getMainStage(), true);
-       
-    }
-    
-    //Validaciones de espacios
-     
-    private boolean esValidoNombreYApellidos(){
-        
-        String formatoNombreYApellidos = "[A-Za-z\\s]{4,30}";
-        
-        return txtApellidos.getText().matches(formatoNombreYApellidos) && txtNombre.getText().matches(formatoNombreYApellidos);
-    }
-    
-    private boolean esValidoCorreoElectronico(){
-        
-        String formantoCorreoElectronico = "^[a-zA-Z0-9._^\\-]{4,50}@[a-zA-Z.]{4,30}\\.[a-z]{2,3}$";
-        return txtCorreoElectronico.getText().matches(formantoCorreoElectronico);
-        
-    }
-    
-    private boolean esValidoTelefono(){
-        
-        String formatoTelefono = "\\d{8}";
-        return txtTelefono.getText().matches(formatoTelefono);
-        
-    }
-    
-    private boolean esValidaFechaDeNacimiento(){
-        
-        return dpFechaDeNacimiento.getValue() != null;
-        
-    }
-    
-    private boolean esValidaCedula(){
-        
-        String formatoCedula = "[\\d{9}]*";
-        return txtCedula.getText().matches(formatoCedula);
-        
-    }
-    
-   //Funciones de UI
-    
-    private void limpiarVistaDeRegistro(){
-        txtApellidos.clear();
-        txtNombre.clear();
+
+    private void limpiarFormulario() {
         txtCedula.clear();
+        txtNombre.clear();
+        txtApellido.clear();
         txtTelefono.clear();
-        txtCorreoElectronico.clear();
-        dpFechaDeNacimiento.clear();
-    }*/
+        txtCorreo.clear();
+        dpFechaNacimiento.setValue(null);
+        txtCedula.setEditable(true); 
+        EditandoCliente = null; 
+    }
+
+    private void mostrarAlerta(Alert.AlertType tipo, String titulo, String mensaje) {
+        Alert alerta = new Alert(tipo);
+        alerta.setTitle(titulo);
+        alerta.setHeaderText(null);
+        alerta.setContentText(mensaje);
+        alerta.showAndWait();
+    }
+   
 }

@@ -32,8 +32,8 @@ public class FuncionarioController extends Controller implements Initializable {
     }
 
     @FXML
-    private void onBtnRegistro(ActionEvent event) {
-        FlowController.getInstance().goView("RegistroFuncionarioView");
+    private void onBtnRegistroClientes(ActionEvent event) {
+        FlowController.getInstance().goView("VerClienteView");
     }
     
     @FXML
@@ -45,5 +45,9 @@ public class FuncionarioController extends Controller implements Initializable {
     private void onBtnCerrarSesion(ActionEvent event) {
         FlowController.getInstance().goViewInWindow("LoginFuncionarioView");
         getStage().close();
+    }
+    @FXML
+    private void onBtnConfiguracionEstacion(ActionEvent event) {
+        FlowController.getInstance().goView("ConfiguracionView");
     }
 }
