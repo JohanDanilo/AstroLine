@@ -7,6 +7,8 @@ import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 
 /**
@@ -17,16 +19,20 @@ import javafx.scene.layout.StackPane;
 public class AdminController extends Controller implements Initializable {
 
     @FXML
+    private ImageView logoEmpresa;
+    @FXML
+    private Label nombreEmpresa; 
+    @FXML
     private MFXButton btnConfiguracionGeneral;
+    
     @FXML
     private MFXButton btnTramites;
     @FXML
     private MFXButton btnRankings;
     @FXML
-    private MFXButton btnClientes1;
-    
+    private MFXButton btnClientes;  
     @FXML
-    private MFXButton btnConfiguracion;
+    private MFXButton btnEstacion;
 
     @Override
     public void initialize() {

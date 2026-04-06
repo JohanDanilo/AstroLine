@@ -1,36 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import io.github.palexdev.materialfx.controls.MFXButton?>
-<?import io.github.palexdev.materialfx.controls.MFXTextField?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
-<?import javafx.scene.effect.Blend?>
-<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-
-<AnchorPane id="AnchorPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="411.0" prefWidth="567.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.VerClienteController">
+<AnchorPane id="AnchorPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="411.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.VerClienteController">
    <children>
       <VBox layoutX="140.0" layoutY="55.0" prefHeight="200.0" prefWidth="100.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
             <Label text="Registro de Clientes" />
-            <TableView prefHeight="327.0" prefWidth="437.0">
+            <TableView fx:id="TbMostrarClientes" prefHeight="327.0" prefWidth="437.0">
               <columns>
-                <TableColumn prefWidth="75.0" text="ID (Cedula)" />
-                <TableColumn prefWidth="75.0" text="Nombre" />
-                  <TableColumn prefWidth="75.0" text="Apellido" />
-                  <TableColumn prefWidth="112.00001525878906" text="Fecha Nacimiento" />
-                  <TableColumn prefWidth="133.33331298828125" text="Correo" />
-                  <TableColumn prefWidth="75.33328247070312" text="Telefono" />
+                <TableColumn fx:id="idColumn" prefWidth="75.0" text="ID (Cedula)" />
+                <TableColumn fx:id="nombreColumn" prefWidth="75.0" text="Nombre" />
+                  <TableColumn fx:id="apellidoColumn" prefWidth="75.0" text="Apellido" />
+                  <TableColumn fx:id="fechaColumn" prefWidth="112.00001525878906" text="Fecha Nacimiento" />
+                  <TableColumn fx:id="correoColumn" prefWidth="83.33331298828125" text="Correo" />
+                  <TableColumn fx:id="telefonoColumn" prefWidth="84.66659545898438" text="Telefono" />
+                  <TableColumn fx:id="fotoColumn" prefWidth="116.00006103515625" text="Foto" />
               </columns>
             </TableView>
             <HBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="31.0" prefWidth="437.0" spacing="10.0" VBox.vgrow="ALWAYS">
                <children>
-                  <MFXButton onAction="#OnActionEditarClientes" text="Editar Lista De Clientes" />
+                  <MFXButton fx:id="btnAgregarClientes" onAction="#OnAgregarClientes" text="Agregar Clientes" />
+                  <MFXButton fx:id="btnEliminarCliente" onAction="#OnEliminarCliente" text="Eliminar Cliente" />
+                  <MFXButton fx:id="btnEditarCliente" onAction="#OnEditarCliente" text="Editar Cliente" />
                </children>
             </HBox>
          </children>
