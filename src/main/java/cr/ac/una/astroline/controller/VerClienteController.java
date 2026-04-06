@@ -7,6 +7,7 @@ import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.image.ImageView;
 
 /**
  * FXML Controller class
@@ -14,6 +15,10 @@ import javafx.fxml.Initializable;
  * @author takka_sama
  */
 public class VerClienteController extends Controller implements Initializable {
+
+    
+    @FXML
+    private ImageView imgFotoPerfil;
 
     /**
      * Initializes the controller class.
