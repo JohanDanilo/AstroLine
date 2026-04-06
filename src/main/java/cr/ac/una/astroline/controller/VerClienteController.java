@@ -7,6 +7,7 @@ import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.image.ImageView;
 
 /**
  * FXML Controller class
@@ -14,6 +15,21 @@ import javafx.fxml.Initializable;
  * @author takka_sama
  */
 public class VerClienteController extends Controller implements Initializable {
+
+    @FXML
+    private ImageView imgFotoPerfil;
+    @FXML
+    private MFXTextField txtNombre;
+    @FXML
+    private MFXTextField txtApellidos;
+    @FXML
+    private MFXTextField txtCedula;
+    @FXML
+    private MFXTextField txtFechaDeNacimiento;
+    @FXML
+    private MFXTextField txtCorreoElectronico;
+    @FXML
+    private MFXTextField txtTelefono;
 
     /**
      * Initializes the controller class.

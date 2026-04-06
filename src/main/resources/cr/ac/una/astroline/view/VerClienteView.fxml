@@ -1,38 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import io.github.palexdev.materialfx.controls.MFXButton?>
+<?import io.github.palexdev.materialfx.controls.MFXTextField?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.effect.Blend?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane id="AnchorPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="411.0" prefWidth="567.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.VerClienteController">
+<AnchorPane id="AnchorPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="749.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.VerClienteController">
    <children>
-      <VBox layoutX="140.0" layoutY="55.0" prefHeight="200.0" prefWidth="100.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <VBox alignment="TOP_CENTER" layoutX="169.0" layoutY="196.0" prefHeight="200.0" prefWidth="100.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <Label text="Registro de Clientes" />
-            <TableView prefHeight="327.0" prefWidth="437.0">
-              <columns>
-                <TableColumn prefWidth="75.0" text="ID (Cedula)" />
-                <TableColumn prefWidth="75.0" text="Nombre" />
-                  <TableColumn prefWidth="75.0" text="Apellido" />
-                  <TableColumn prefWidth="112.00001525878906" text="Fecha Nacimiento" />
-                  <TableColumn prefWidth="133.33331298828125" text="Correo" />
-                  <TableColumn prefWidth="75.33328247070312" text="Telefono" />
-              </columns>
-            </TableView>
-            <HBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="31.0" prefWidth="437.0" spacing="10.0" VBox.vgrow="ALWAYS">
+            <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
                <children>
-                  <MFXButton onAction="#OnActionEditarClientes" text="Editar Lista De Clientes" />
+                  <ImageView fx:id="imgFotoPerfil" fitHeight="123.0" fitWidth="172.0" pickOnBounds="true" preserveRatio="true" />
                </children>
             </HBox>
+            <Label text="Informacion Personal" />
+            <HBox alignment="CENTER" prefHeight="42.0" prefWidth="500.0" spacing="10.0">
+               <children>
+                  <MFXTextField fx:id="txtNombre" alignment="CENTER" floatMode="BORDER" floatingText="Nombre" maxWidth="1.7976931348623157E308" prefWidth="235.0" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin>
+                  </MFXTextField>
+                  <MFXTextField fx:id="txtApellidos" alignment="CENTER" floatMode="BORDER" floatingText="Apellidos" maxWidth="1.7976931348623157E308" prefWidth="235.0" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets right="10.0" />
+                     </HBox.margin>
+                  </MFXTextField>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" prefHeight="42.0" prefWidth="500.0" spacing="10.0">
+               <children>
+                  <MFXTextField fx:id="txtCedula" alignment="CENTER" floatMode="BORDER" floatingText="Cedula" maxWidth="1.7976931348623157E308" prefWidth="235.0" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin>
+                  </MFXTextField>
+                  <MFXTextField fx:id="txtFechaDeNacimiento" alignment="CENTER" floatMode="BORDER" floatingText="Fecha de Nacimiento" maxWidth="1.7976931348623157E308" prefWidth="235.0" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets right="10.0" />
+                     </HBox.margin>
+                  </MFXTextField>
+               </children>
+               <VBox.margin>
+                  <Insets />
+               </VBox.margin>
+            </HBox>
+            <Label text="Informacion de Contacto" />
+            <MFXTextField fx:id="txtCorreoElectronico" alignment="CENTER" floatMode="BORDER" floatingText="Correo Electronico" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
+               <VBox.margin>
+                  <Insets left="20.0" right="20.0" />
+               </VBox.margin>
+            </MFXTextField>
+            <HBox alignment="CENTER" prefHeight="42.0" prefWidth="500.0" spacing="10.0">
+               <children>
+                  <HBox maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+                  <MFXTextField fx:id="txtTelefono" alignment="CENTER" floatMode="BORDER" floatingText="Telefono" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets right="10.0" />
+                     </HBox.margin>
+                  </MFXTextField>
+                  <HBox maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+               </children>
+            </HBox>
+            <Label text="Historial de Tramites" />
+            <TableView prefHeight="273.0" prefWidth="500.0" VBox.vgrow="ALWAYS">
+              <columns>
+                <TableColumn prefWidth="75.0" text="C1" />
+                <TableColumn prefWidth="75.0" text="C2" />
+              </columns>
+               <columnResizePolicy>
+                  <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+               </columnResizePolicy>
+            </TableView>
          </children>
-         <padding>
-            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-         </padding>
+         <effect>
+            <Blend />
+         </effect>
       </VBox>
    </children>
 </AnchorPane>
