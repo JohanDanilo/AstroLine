@@ -16,6 +16,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import cr.ac.una.astroline.controller.Controller;
+import cr.ac.una.astroline.controller.RegistroClienteController;
 import io.github.palexdev.materialfx.css.themes.MFXThemeManager;
 import io.github.palexdev.materialfx.css.themes.Themes;
 import javafx.scene.layout.HBox;
@@ -224,25 +225,25 @@ public class FlowController {
         stage.showAndWait();
     }
 
-        public Controller goViewInPane(String viewName, Pane container){
+    public void goViewInDividePane(String viewNameToShow, Pane pane, boolean isActiveDividePane){
 	
-	try {
-	
-	FXMLLoader loader = getLoader(viewName);
-
-	Controller controller = loader.getController();	
-        controller.initialize();
+        if(isActiveDividePane){
+            FXMLLoader loader = getLoader(viewNameToShow);
+            Controller controller = loader.getController();	
+            controller.initialize();
+            
+            // guarda la referencia del paneprincipal en el registro para poder cerrar la vista desde el registro 
+            // Diseño fragil y rigido
+            
+            if (controller instanceof RegistroClienteController registroController)
+                registroController.setPanePadre(pane);
+            
+            Parent root = loader.getRoot();
+            pane.getChildren().clear();
+            pane.getChildren().add(root);
+        }
+        else pane.getChildren().clear();
         
-        Parent root = loader.getRoot();
-	container.getChildren().clear();
-	container.getChildren().add(root);
-	
-	return controller;
-	
-	}
-	
-	
-	catch(Exception e){return null;}
     }
     public Controller getController(String viewName) {
         return getLoader(viewName).getController();

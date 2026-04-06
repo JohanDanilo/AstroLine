@@ -37,7 +37,6 @@ public class Cliente {
         this.correo = correo;
         this.fotoPath = fotoPath;
         this.fechaNacimiento = fechaNacimiento;
-        this.historialTramites = new ArrayList<>();
     }
 
     /**

@@ -23,7 +23,7 @@ public class AdminController extends Controller implements Initializable {
     @FXML
     private MFXButton btnRankings;
     @FXML
-    private MFXButton btnClientes1;
+    private MFXButton btnSucursal;
 
     @Override
     public void initialize() {
@@ -46,6 +46,11 @@ public class AdminController extends Controller implements Initializable {
 
     @FXML
     private void onActionBtnRankings(ActionEvent event) {
+    }
+
+    @FXML
+    private void onActionBtnSucursal(ActionEvent event) {
+        FlowController.getInstance().goView("MantenimientoSucursalView");
     }
     
 }
