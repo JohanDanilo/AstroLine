@@ -17,7 +17,7 @@ import javafx.scene.layout.StackPane;
 public class AdminController extends Controller implements Initializable {
 
     @FXML
-    private MFXButton btnClientes;
+    private MFXButton btnConfiguracionGeneral;
     @FXML
     private MFXButton btnTramites;
     @FXML
@@ -49,11 +49,13 @@ public class AdminController extends Controller implements Initializable {
     }
 
     @FXML
-    private void onActionBtnTramites(ActionEvent event) {
+    private void onActionBtnVerClientes(ActionEvent event) {
+        FlowController.getInstance().goView("VerClienteView");
     }
 
     @FXML
-    private void onActionBtnRankings(ActionEvent event) {
+    private void onActionBtnGeneral (ActionEvent event) {
+        FlowController.getInstance().goView("MantenimientoParametrosGeneralesView");
     }
     
 }

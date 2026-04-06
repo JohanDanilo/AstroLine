@@ -106,7 +106,7 @@ public class FlowController {
             if (acceso == null || acceso.isBlank()) {
                 acceso = "Principal"; // fallback seguro
             }
-
+            
             FXMLLoader loader = new FXMLLoader(
                 App.class.getResource("/cr/ac/una/astroline/view/" + acceso + "View.fxml"), 
                 this.idioma
@@ -254,7 +254,6 @@ public class FlowController {
         return getLoader(viewName).getController();
     }
 
-    // FlowController.java - en el método que configura cada Stage
     private void applyIcon(Stage stage) {
         stage.getIcons().clear();
         stage.getIcons().add(new Image(

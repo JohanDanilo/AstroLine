@@ -32,10 +32,9 @@ public class DataInitializer {
 
     private static void inicializarConfiguracion() {
         if (GsonUtil.existe("configuracion.json")) return;
-        // Por defecto: Kiosko en sucursal-1, sin estación
-        ConfiguracionLocal config = new ConfiguracionLocal("sucursal-1", null);
+        ConfiguracionLocal config = new ConfiguracionLocal(); // constructor vacío, todo null
         GsonUtil.guardar(config, "configuracion.json");
-        System.out.println("[DataInitializer] configuracion.json creado.");
+        System.out.println("[DataInitializer] configuracion.json creado vacío.");
     }
 
     private static void inicializarSucursales() {
