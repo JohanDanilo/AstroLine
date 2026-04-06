@@ -1,4 +1,3 @@
-
 package cr.ac.una.astroline.controller;
 
 import cr.ac.una.astroline.util.FlowController;
@@ -12,28 +11,11 @@ import javafx.scene.image.ImageView;
 /**
  * FXML Controller class
  *
- * @author takka_sama
+ * @author JekaCordero
  */
+
 public class VerClienteController extends Controller implements Initializable {
-
-    @FXML
-    private ImageView imgFotoPerfil;
-    @FXML
-    private MFXTextField txtNombre;
-    @FXML
-    private MFXTextField txtApellidos;
-    @FXML
-    private MFXTextField txtCedula;
-    @FXML
-    private MFXTextField txtFechaDeNacimiento;
-    @FXML
-    private MFXTextField txtCorreoElectronico;
-    @FXML
-    private MFXTextField txtTelefono;
-
-    /**
-     * Initializes the controller class.
-     */
+    
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
