@@ -78,13 +78,13 @@ public class ProyeccionController extends Controller implements Initializable {
     
     private void cargarFichasPorAtender(){
         
-        Respuesta resUltimasFichas = fichas.obtenerUltimasDelHistorial(6);
+        Respuesta resUltimasFichas = fichas.obtenerFichasActivas();
 
 
         if(resUltimasFichas == null || !resUltimasFichas.getEstado())return;
 
         List<Ficha> fichasAMostrar = ordenarFichasPorPrioridad((List<Ficha>)resUltimasFichas.getResultado("lista"));
-        
+        int size = fichasAMostrar.size();
         cargarFicha1(fichasAMostrar.get(0));
         cargarFicha2(fichasAMostrar.get(1));
         cargarFicha3(fichasAMostrar.get(2));
