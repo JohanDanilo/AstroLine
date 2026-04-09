@@ -1,11 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-
-<AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/25" fx:controller="cr.ac.una.astroline.controller.ProyeccionController">
-   <children>
-      <Label alignment="CENTER" layoutX="189.0" layoutY="191.0" prefHeight="17.0" prefWidth="222.0" text="Módulo Proyeccion — En desarrollo" />
-   </children>
-</AnchorPane>
+<BorderPane fx:id="root" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.ProyeccionController">
+   <center>
+      <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <children>
+            <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
+               <children>
+                  <VBox fx:id="primerFichaEspera" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="100.0" VBox.vgrow="ALWAYS">
+                     <children>
+                        <Label fx:id="lblEsperandoCode1" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Numero de ficha " VBox.vgrow="ALWAYS" />
+                        <Label fx:id="lblEsperandoCed1" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Cedula" VBox.vgrow="ALWAYS" />
+                        <ImageView fx:id="imgEsperandoPref1" fitHeight="50.0" fitWidth="67.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../resource/Preferencial.png" />
+                           </image>
+                        </ImageView>
+                     </children></VBox>
+                  <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                     <children>
+                        <VBox fx:id="segundaFichaEspera" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label fx:id="lblEsperandoCode2" text="Numero de ficha " />
+                              <Label fx:id="lblEsperandoCed2" text="Cedula" />
+                              <ImageView fx:id="imgEsperandoPref2" fitHeight="50.0" fitWidth="67.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../resource/Preferencial.png" />
+                                 </image>
+                              </ImageView>
+                           </children></VBox>
+                        <VBox fx:id="terceraFichaEspera" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
+                           <children>
+                              <Label fx:id="lblEsperandoCode3" text="Numero de ficha " />
+                              <Label fx:id="lblEsperandoCed3" text="Cedula" />
+                              <ImageView fx:id="imgEsperandoPref3" fitHeight="50.0" fitWidth="67.0" pickOnBounds="true" preserveRatio="true">
+                                 <image>
+                                    <Image url="@../resource/Preferencial.png" />
+                                 </image>
+                              </ImageView>
+                           </children></VBox>
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+            <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="0.0" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
+   </center>
+   <top>
+      <Label fx:id="lblSucursalInfo" alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="30.0" prefWidth="600.0" text="Empresa" BorderPane.alignment="CENTER" />
+   </top>
+</BorderPane>
