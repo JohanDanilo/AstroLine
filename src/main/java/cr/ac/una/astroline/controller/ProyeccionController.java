@@ -85,9 +85,10 @@ public class ProyeccionController extends Controller implements Initializable {
 
         List<Ficha> fichasAMostrar = ordenarFichasPorPrioridad((List<Ficha>)resUltimasFichas.getResultado("lista"));
         int size = fichasAMostrar.size();
-        cargarFicha1(fichasAMostrar.get(0));
-        cargarFicha2(fichasAMostrar.get(1));
-        cargarFicha3(fichasAMostrar.get(2));
+        Ficha ficha1 = fichasAMostrar.get(0), ficha2 = fichasAMostrar.get(1), ficha3 = fichasAMostrar.get(2);
+        cargarFicha1(ficha1);
+        cargarFicha2(ficha2);
+        cargarFicha3(fichas3);
         
         
         
@@ -136,51 +137,83 @@ public class ProyeccionController extends Controller implements Initializable {
     
     private void cargarFicha1(Ficha ficha){
         
-        lblEsperandoCode1.setText(ficha.getCodigo());
-                
-        if(!ficha.isPreferencial()){
+        if(ficha == null){
             imgEsperandoPref1.setVisible(false);
             imgEsperandoPref1.setManaged(false);
+            
+            lblEsperandoCed1.setVisible(false);
+            lblEsperandoCed1.setManaged(false);
+            
+            lblEsperandoCed1.setVisible(false);
+            lblEsperandoCed1.setManaged(false);
+            
+            return;
+        }
+            
+            
+        lblEsperandoCode1.setText(ficha.getCodigo());
+                
+        if(ficha.isPreferencial()){
+          imgEsperandoPref1.setVisible(true);
+          imgEsperandoPref1.setManaged(true);
         }
         
         if(ficha.getCedulaCliente() != null) lblEsperandoCed1.setText(ficha.getCedulaCliente());
-        else {
-            lblEsperandoCed1.setVisible(false);
-            lblEsperandoCed1.setManaged(false);
-        }
+       
         
     }
       private void cargarFicha2(Ficha ficha){
         
-        lblEsperandoCode2.setText(ficha.getCodigo());
-                
-        if(!ficha.isPreferencial()){
+           if(ficha == null){
             imgEsperandoPref2.setVisible(false);
             imgEsperandoPref2.setManaged(false);
+            
+            lblEsperandoCed2.setVisible(false);
+            lblEsperandoCed2.setManaged(false);
+            
+            lblEsperandoCed2.setVisible(false);
+            lblEsperandoCed2.setManaged(false);
+            
+            return;
+        }
+            
+            
+        lblEsperandoCode2.setText(ficha.getCodigo());
+                
+        if(ficha.isPreferencial()){
+          imgEsperandoPref2.setVisible(true);
+          imgEsperandoPref2.setManaged(true);
         }
         
         if(ficha.getCedulaCliente() != null) lblEsperandoCed2.setText(ficha.getCedulaCliente());
-        else {
-            lblEsperandoCed2.setVisible(false);
-            lblEsperandoCed2.setManaged(false);
-        }
+       
         
     }
         private void cargarFicha3(Ficha ficha){
         
-        lblEsperandoCode3.setText(ficha.getCodigo());
-                
-        if(!ficha.isPreferencial()){
+            if(ficha == null){
             imgEsperandoPref3.setVisible(false);
             imgEsperandoPref3.setManaged(false);
+            
+            lblEsperandoCed3.setVisible(false);
+            lblEsperandoCed3.setManaged(false);
+            
+            lblEsperandoCed3.setVisible(false);
+            lblEsperandoCed3.setManaged(false);
+            
+            return;
+        }
+            
+            
+        lblEsperandoCode3.setText(ficha.getCodigo());
+                
+        if(ficha.isPreferencial()){
+          imgEsperandoPref3.setVisible(true);
+          imgEsperandoPref3.setManaged(true);
         }
         
         if(ficha.getCedulaCliente() != null) lblEsperandoCed3.setText(ficha.getCedulaCliente());
-        else {
-            lblEsperandoCed3.setVisible(false);
-            lblEsperandoCed3.setManaged(false);
-        }
-        
+       
     }
     
     
