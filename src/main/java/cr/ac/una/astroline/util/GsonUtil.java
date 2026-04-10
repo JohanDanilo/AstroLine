@@ -114,4 +114,17 @@ public class GsonUtil {
     public static boolean existe(String nombreArchivo) {
         return Files.exists(Paths.get(DATA_DIR, nombreArchivo));
     }
+    
+    public static String getDataDir(){
+        return DATA_DIR;
+    }
+    
+    public static void guardarYPropagar(Object objeto, String nombreArchivo) {
+        guardar(objeto, nombreArchivo);
+        SyncManager.getInstancia().propagar(nombreArchivo);
+    }
+    
+    public static String toJson(Object objeto) {
+        return gson.toJson(objeto);
+    }
 }
