@@ -7,6 +7,10 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.util.*;
 
 /**
@@ -63,6 +67,14 @@ public class SyncClient {
             conn.setReadTimeout(TIMEOUT_MS);
             conn.setDoOutput(true);
             conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+
+            // Leer el timestamp actual del archivo y enviarlo como header
+            Path filePath = Paths.get(GsonUtil.getDataDir(), fileName);
+            if (Files.exists(filePath)) {
+                long lastModified = Files.getLastModifiedTime(filePath).toMillis();
+                conn.setRequestProperty("X-Last-Modified", String.valueOf(lastModified));
+            }
+
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(content.getBytes(StandardCharsets.UTF_8));
             }

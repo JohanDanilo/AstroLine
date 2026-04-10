@@ -5,9 +5,6 @@ import cr.ac.una.astroline.model.Empresa;
 import cr.ac.una.astroline.model.Estacion;
 import cr.ac.una.astroline.model.Sucursal;
 import cr.ac.una.astroline.model.Tramite;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -110,16 +107,5 @@ public class DataInitializer {
         System.out.println("[DataInitializer] historial.json creado vacío.");
     }
     
-    private boolean deberiaActualizar(Path localPath, long remoteModified) {
-        if (!Files.exists(localPath)) return true;
-        long localModified = localPath.toFile().lastModified();
-        if (remoteModified > localModified) return true;
-        // Aunque el local sea más nuevo, si está vacío preferir el remoto
-        try {
-            String contenido = Files.readString(localPath).trim();
-            return contenido.equals("[]") || contenido.equals("{}") || contenido.isEmpty();
-        } catch (IOException e) {
-            return false;
-        }
-    }
+
 }

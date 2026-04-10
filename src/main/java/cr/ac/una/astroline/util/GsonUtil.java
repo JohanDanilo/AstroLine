@@ -123,4 +123,8 @@ public class GsonUtil {
         guardar(objeto, nombreArchivo);
         SyncManager.getInstancia().propagar(nombreArchivo);
     }
+    
+    public static String toJson(Object objeto) {
+        return gson.toJson(objeto);
+    }
 }

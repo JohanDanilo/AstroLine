@@ -21,6 +21,8 @@ public class Cliente {
     private String correo;
     private String fotoPath;
     private String fechaNacimiento; // formato: "dd-MM-yyyy"
+    private long lastModified; // epoch millis — se setea en cada CRUD
+    private boolean eliminado = false;
 
     public Cliente() {
     }
@@ -82,6 +84,14 @@ public class Cliente {
     public void setFechaNacimiento(String fechaNacimiento) {
         this.fechaNacimiento = fechaNacimiento;
     }
+    
+    // getter y setter:
+    public long getLastModified() { return lastModified; }
+    
+    public void setLastModified(long lastModified) { this.lastModified = lastModified; }
+    
+    public boolean isEliminado() { return eliminado; }
+    public void setEliminado(boolean eliminado) { this.eliminado = eliminado; }
 
     @Override
     public String toString() {

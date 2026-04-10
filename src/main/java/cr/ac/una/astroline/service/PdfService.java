@@ -14,12 +14,16 @@ import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 /**
  * Servicio singleton para generación de PDFs de fichas de atención.
+ * Formato ticket compacto
  *
  * @author JohanDanilo
  */
@@ -34,22 +38,29 @@ public class PdfService {
 
     private PdfService() {}
 
-    // Layout
-    private static final float MARGIN    = 40f;
-    private static final float PAGE_W    = PDRectangle.LETTER.getWidth();
-    private static final float PAGE_H    = PDRectangle.LETTER.getHeight();
-    private static final float CONTENT_W = PAGE_W - 2 * MARGIN;
+    // ── Tamaño de página: 3.5" × 5.3" ──────────────────────────────────────
+    private static final PDRectangle PAGE_SIZE = new PDRectangle(240f, 420f);
 
-    // Parseo (coincide con Ficha.FORMATTER)
+    // Layout
+    private static final float MARGIN    = 20f;
+    private static final float PAGE_W    = PAGE_SIZE.getWidth();    // 252
+    private static final float PAGE_H    = PAGE_SIZE.getHeight();   // 382
+    private static final float CONTENT_W = PAGE_W - 2 * MARGIN;    // 212
+
+    // Para centrar texto visualmente: baseline = centerY - size * CAP_RATIO
+    private static final float CAP_RATIO = 0.36f;
+
+    // Parseo
     private static final DateTimeFormatter PARSER    = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
     private static final DateTimeFormatter FMT_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter FMT_HORA  = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
+    private static final DateTimeFormatter FMT_FILE  = DateTimeFormatter.ofPattern("ddMMyyyy");
 
     // Paleta cosmos
     private static final Color DARK       = new Color(18,  18,  36);
     private static final Color DARK2      = new Color(26,  26,  50);
     private static final Color CYAN       = new Color(0,   212, 255);
-    private static final Color CYAN_DIM   = new Color(0,   80,  110);
+    private static final Color CYAN_DIM   = new Color(0,   70,  100);
     private static final Color WHITE      = Color.WHITE;
     private static final Color BLACK      = new Color(30,  30,  30);
     private static final Color GRAY       = new Color(140, 140, 155);
@@ -69,12 +80,21 @@ public class PdfService {
             File file = new File(CARPETA + buildName(ficha));
 
             try (PDDocument doc = new PDDocument()) {
-                PDPage page = new PDPage(PDRectangle.LETTER);
+                PDPage page = new PDPage(PAGE_SIZE);
                 doc.addPage(page);
 
-                PDType1Font regular = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
-                PDType1Font bold    = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
-                PDType1Font italic  = new PDType1Font(Standard14Fonts.FontName.HELVETICA_OBLIQUE);
+                PDType0Font regular;
+                PDType0Font bold;
+                PDType0Font italic;
+
+                try (InputStream regularStream = getClass().getResourceAsStream("/cr/ac/una/astroline/resource/fonts/GoogleSans-Regular.ttf");
+                     InputStream boldStream    = getClass().getResourceAsStream("/cr/ac/una/astroline/resource/fonts/GoogleSans-Bold.ttf");
+                     InputStream italicStream  = getClass().getResourceAsStream("/cr/ac/una/astroline/resource/fonts/GoogleSans-Italic.ttf")) {
+
+                    regular = PDType0Font.load(doc, regularStream);
+                    bold    = PDType0Font.load(doc, boldStream);
+                    italic  = PDType0Font.load(doc, italicStream);
+                }
 
                 try (PDPageContentStream cs = new PDPageContentStream(doc, page)) {
                     cs.setNonStrokingColor(WHITE);
@@ -105,30 +125,35 @@ public class PdfService {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // HEADER — full bleed desde el tope de la pagina
+    // HEADER
     // ═══════════════════════════════════════════════════════════════════════════
 
     private float drawHeader(PDDocument doc, PDPageContentStream cs, Empresa emp,
-                             PDType1Font bold, PDType1Font regular, float y) throws IOException {
+                             PDType0Font bold, PDType0Font regular, float y) throws IOException {
 
-        final float h     = 88f;
-        final float yBase = y - h;
+        final float HEADER_H = 70f;
+        final float LOGO_SZ  = 42f;
+        final float yBase    = y - HEADER_H;
+        final float logoX    = MARGIN;
+        // Logo centrado verticalmente en el header
+        final float logoY    = yBase + (HEADER_H - LOGO_SZ) / 2f;
 
-        // Fondo oscuro
+        // ── Fondo ────────────────────────────────────────────────────────────
         cs.setNonStrokingColor(DARK);
-        cs.addRect(0, yBase, PAGE_W, h);
+        cs.addRect(0, yBase, PAGE_W, HEADER_H);
         cs.fill();
 
-        // Franja cyan en el borde superior
+        // Franja cyan top
         cs.setNonStrokingColor(CYAN);
-        cs.addRect(0, PAGE_H - 5f, PAGE_W, 5f);
+        cs.addRect(0, PAGE_H - 4f, PAGE_W, 4f);
         cs.fill();
 
-        // Dots decorativos (estrellas)
-        drawHeaderDots(cs, yBase);
+        // ── Constelación en zona derecha ─────────────────────────────────────
+        drawHeaderDots(cs, yBase, HEADER_H);
 
-        // Logo desde classpath (misma logica que KioskoController)
-        float xText = MARGIN;
+        // ── Logo ─────────────────────────────────────────────────────────────
+        float xText  = MARGIN;
+        boolean hasLogo = false;
         if (emp != null && emp.getLogoPath() != null && !emp.getLogoPath().isBlank()) {
             try {
                 String ruta = "/cr/ac/una/astroline/resource/"
@@ -137,55 +162,96 @@ public class PdfService {
                 if (stream != null) {
                     PDImageXObject img = PDImageXObject.createFromByteArray(
                             doc, stream.readAllBytes(), "logo");
-                    float logoSz = 52f;
-                    cs.drawImage(img, MARGIN, yBase + (h - logoSz) / 2f, logoSz, logoSz);
-                    xText += logoSz + 14f;
+                    cs.drawImage(img, logoX, logoY, LOGO_SZ, LOGO_SZ);
+                    xText   = logoX + LOGO_SZ + 12f;
+                    hasLogo = true;
                 }
             } catch (Exception ignored) {}
         }
 
-        // Nombre empresa
-        String nombre = (emp != null) ? nvl(emp.getNombre()) : "AstroLine";
-        text(cs, bold, 20f, xText, yBase + 56f, nombre, CYAN);
+        // ── Bloque de texto: centrado verticalmente en el header ──────────────
+        // Recopilamos líneas disponibles
+        String nombre = nvl(emp != null ? emp.getNombre() : "AstroLine");
+        String tel    = nvl(emp != null ? emp.getTelefono() : "");
+        String correo = nvl(emp != null ? emp.getCorreo()   : "");
+        String dir    = nvl(emp != null ? emp.getDireccion(): "");
 
-        // Telefono | correo
-        String tel    = (emp != null) ? nvl(emp.getTelefono()) : "";
-        String correo = (emp != null) ? nvl(emp.getCorreo())   : "";
-        if (!tel.isBlank() || !correo.isBlank()) {
-            text(cs, regular, 10f, xText, yBase + 38f,
-                    "Tel: " + tel + "   |   " + correo, WHITE);
+        boolean hasTelLine = !tel.isBlank() || !correo.isBlank();
+        boolean hasDirLine = !dir.isBlank();
+
+        final float SZ_NAME = 14f;
+        final float SZ_TEL  = 8f;
+        final float SZ_DIR  = 7.5f;
+        final float LINE_GAP = 6f;
+
+        // Altura total del bloque: suma de cap-heights + gaps entre líneas
+        float blockH = SZ_NAME * 0.72f;
+        if (hasTelLine) blockH += LINE_GAP + SZ_TEL  * 0.72f;
+        if (hasDirLine) blockH += LINE_GAP + SZ_DIR  * 0.72f;
+
+        // Centro vertical del header
+        float headerCY = yBase + HEADER_H / 2f;
+
+        // Baseline de la primera línea: sube blockH/2 desde el centro,
+        // luego baja el cap-height del nombre para que la línea base quede bien
+        float nameBaseline = headerCY + blockH / 2f - SZ_NAME * 0.72f;
+
+        text(cs, bold, SZ_NAME, xText, nameBaseline, nombre, CYAN);
+
+        if (hasTelLine) {
+            String telLine = (!tel.isBlank() && !correo.isBlank())
+                    ? "Tel: " + tel + "   " + correo
+                    : (!tel.isBlank() ? "Tel: " + tel : correo);
+            float telBase = nameBaseline - SZ_NAME * 0.72f - LINE_GAP;
+            text(cs, regular, SZ_TEL, xText, telBase, telLine, WHITE);
+
+            if (hasDirLine) {
+                float dirBase = telBase - SZ_TEL * 0.72f - LINE_GAP;
+                text(cs, regular, SZ_DIR, xText, dirBase, dir, GRAY);
+            }
         }
 
-        // Direccion
-        String dir = (emp != null) ? nvl(emp.getDireccion()) : "";
-        if (!dir.isBlank()) {
-            text(cs, regular, 9f, xText, yBase + 23f, dir, GRAY);
-        }
-
-        // Linea cyan inferior
+        // ── Línea cyan inferior ───────────────────────────────────────────────
         cs.setStrokingColor(CYAN);
-        cs.setLineWidth(2.5f);
+        cs.setLineWidth(2f);
         cs.moveTo(0, yBase);
         cs.lineTo(PAGE_W, yBase);
         cs.stroke();
 
-        return yBase - 28f;
+        return yBase - 16f;
     }
 
-    private void drawHeaderDots(PDPageContentStream cs, float yBase) throws IOException {
-        cs.setNonStrokingColor(CYAN_DIM);
-        float[][] dots = {
-            {510f, yBase + 12f, 2.5f},
-            {535f, yBase + 42f, 1.5f},
-            {556f, yBase + 22f, 3.0f},
-            {572f, yBase + 58f, 2.0f},
-            {590f, yBase + 30f, 1.5f},
-            {500f, yBase + 65f, 2.0f},
-            {580f, yBase + 73f, 1.2f},
-            {545f, yBase + 78f, 1.8f},
+    /**
+     * 8 estrellas en el tercio derecho del header con 3 líneas de constelación.
+     * Las coordenadas X están dentro de [170, 248] para no solapar el texto.
+     */
+    private void drawHeaderDots(PDPageContentStream cs, float yBase, float h) throws IOException {
+        // {x, y_offset_desde_yBase, radio}
+        float[][] stars = {
+            {175f, h * 0.76f, 1.0f},
+            {192f, h * 0.52f, 1.8f},
+            {207f, h * 0.82f, 1.2f},
+            {216f, h * 0.28f, 2.2f},
+            {226f, h * 0.62f, 1.5f},
+            {234f, h * 0.16f, 1.0f},
+            {241f, h * 0.46f, 1.8f},
+            {247f, h * 0.78f, 1.2f},
         };
-        for (float[] d : dots) {
-            drawDot(cs, d[0], d[1], d[2]);
+
+        // Líneas de constelación (tenues)
+        cs.setStrokingColor(CYAN_DIM);
+        cs.setLineWidth(0.4f);
+        int[][] lines = {{1, 3}, {3, 6}, {4, 6}, {6, 7}};
+        for (int[] l : lines) {
+            cs.moveTo(stars[l[0]][0], yBase + stars[l[0]][1]);
+            cs.lineTo(stars[l[1]][0], yBase + stars[l[1]][1]);
+            cs.stroke();
+        }
+
+        // Puntos encima
+        cs.setNonStrokingColor(CYAN_DIM);
+        for (float[] s : stars) {
+            drawDot(cs, s[0], yBase + s[1], s[2]);
         }
     }
 
@@ -193,25 +259,25 @@ public class PdfService {
     // TITULO
     // ═══════════════════════════════════════════════════════════════════════════
 
-    private float drawTitle(PDPageContentStream cs, PDType1Font bold, float y) throws IOException {
-        center(cs, bold, 20f, y, "FICHA DE ATENCION", BLACK);
-        y -= 10f;
+    private float drawTitle(PDPageContentStream cs, PDType0Font bold, float y) throws IOException {
+        center(cs, bold, 14f, y, "FICHA DE ATENCION", BLACK);
+        y -= 7f;
 
         cs.setStrokingColor(CYAN);
-        cs.setLineWidth(2.2f);
-        float lw = 130f;
+        cs.setLineWidth(2f);
+        float lw = 96f;
         cs.moveTo((PAGE_W - lw) / 2f, y);
         cs.lineTo((PAGE_W + lw) / 2f, y);
         cs.stroke();
 
-        return y - 28f;
+        return y - 18f;
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // FECHA Y HORA — side-by-side, leidos de Ficha
+    // FECHA Y HORA
     // ═══════════════════════════════════════════════════════════════════════════
 
-    private float drawDateTime(PDPageContentStream cs, PDType1Font regular, PDType1Font bold,
+    private float drawDateTime(PDPageContentStream cs, PDType0Font regular, PDType0Font bold,
                                Ficha ficha, float y) throws IOException {
 
         String fecha = "N/D";
@@ -226,23 +292,21 @@ public class PdfService {
             } catch (Exception ignored) {}
         }
 
-        // Izquierda
-        text(cs, regular, 9f,  MARGIN, y,       "FECHA", GRAY);
-        text(cs, bold,    14f, MARGIN, y - 18f,  fecha,  BLACK);
+        text(cs, regular, 8f,  MARGIN, y,       "FECHA", GRAY);
+        text(cs, bold,    12f, MARGIN, y - 14f,  fecha,  BLACK);
 
-        // Derecha alineada al margen
-        float horaW = bold.getStringWidth(hora)      / 1000f * 14f;
-        float labW  = regular.getStringWidth("HORA") / 1000f * 9f;
+        float horaW = bold.getStringWidth(hora)      / 1000f * 12f;
+        float labW  = regular.getStringWidth("HORA") / 1000f * 8f;
         float xR    = PAGE_W - MARGIN - Math.max(horaW, labW);
-        text(cs, regular, 9f,  xR, y,       "HORA",  GRAY);
-        text(cs, bold,    14f, xR, y - 18f,  hora,   BLACK);
+        text(cs, regular, 8f,  xR, y,       "HORA",  GRAY);
+        text(cs, bold,    12f, xR, y - 14f,  hora,   BLACK);
 
-        y -= 46f;
+        y -= 30f;
 
         cs.setStrokingColor(GRAY_LIGHT);
         cs.setLineWidth(0.5f);
-        cs.moveTo(MARGIN, y + 8f);
-        cs.lineTo(PAGE_W - MARGIN, y + 8f);
+        cs.moveTo(MARGIN, y + 4f);
+        cs.lineTo(PAGE_W - MARGIN, y + 4f);
         cs.stroke();
 
         return y;
@@ -253,34 +317,40 @@ public class PdfService {
     // ═══════════════════════════════════════════════════════════════════════════
 
     private float drawTicketBox(PDPageContentStream cs, Ficha ficha,
-                                PDType1Font bold, PDType1Font regular, float y) throws IOException {
+                                PDType0Font bold, PDType0Font regular, float y) throws IOException {
 
-        final float h    = 115f;
-        final float yBox = y - h;
-        final float barH = 24f;
+        final float BOX_H = 88f;
+        final float BAR_H = 20f;
+        final float yBox  = y - BOX_H;
 
         // Fondo oscuro
         cs.setNonStrokingColor(DARK2);
-        cs.addRect(MARGIN, yBox, CONTENT_W, h);
+        cs.addRect(MARGIN, yBox, CONTENT_W, BOX_H);
         cs.fill();
 
-        // Banner cyan superior "TU TURNO"
+        // Banner "TU TURNO"
         cs.setNonStrokingColor(CYAN);
-        cs.addRect(MARGIN, yBox + h - barH, CONTENT_W, barH);
+        cs.addRect(MARGIN, yBox + BOX_H - BAR_H, CONTENT_W, BAR_H);
         cs.fill();
 
-        center(cs, regular, 11f, yBox + h - barH + 7f, "TU TURNO", DARK);
+        // "TU TURNO" centrado verticalmente en el banner
+        float bannerCY   = yBox + BOX_H - BAR_H + BAR_H / 2f;
+        float turnoBase  = bannerCY - 10f * CAP_RATIO;
+        center(cs, regular, 10f, turnoBase, "TU TURNO", DARK);
 
-        // Borde cyan del box completo
+        // Borde cyan
         cs.setStrokingColor(CYAN);
         cs.setLineWidth(2f);
-        cs.addRect(MARGIN, yBox, CONTENT_W, h);
+        cs.addRect(MARGIN, yBox, CONTENT_W, BOX_H);
         cs.stroke();
 
-        // Numero principal — getCodigo() = "A-001", "B-023", etc.
-        center(cs, bold, 54f, yBox + 22f, ficha.getCodigo(), CYAN);
+        // Número centrado verticalmente en la zona oscura
+        float darkH   = BOX_H - BAR_H;
+        float darkCY  = yBox + darkH / 2f;
+        float numBase = darkCY - 44f * CAP_RATIO;
+        center(cs, bold, 44f, numBase, ficha.getCodigo(), CYAN);
 
-        return yBox - 28f;
+        return yBox - 14f;
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -288,25 +358,28 @@ public class PdfService {
     // ═══════════════════════════════════════════════════════════════════════════
 
     private float drawClientSection(PDPageContentStream cs, Cliente cliente,
-                                    PDType1Font bold, PDType1Font regular, float y) throws IOException {
+                                    PDType0Font bold, PDType0Font regular, float y) throws IOException {
 
         String nombre = (cliente != null) ? cliente.getNombreCompleto() : "Cliente";
-        final float h = 58f;
+        final float H = 42f;
 
-        // Fondo sutil
         cs.setNonStrokingColor(new Color(243, 243, 252));
-        cs.addRect(MARGIN, y - h, CONTENT_W, h);
+        cs.addRect(MARGIN, y - H, CONTENT_W, H);
         cs.fill();
 
-        // Barra lateral izquierda
         cs.setNonStrokingColor(CYAN);
-        cs.addRect(MARGIN, y - h, 4f, h);
+        cs.addRect(MARGIN, y - H, 4f, H);
         cs.fill();
 
-        text(cs, regular, 9f,  MARGIN + 14f, y - 16f, "CLIENTE", GRAY);
-        text(cs, bold,    16f, MARGIN + 14f, y - 36f,  nombre,   BLACK);
+        // Centrar las dos líneas verticalmente en la caja
+        float boxCY     = (y - H) + H / 2f;
+        float labelBase = boxCY + 7f;
+        float nameBase  = boxCY - 8f;
 
-        return y - h - 20f;
+        text(cs, regular, 8f,  MARGIN + 12f, labelBase, "CLIENTE", GRAY);
+        text(cs, bold,    13f, MARGIN + 12f, nameBase,   nombre,   BLACK);
+
+        return y - H - 12f;
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -314,20 +387,21 @@ public class PdfService {
     // ═══════════════════════════════════════════════════════════════════════════
 
     private float drawPreferencial(PDPageContentStream cs, Ficha ficha,
-                                   PDType1Font bold, float y) throws IOException {
+                                   PDType0Font bold, float y) throws IOException {
 
         if (!ficha.isPreferencial()) return y;
 
-        final float h    = 36f;
-        final float yBox = y - h;
+        final float H    = 30f;
+        final float yBox = y - H;
 
         cs.setNonStrokingColor(PURPLE);
-        cs.addRect(MARGIN, yBox, CONTENT_W, h);
+        cs.addRect(MARGIN, yBox, CONTENT_W, H);
         cs.fill();
 
-        center(cs, bold, 13f, yBox + 11f, "ATENCION PREFERENCIAL", WHITE);
+        float textBase = yBox + H / 2f - 11f * CAP_RATIO;
+        center(cs, bold, 11f, textBase, "ATENCION PREFERENCIAL", WHITE);
 
-        return yBox - 18f;
+        return yBox - 10f;
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -335,28 +409,28 @@ public class PdfService {
     // ═══════════════════════════════════════════════════════════════════════════
 
     private void drawFooter(PDPageContentStream cs,
-                            PDType1Font bold, PDType1Font italic) throws IOException {
+                            PDType0Font bold, PDType0Font italic) throws IOException {
 
         cs.setStrokingColor(GRAY_LIGHT);
         cs.setLineWidth(0.8f);
-        cs.moveTo(MARGIN, 98f);
-        cs.lineTo(PAGE_W - MARGIN, 98f);
+        cs.moveTo(MARGIN, 55f);
+        cs.lineTo(PAGE_W - MARGIN, 55f);
         cs.stroke();
 
         cs.setNonStrokingColor(CYAN);
-        drawDot(cs, PAGE_W / 2f - 18f, 90f, 2.2f);
-        drawDot(cs, PAGE_W / 2f,        90f, 2.2f);
-        drawDot(cs, PAGE_W / 2f + 18f,  90f, 2.2f);
+        drawDot(cs, PAGE_W / 2f - 12f, 46f, 2f);
+        drawDot(cs, PAGE_W / 2f,        46f, 2f);
+        drawDot(cs, PAGE_W / 2f + 12f,  46f, 2f);
 
-        center(cs, bold,   13f, 74f, "Gracias por tu visita!",       BLACK);
-        center(cs, italic, 10f, 57f, "AstroLine - Sistema de Filas", GRAY);
+        center(cs, bold,   11f, 34f, "Gracias por tu visita!",       BLACK);
+        center(cs, italic,  9f, 20f, "AstroLine - Sistema de Filas", GRAY);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // HELPERS
     // ═══════════════════════════════════════════════════════════════════════════
 
-    private void text(PDPageContentStream cs, PDType1Font font, float size,
+    private void text(PDPageContentStream cs, PDType0Font font, float size,
                       float x, float y, String t, Color c) throws IOException {
         if (t == null || t.isBlank()) return;
         cs.beginText();
@@ -367,14 +441,14 @@ public class PdfService {
         cs.endText();
     }
 
-    private void center(PDPageContentStream cs, PDType1Font font, float size,
+    private void center(PDPageContentStream cs, PDType0Font font, float size,
                         float y, String t, Color c) throws IOException {
         float w = font.getStringWidth(t) / 1000f * size;
         float x = (PAGE_W - w) / 2f;
         text(cs, font, size, x, y, t, c);
     }
 
-    /** Circulo relleno via curvas de Bezier cubicas. */
+    /** Círculo relleno via curvas de Bézier cúbicas. */
     private void drawDot(PDPageContentStream cs, float cx, float cy, float r) throws IOException {
         final float k = 0.5522848f;
         cs.moveTo(cx - r, cy);
@@ -392,7 +466,15 @@ public class PdfService {
     }
 
     private String buildName(Ficha f) {
-        return "ficha_" + System.currentTimeMillis() + ".pdf";
+        String codigo = f.getCodigo() != null ? f.getCodigo().replace("-", "") : "XXX";
+        String fecha  = LocalDate.now().format(FMT_FILE);
+        
+        ZoneId zonaHoraria = ZoneId.systemDefault();
+        LocalTime horaActual = LocalTime.now(zonaHoraria);
+        DateTimeFormatter formato = DateTimeFormatter.ofPattern("hhmma", Locale.US);
+        String hora = horaActual.format(formato);
+        
+        return codigo + "_" + fecha + "_" + hora + ".pdf";
     }
 
     private String nvl(String s) {

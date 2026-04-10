@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
+import java.nio.file.attribute.FileTime;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -96,18 +97,31 @@ public class SyncServer {
                 try (OutputStream os = ex.getResponseBody()) { os.write(content); }
 
             } else if ("POST".equals(ex.getRequestMethod())) {
+                // Registrar al peer que nos envió datos
+                String senderIp = ex.getRemoteAddress().getAddress().getHostAddress();
+                SyncManager.getInstancia().registrarPeer(senderIp);
+
                 byte[] content = ex.getRequestBody().readAllBytes();
                 Path dataDir = Paths.get(GsonUtil.getDataDir());
                 if (!Files.exists(dataDir)) Files.createDirectories(dataDir);
 
-                // ✅ Sincronizar sobre el mismo monitor que SyncManager
                 synchronized (SyncManager.getInstancia()) {
-                    Files.write(dataDir.resolve(fileName), content);
+                    Path destino = dataDir.resolve(fileName);
+                    Files.write(destino, content);
+
+                    // Preservar el timestamp original del peer que envió el archivo
+                    String lmHeader = ex.getRequestHeaders().getFirst("X-Last-Modified");
+                    if (lmHeader != null) {
+                        try {
+                            Files.setLastModifiedTime(destino,
+                                FileTime.fromMillis(Long.parseLong(lmHeader)));
+                        } catch (NumberFormatException ignored) {}
+                    }
                 }
 
                 ex.sendResponseHeaders(200, -1);
                 DataNotifier.notifyChange(fileName);
-            }else {
+            } else {
                 ex.sendResponseHeaders(405, -1);
             }
         }

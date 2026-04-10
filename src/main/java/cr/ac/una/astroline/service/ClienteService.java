@@ -4,6 +4,7 @@ import cr.ac.una.astroline.model.Cliente;
 import cr.ac.una.astroline.model.ClienteDTO;
 import cr.ac.una.astroline.util.DataNotifier;
 import cr.ac.una.astroline.util.GsonUtil;
+import cr.ac.una.astroline.util.SyncManager;
 
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -40,7 +41,7 @@ public class ClienteService implements DataNotifier.Listener {
     }
 
     public ObservableList<Cliente> getListaDeClientes() {
-        return listaDeClientes;
+        return listaDeClientes.filtered(c -> !c.isEliminado());
     }
 
     // ── Conversiones DTO ↔ Modelo ────────────────────────────────────────────
@@ -92,27 +93,45 @@ public class ClienteService implements DataNotifier.Listener {
 
     public boolean existe(Cliente cliente) {
         if (cliente == null) return false;
-        return buscarPorCedula(cliente.getCedula()) != null;
+        Cliente encontrado = buscarPorCedula(cliente.getCedula());
+        return encontrado != null && !encontrado.isEliminado();
     }
 
     public boolean agregar(Cliente nuevoCliente) {
         if (nuevoCliente == null || existe(nuevoCliente)) return false;
+        nuevoCliente.setLastModified(System.currentTimeMillis()); // ← agregar
         listaDeClientes.add(nuevoCliente);
         GsonUtil.guardarYPropagar(listaDeClientes, ARCHIVO_JSON);
         return true;
     }
 
     public boolean remover(Cliente clienteARemover) {
-        if (clienteARemover == null || !existe(clienteARemover)) return false;
-        listaDeClientes.remove(clienteARemover);
-        GsonUtil.guardarYPropagar(listaDeClientes, ARCHIVO_JSON);
-        return true;
+        if (clienteARemover == null) return false;
+        for (int i = 0; i < listaDeClientes.size(); i++) {
+            Cliente c = listaDeClientes.get(i);
+            if (c.getCedula().equals(clienteARemover.getCedula())) {
+
+                // Construir tombstone en memoria y propagarlo sin tocar el disco
+                c.setEliminado(true);
+                c.setLastModified(System.currentTimeMillis());
+                listaDeClientes.set(i, c);
+                SyncManager.getInstancia().propagarContenido(
+                    GsonUtil.toJson(listaDeClientes), ARCHIVO_JSON);
+
+                // Eliminar localmente y guardar limpio — una sola escritura a disco
+                listaDeClientes.remove(i);
+                GsonUtil.guardar(listaDeClientes, ARCHIVO_JSON);
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean actualizar(Cliente clienteActualizado) {
         if (clienteActualizado == null) return false;
         for (int i = 0; i < listaDeClientes.size(); i++) {
             if (listaDeClientes.get(i).getCedula().equals(clienteActualizado.getCedula())) {
+                clienteActualizado.setLastModified(System.currentTimeMillis());
                 listaDeClientes.set(i, clienteActualizado);
                 GsonUtil.guardarYPropagar(listaDeClientes, ARCHIVO_JSON);
                 return true;
@@ -147,17 +166,34 @@ public class ClienteService implements DataNotifier.Listener {
     }
 
     /**
-     * Merge basado en cédula.
-     * Usa el archivo remoto como fuente de verdad — incluye eliminaciones.
-     * El mapa se construye desde el remoto, no desde el local, para que
-     * las eliminaciones hechas en otro peer se reflejen aquí.
-     */
-    private void mergeClientes(List<Cliente> nuevos) {
-        // Usar LinkedHashMap para mantener orden de inserción
+    * Merge basado en cédula y lastModified.
+    * Gana siempre el registro más reciente.
+    * Las eliminaciones viajan como tombstones (eliminado=true),
+    * por lo que nunca se pierden en un merge.
+    */
+    private void mergeClientes(List<Cliente> remotos) {
         Map<String, Cliente> mapa = new LinkedHashMap<>();
-        for (Cliente c : nuevos) {
-            mapa.put(c.getCedula(), c);
+        for (Cliente c : listaDeClientes) mapa.put(c.getCedula(), c);
+
+        boolean hayTombstones = false;
+        for (Cliente r : remotos) {
+            if (r.isEliminado()) {
+                mapa.remove(r.getCedula());
+                hayTombstones = true;
+            } else {
+                Cliente local = mapa.get(r.getCedula());
+                if (local == null || r.getLastModified() >= local.getLastModified()) {
+                    mapa.put(r.getCedula(), r);
+                }
+            }
         }
+
         listaDeClientes.setAll(mapa.values());
+
+        // Solo guarda si había tombstones — los limpia del disco local
+        // Sin esta condición se actualizaría el timestamp innecesariamente y volvería el loop
+        if (hayTombstones) {
+            GsonUtil.guardar(listaDeClientes, ARCHIVO_JSON);
+        }
     }
 }

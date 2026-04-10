@@ -24,7 +24,11 @@ public class SyncManager {
     private SyncManager() {}
 
     public static SyncManager getInstancia() {
-        if (instancia == null) instancia = new SyncManager();
+        if (instancia == null) {
+            synchronized (SyncManager.class) {
+                if (instancia == null) instancia = new SyncManager();
+            }
+        }
         return instancia;
     }
 
@@ -60,6 +64,11 @@ public class SyncManager {
             this::pollPeers,
             POLL_INTERVAL_SECONDS, POLL_INTERVAL_SECONDS, TimeUnit.SECONDS
         );
+        
+            scheduler.scheduleAtFixedRate(
+            this::redescubrirPeers,
+            60, 60, TimeUnit.SECONDS
+        );
     }
 
     /**
@@ -78,6 +87,13 @@ public class SyncManager {
             }
         } catch (IOException e) {
             System.err.println("[SyncManager] Error propagando " + nombreArchivo + ": " + e.getMessage());
+        }
+    }
+    
+    private void redescubrirPeers() {
+        List<String> descubiertos = NetworkPeer.discoverPeers();
+        for (String ip : descubiertos) {
+            registrarPeer(ip);
         }
     }
 
@@ -175,5 +191,21 @@ public class SyncManager {
         if (scheduler != null) scheduler.shutdown();
         SyncServer.stop();
         NetworkPeer.stop();
+    }
+
+    public void registrarPeer(String ip) {
+        String ownIp = NetworkPeer.getOwnIp();
+        if (!ip.equals(ownIp) && !peers.contains(ip)) {
+            peers.add(ip);
+            System.out.println("[SyncManager] Nuevo peer registrado: " + ip);
+        }
+    }
+    
+    public void propagarContenido(String contenido, String nombreArchivo) {
+        if (peers.isEmpty()) return;
+        for (String peer : peers) {
+            boolean ok = SyncClient.postFile(peer, nombreArchivo, contenido);
+            System.out.println("[SyncManager] " + nombreArchivo + " → " + peer + ": " + (ok ? "OK" : "FALLO"));
+        }
     }
 }
