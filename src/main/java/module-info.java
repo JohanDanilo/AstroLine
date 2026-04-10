@@ -12,6 +12,13 @@ module cr.ac.una.astroline {
 
     // Gson
     requires com.google.gson;
+    
+    // Pdf
+    requires org.apache.pdfbox;   // PDDocument, PDPage, PDType1Font, etc.
+    requires java.desktop;         // java.awt.Desktop + java.awt.Color
+    
+    // Http Server
+    requires jdk.httpserver; // necesario para com.sun.net.httpserver
 
     // Abre el paquete principal a JavaFX para que pueda leer los FXML
     opens cr.ac.una.astroline to javafx.fxml;

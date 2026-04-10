@@ -33,6 +33,8 @@ desktop.ini
 
 # ─── Datos locales ──────────────────────
 data/
+files/
+*.lnk
 
 # ─── Config sensible ────────────────────
 *.env
