@@ -52,6 +52,13 @@ public class RegistroClienteController extends Controller implements Initializab
     @FXML private MFXButton     btnTomarFoto;
     @FXML private MFXButton     btnRegresarAListaClientes;
     @FXML private MFXButton     btnGuardarCambiosClientes;
+    private static final String DEFAULT_FOTO_PATH;
+    static {
+        URL resource = RegistroClienteController.class.getResource(
+            "/cr/ac/una/astroline/resource/LogoUser.png");
+        DEFAULT_FOTO_PATH = resource != null ? resource.toExternalForm() : "";
+    }
+
 
     // ── Estado ───────────────────────────────────────────────────────────────
     private final ClienteService clienteService = ClienteService.getInstancia();
@@ -76,6 +83,8 @@ public class RegistroClienteController extends Controller implements Initializab
     public void initialize(URL url, ResourceBundle rb) {
         // Deshabilitar "Tomar foto" hasta que la cámara esté abierta
         btnTomarFoto.setDisable(true);
+        fotoPathSeleccionado = DEFAULT_FOTO_PATH;
+        mostrarImagenLocal(DEFAULT_FOTO_PATH);
     }
 
     // ── Cargar cliente (modo edición) ─────────────────────────────────────────
@@ -95,11 +104,13 @@ public class RegistroClienteController extends Controller implements Initializab
         dpFechaNacimiento.setValue(dto.getFechaNacimiento());
         txtCedula.setEditable(false);
 
-        // Mostrar foto existente si la tiene
-        if (dto.getFotoPath() != null && !dto.getFotoPath().isEmpty()) {
-            fotoPathSeleccionado = dto.getFotoPath();
-            mostrarImagenLocal(fotoPathSeleccionado);
-        }
+        // Antes: solo cargaba si fotoPath no era vacío
+        // Ahora: siempre carga, con fallback al default si está vacío
+        String foto = (dto.getFotoPath() != null && !dto.getFotoPath().isEmpty())
+                      ? dto.getFotoPath()
+                      : DEFAULT_FOTO_PATH;
+        fotoPathSeleccionado = foto;
+        mostrarImagenLocal(foto);
     }
 
     // ── Eventos de navegación y guardado (sin cambios) ────────────────────────
@@ -258,7 +269,8 @@ public class RegistroClienteController extends Controller implements Initializab
         String extension = nombreOriginal.contains(".")
             ? nombreOriginal.substring(nombreOriginal.lastIndexOf('.'))
             : ".jpg";
-        return "foto_" + System.currentTimeMillis() + extension;
+        String cedula = txtCedula.getText().trim();
+        return "Cliente_" + cedula + extension;
     }
 
     /**
@@ -267,10 +279,23 @@ public class RegistroClienteController extends Controller implements Initializab
     private void mostrarImagenLocal(String path) {
         if (path == null || path.isEmpty()) return;
 
-        File archivo = Paths.get(path).toAbsolutePath().toFile();
-        if (!archivo.exists()) return;
-
-        fotoCliente.setImage(new Image(archivo.toURI().toString()));
+        try {
+            if (path.startsWith("file:") || path.startsWith("jar:")) {
+                // Es una URL de recurso (logo predefinido) — JavaFX la carga directo
+                fotoCliente.setImage(new Image(path));
+            } else {
+                // Es una ruta de archivo en disco (foto subida o capturada)
+                File archivo = Paths.get(path).toAbsolutePath().toFile();
+                if (archivo.exists()) {
+                    fotoCliente.setImage(new Image(archivo.toURI().toString()));
+                } else {
+                    // Si el archivo ya no existe, mostrar logo por defecto
+                    fotoCliente.setImage(new Image(DEFAULT_FOTO_PATH));
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[RegistroCliente] No se pudo cargar imagen: " + e.getMessage());
+        }
     }
 
     // ── Lógica separada (sin cambios relevantes) ──────────────────────────────
@@ -282,7 +307,7 @@ public class RegistroClienteController extends Controller implements Initializab
         dto.setApellidos(txtApellido.getText().trim());
         dto.setTelefono(txtTelefono.getText().trim());
         dto.setCorreo(txtCorreo.getText().trim());
-        dto.setFotoPath(fotoPathSeleccionado); // ← ya no es ""
+        dto.setFotoPath(fotoPathSeleccionado.isEmpty() ? DEFAULT_FOTO_PATH : fotoPathSeleccionado);
         dto.setFechaNacimiento(dpFechaNacimiento.getValue());
         return clienteService.dtoACliente(dto);
     }
@@ -343,15 +368,15 @@ public class RegistroClienteController extends Controller implements Initializab
 
     // ── Formulario ────────────────────────────────────────────────────────────
 
-    private void limpiarFormulario() {
+    public void limpiarFormulario() {
         txtCedula.clear();
         txtNombre.clear();
         txtApellido.clear();
         txtTelefono.clear();
         txtCorreo.clear();
         dpFechaNacimiento.setValue(null);
-        fotoCliente.setImage(null);
-        fotoPathSeleccionado = "";
+        fotoPathSeleccionado = DEFAULT_FOTO_PATH;
+        mostrarImagenLocal(DEFAULT_FOTO_PATH);
         txtCedula.setEditable(true);
         editingCliente = null;
         detenerCamara();
@@ -369,16 +394,15 @@ public class RegistroClienteController extends Controller implements Initializab
     public void initialize() {}
 
 
+
     @FXML
     private void onBtnDescartar(ActionEvent event) {
-        // Borrar del disco solo si es una foto nuestra en data/fotos/
-        if (fotoPathSeleccionado != null && !fotoPathSeleccionado.isEmpty()) {
+        if (fotoPathSeleccionado != null
+                && !fotoPathSeleccionado.isEmpty()
+                && !fotoPathSeleccionado.equals(DEFAULT_FOTO_PATH)) {
             try {
                 Path fotoPath = Paths.get(fotoPathSeleccionado).toAbsolutePath();
                 Path fotoDir  = Paths.get(FOTOS_DIR).toAbsolutePath();
-
-                // Solo borra si el archivo vive dentro de data/fotos/
-                // para no eliminar nada que no hayamos creado nosotros
                 if (fotoPath.startsWith(fotoDir)) {
                     Files.deleteIfExists(fotoPath);
                 }
@@ -387,11 +411,9 @@ public class RegistroClienteController extends Controller implements Initializab
             }
         }
 
-        // Limpiar estado visual y lógico
-        fotoPathSeleccionado = "";
-        fotoCliente.setImage(null);
-
-        // Dejar la cámara lista para usarse de nuevo
+        // Volver al logo por defecto, no a imagen vacía
+        fotoPathSeleccionado = DEFAULT_FOTO_PATH;
+        mostrarImagenLocal(DEFAULT_FOTO_PATH);
         detenerCamara();
     }
 }
