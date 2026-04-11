@@ -7,13 +7,18 @@ import cr.ac.una.astroline.model.Ficha;
 import cr.ac.una.astroline.model.Tramite;
 import cr.ac.una.astroline.service.ClienteService;
 import cr.ac.una.astroline.service.FichaService;
+import cr.ac.una.astroline.service.PdfService;
 import cr.ac.una.astroline.service.TramiteService;
 import cr.ac.una.astroline.util.GsonUtil;
 import cr.ac.una.astroline.util.Mensaje;
+import cr.ac.una.astroline.util.Respuesta;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXComboBox;
 import io.github.palexdev.materialfx.controls.MFXPasswordField;
 import io.github.palexdev.materialfx.controls.MFXTextField;
+import java.awt.Desktop;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -40,63 +45,49 @@ import javafx.scene.layout.VBox;
 public class KioskoController extends Controller implements Initializable {
 
 
-    @FXML
-    private AnchorPane root;
-    @FXML
-    private ImageView imgLogo;
-    @FXML
-    private Label lblNombreEmpresa;
-    @FXML
-    private MFXComboBox<Tramite> cmbTramite;
-    @FXML
-    private MFXTextField txtCedula;
-    @FXML
-    private VBox panelPinAdmin;
-    @FXML
-    private MFXPasswordField passwordFldAdmin;
-    @FXML
-    private MFXButton onBtnConfirmar;
-    
-    @FXML
-    private MFXButton btnCancelar;
-    
-    @FXML
-    private HBox panelMensaje;
-    @FXML
-    private Label lblMensaje;
-    
+    @FXML private AnchorPane root;
+    @FXML private ImageView imgLogo;
+    @FXML private Label lblNombreEmpresa;
+    @FXML private MFXComboBox<Tramite> cmbTramite;
+    @FXML private MFXTextField txtCedula;
+    @FXML private VBox panelPinAdmin;
+    @FXML private MFXPasswordField passwordFldAdmin;
+    @FXML private MFXButton onBtnConfirmar;
+    @FXML private MFXButton btnCancelar;
+    @FXML private HBox panelMensaje;
+    @FXML private Label lblMensaje;
+
     private final FichaService fichaService = new FichaService();
     private final Mensaje utilMensaje = new Mensaje();
+
+    // Empresa se carga una vez en initialize() y se reutiliza en PDF
+    private Empresa empresa;
+
     private String pinAdminCorrecto;
     private boolean preferencialPorPin = false;
 
     private static final ZoneId ZONA_CR = ZoneId.of("America/Costa_Rica");
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-    
-    /**
-     * Initializes the controller class.
-     */
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // TODO
-    }    
-    
-    // -------------------------------------------------------------------------//
-    // ACCIONES                                                                 //
-    // -------------------------------------------------------------------------//
-    
+        // reservado para Initializable — lógica real en initialize()
+    }
+
+    // -------------------------------------------------------------------------
+    // ACCIONES
+    // -------------------------------------------------------------------------
+
     @FXML
     private void onBtnPreferencial(ActionEvent event) {
         boolean isVisible = panelPinAdmin.isVisible();
-
         panelPinAdmin.setVisible(!isVisible);
         panelPinAdmin.setManaged(!isVisible);
-
         if (isVisible) {
             passwordFldAdmin.clear();
         }
     }
-    
+
     @FXML
     private void onBtnCancelar(ActionEvent event) {
         preferencialPorPin = false;
@@ -127,27 +118,46 @@ public class KioskoController extends Controller implements Initializable {
 
         boolean preferencial = preferencialPorPin || detectarPreferencial(cedula);
 
-        // Usamos "sucursal-1" como id fijo por ahora — se puede parametrizar luego
-        var respuesta = fichaService.generarFicha(
+        Respuesta respuesta = fichaService.generarFicha(
                 tramiteSeleccionado.getId(),
                 "sucursal-1",
                 cedula.isEmpty() ? null : cedula,
                 preferencial
         );
 
-        if (respuesta.getEstado()) {
-            Ficha ficha = (Ficha) respuesta.getResultado("ficha");
-            String mensaje = "Tu ficha es: " + ficha.getCodigo();
-            if (ficha.isPreferencial()) mensaje += "  Preferencial";
-            mostrarExito(mensaje);
-            limpiarFormulario();
-        } else {
+        if (!respuesta.getEstado()) {
             mostrarError(respuesta.getMensaje());
+            return;
         }
+
+        Ficha ficha = (Ficha) respuesta.getResultado("ficha");
+
+        // ── Generar y entregar PDF ────────────────────────────────────────────
+        Cliente cliente = cedula.isEmpty()
+                ? null
+                : ClienteService.getInstancia().buscarPorCedula(cedula);
+
+        Respuesta respuestaPDF = PdfService.getInstancia()
+                .generarFichaPDF(ficha, cliente, empresa);
+
+        if (respuestaPDF.getEstado()) {
+            File archivoPDF = (File) respuestaPDF.getResultado("archivo");
+            abrirYImprimir(archivoPDF);
+        } else {
+            // El PDF falló pero la ficha ya fue registrada — no es error crítico
+            System.err.println("[KioskoController] PDF no generado: " + respuestaPDF.getMensaje());
+        }
+
+        // ── Confirmación en pantalla ──────────────────────────────────────────
+        String mensajeExito = "Tu ficha es: " + ficha.getCodigo();
+        if (ficha.isPreferencial()) mensajeExito += "  (Preferencial)";
+        mostrarExito(mensajeExito);
+
+        limpiarFormulario();
     }
-    
+
     @FXML
-    private void onBtnConfirmar(ActionEvent event){
+    private void onBtnConfirmar(ActionEvent event) {
         String pinIngresado = passwordFldAdmin.getText().trim();
 
         if (pinAdminCorrecto == null || pinAdminCorrecto.isBlank()) {
@@ -174,21 +184,23 @@ public class KioskoController extends Controller implements Initializable {
         cargarTramites();
         limpiarFormulario();
     }
-    
-    // -------------------------------------------------------------------------//
-    // CARGA INICIAL                                                            //
-    // -------------------------------------------------------------------------//
+
+    // -------------------------------------------------------------------------
+    // CARGA INICIAL
+    // -------------------------------------------------------------------------
 
     private void cargarEmpresa() {
-        Empresa empresa = GsonUtil.leer("empresa.json", Empresa.class);
+        empresa = GsonUtil.leer("empresa.json", Empresa.class);
         if (empresa == null) return;
+
         lblNombreEmpresa.setText(empresa.getNombre());
         pinAdminCorrecto = empresa.getPinAdmin();
 
         if (empresa.getLogoPath() != null && !empresa.getLogoPath().isBlank()) {
             try {
                 var stream = App.class.getResourceAsStream(
-                        "/cr/ac/una/astroline/resource/" + empresa.getLogoPath().replace("assets/", ""));
+                        "/cr/ac/una/astroline/resource/"
+                        + empresa.getLogoPath().replace("assets/", ""));
                 if (stream != null) {
                     imgLogo.setImage(new Image(stream));
                 }
@@ -197,24 +209,51 @@ public class KioskoController extends Controller implements Initializable {
             }
         }
     }
-    
+
     private void cargarTramites() {
         List<Tramite> activos = TramiteService.getInstancia().getTramitesActivos();
         cmbTramite.setConverter(new javafx.util.StringConverter<Tramite>() {
-            @Override
-            public String toString(Tramite tramite) {
-                return tramite == null ? "" : tramite.getId() + " — " + tramite.getNombre();
+            @Override public String toString(Tramite t) {
+                return t == null ? "" : t.getId() + " — " + t.getNombre();
             }
-            @Override
-            public Tramite fromString(String string) { return null; }
+            @Override public Tramite fromString(String s) { return null; }
         });
         cmbTramite.getItems().addAll(activos);
     }
-    
-    // -------------------------------------------------------------------------//
-    // Utilidades                                                               //
-    // -------------------------------------------------------------------------//
-    
+
+    // -------------------------------------------------------------------------
+    // UTILIDADES DE IMPRESIÓN / PDF
+    // -------------------------------------------------------------------------
+
+    /**
+     * Abre el PDF en el visor del SO y lo envía a la impresora predeterminada.
+     * Muestra la ruta guardada al usuario mediante alert informativo.
+     */
+    private void abrirYImprimir(File pdf) {
+        if (!Desktop.isDesktopSupported()) {
+            System.err.println("[KioskoController] java.awt.Desktop no disponible.");
+            return;
+        }
+        Desktop desktop = Desktop.getDesktop();
+        try {
+            if (desktop.isSupported(Desktop.Action.OPEN)) {
+                desktop.open(pdf);
+            }
+            if (desktop.isSupported(Desktop.Action.PRINT)) {
+                desktop.print(pdf);
+            }
+            utilMensaje.show(AlertType.INFORMATION,
+                    "PDF Generado",
+                    "Ficha guardada en:\n" + pdf.getAbsolutePath());
+        } catch (IOException ex) {
+            System.err.println("[KioskoController] No se pudo abrir/imprimir el PDF: " + ex.getMessage());
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // UTILIDADES DE UI
+    // -------------------------------------------------------------------------
+
     private void limpiarFormulario() {
         cmbTramite.clearSelection();
         txtCedula.clear();
@@ -223,61 +262,42 @@ public class KioskoController extends Controller implements Initializable {
         panelPinAdmin.setManaged(false);
         lblMensaje.setText("");
         panelMensaje.setVisible(false);
-        panelMensaje.setManaged(false);  
+        panelMensaje.setManaged(false);
         btnCancelar.setVisible(false);
         btnCancelar.setManaged(false);
     }
-    
-    private void mostrarExito(String mensaje) {
-        // Llamamos a la ventana emergente de éxito
-        utilMensaje.show(AlertType.INFORMATION, "Trámite Exitoso", mensaje);
 
-        // Mantenemos tu lógica de la interfaz
+    private void mostrarExito(String mensaje) {
+        utilMensaje.show(AlertType.INFORMATION, "Trámite Exitoso", mensaje);
         btnCancelar.setVisible(preferencialPorPin);
         btnCancelar.setManaged(preferencialPorPin);
     }
 
     private void mostrarError(String mensaje) {
-        // Llamamos a la ventana emergente de error
         utilMensaje.show(AlertType.ERROR, "Atención", mensaje);
     }
-    
-    private void mostrarExitoPin(String mensaje) {
-        /** Usar para limpiar clase de error y poner la de éxito cuando esté en el css
-        lblMensaje.getStyleClass().remove("kiosko-mensaje-error");
-        if (!lblMensaje.getStyleClass().contains("kiosko-mensaje-exito")) {
-            lblMensaje.getStyleClass().add("kiosko-mensaje-exito");
-        }*/
-        lblMensaje.setText(mensaje);
 
+    private void mostrarExitoPin(String mensaje) {
+        lblMensaje.setText(mensaje);
         panelMensaje.setVisible(true);
         panelMensaje.setManaged(true);
-
         btnCancelar.setVisible(preferencialPorPin);
         btnCancelar.setManaged(preferencialPorPin);
     }
 
     private void mostrarErrorPin(String mensaje) {
-        /** Usar para limpiar clase de exito y poner la de error cuando esté en el css
-        lblMensaje.getStyleClass().remove("kiosko-mensaje-exito");
-        if (!lblMensaje.getStyleClass().contains("kiosko-mensaje-error")) {
-            lblMensaje.getStyleClass().add("kiosko-mensaje-error");
-        }
-        */
         lblMensaje.setText(mensaje);
         panelMensaje.setVisible(true);
         panelMensaje.setManaged(true);
     }
 
-    
+    // -------------------------------------------------------------------------
+    // LÓGICA DE NEGOCIO
+    // -------------------------------------------------------------------------
 
     private boolean cedulaValida(String cedula) {
         return cedula.matches("\\d{9}");
     }
-    
-    // -------------------------------------------------------------------------
-    // LÓGICA DE NEGOCIO
-    // -------------------------------------------------------------------------
 
     /**
      * Detecta automáticamente si el cliente es mayor de 65 años

@@ -85,10 +85,10 @@ public class ProyeccionController extends Controller implements Initializable {
 
         List<Ficha> fichasAMostrar = ordenarFichasPorPrioridad((List<Ficha>)resUltimasFichas.getResultado("lista"));
         int size = fichasAMostrar.size();
-        Ficha ficha1 = fichasAMostrar.get(0), ficha2 = fichasAMostrar.get(1), ficha3 = fichasAMostrar.get(2);
-        cargarFicha1(ficha1);
-        cargarFicha2(ficha2);
-        cargarFicha3(fichas3);
+        for(int i = 0; i < size; i++){
+            
+            
+        }
         
         
         

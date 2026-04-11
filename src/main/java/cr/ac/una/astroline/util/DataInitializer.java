@@ -106,4 +106,6 @@ public class DataInitializer {
 
         System.out.println("[DataInitializer] historial.json creado vacío.");
     }
+    
+
 }

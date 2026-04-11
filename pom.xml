@@ -53,9 +53,9 @@
         </dependency>
         
         <dependency>
-            <groupId>de.dfki.mary</groupId>
-            <artifactId>marytts-runtime</artifactId>
-            <version>5.2</version>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>3.0.3</version>
         </dependency>
 
     </dependencies>
