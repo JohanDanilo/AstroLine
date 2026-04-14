@@ -5,6 +5,10 @@ module cr.ac.una.astroline {
     requires javafx.fxml;
     requires javafx.media;
     requires java.logging;
+    
+    // Nuevas por la funcionalidad de fotos:
+    requires javafx.swing;
+    requires webcam.capture;
 
     // Librerías UI
     requires atlantafx.base;
