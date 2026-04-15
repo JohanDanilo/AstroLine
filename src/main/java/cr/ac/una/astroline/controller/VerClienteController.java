@@ -140,7 +140,7 @@ public class VerClienteController extends Controller implements Initializable {
 
     @FXML
     private void OnAgregarClientes(ActionEvent event) {
-        FlowController.getInstance().goView("RegistroClienteView");
+        FlowController.getInstance().goViewInWindow("RegistroClienteView");
 
         // Limpiar el controlador cacheado para que no arrastre datos del cliente anterior
         RegistroClienteController controller = (RegistroClienteController)
@@ -159,7 +159,7 @@ public class VerClienteController extends Controller implements Initializable {
                           "Seleccioná un cliente para editar.");
             return;
         }
-        FlowController.getInstance().goView("RegistroClienteView");
+        FlowController.getInstance().goViewInWindow("RegistroClienteView");
         RegistroClienteController controller = (RegistroClienteController)
             FlowController.getInstance().getController("RegistroClienteView");
         controller.cargarClienteParaEditar(clienteSeleccionado);
