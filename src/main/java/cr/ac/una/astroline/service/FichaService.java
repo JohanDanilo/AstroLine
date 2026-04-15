@@ -13,6 +13,17 @@ import java.util.List;
  * Lógica de negocio para la gestión de fichas.
  * Maneja generación, persistencia y archivado automático al historial.
  *
+ * Sistema de códigos de ficha:
+ *   - El código visible (A-001, B-005...) se calcula por posición global del día.
+ *   - Las fichas 1-10  → A-001 a A-010
+ *   - Las fichas 11-20 → B-001 a B-010
+ *   - Las fichas 21-30 → C-001 a C-010
+ *   - Las fichas 31-40 → D-001 a D-010
+ *   - Las fichas 41-50 → E-001 a E-010
+ *   - La ficha 51 reinicia en A-001 (ciclo de 50)
+ *   El trámite elegido por el cliente se guarda en tramiteId pero NO
+ *   determina la letra del código.
+ *
  * @author AstroLine
  */
 public class FichaService {
@@ -23,6 +34,15 @@ public class FichaService {
     private static final DateTimeFormatter FORMATO_FECHA =
             DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
+    /** Letras disponibles en orden. Deben ser exactamente 5. */
+    private static final char[] LETRAS = {'A', 'B', 'C', 'D', 'E'};
+
+    /** Números por letra (del 1 al 10). */
+    private static final int NUMEROS_POR_LETRA = 10;
+
+    /** Tamaño total del ciclo: 5 letras × 10 números = 50 fichas. */
+    private static final int CICLO = LETRAS.length * NUMEROS_POR_LETRA;
+
     // -------------------------------------------------------------------------
     // GENERACIÓN DE FICHA
     // -------------------------------------------------------------------------
@@ -31,7 +51,10 @@ public class FichaService {
      * Genera una nueva ficha para el trámite indicado.
      * Si es la primera ficha del día, archiva las fichas anteriores primero.
      *
-     * @param tramiteId      id del trámite (la letra: A, B, C...)
+     * El código visible (letra + número) se determina por la posición global
+     * de la ficha en el día, independientemente del trámite elegido.
+     *
+     * @param tramiteId      id del trámite (guardado para registro, no afecta el código)
      * @param sucursalId     id de la sucursal
      * @param cedulaCliente  cédula del cliente, null si no se identificó
      * @param preferencial   true si tiene atención preferencial
@@ -48,14 +71,17 @@ public class FichaService {
                 fichasActivas = new ArrayList<>();
             }
 
-            // Calcular el siguiente número para este trámite
-            int siguienteNumero = calcularSiguienteNumero(fichasActivas, tramiteId);
+            // Calcular letra y número por posición global en el ciclo
+            int[] posicion = calcularPosicionGlobal(fichasActivas);
+            String letra   = String.valueOf(LETRAS[posicion[0]]);
+            int numero     = posicion[1];
 
-            // Construir el id único: letra + número + fecha (ej: A-001-28-03-2026)
+            // ID único: letra + número + fecha + timestamp (evita colisiones al reiniciar)
             String fechaHoy = LocalDate.now(ZONA_CR).format(FORMATO_FECHA);
-            String id = tramiteId + "-" + String.format("%03d", siguienteNumero) + "-" + fechaHoy;
+            String id = letra + "-" + String.format("%03d", numero)
+                      + "-" + fechaHoy + "-" + System.currentTimeMillis();
 
-            Ficha ficha = new Ficha(id, siguienteNumero, tramiteId,
+            Ficha ficha = new Ficha(id, numero, letra, tramiteId,
                     sucursalId, cedulaCliente, preferencial);
 
             fichasActivas.add(ficha);
@@ -148,25 +174,35 @@ public class FichaService {
     // -------------------------------------------------------------------------
 
     /**
+     * Calcula la letra y el número de la próxima ficha según la posición
+     * global dentro del ciclo de 50 (5 letras × 10 números).
+     *
+     * Ejemplos:
+     *   0 fichas activas → índice 0  → A-001
+     *   9 fichas activas → índice 9  → A-010
+     *  10 fichas activas → índice 10 → B-001
+     *  49 fichas activas → índice 49 → E-010
+     *  50 fichas activas → índice 0  → A-001 (reinicio)
+     *
+     * @param fichasActivas lista actual de fichas del día
+     * @return int[0] = índice de letra (0=A, 1=B...), int[1] = número (1-10)
+     */
+    private int[] calcularPosicionGlobal(List<Ficha> fichasActivas) {
+        int indiceGlobal = fichasActivas.size() % CICLO; // reinicia cada 50
+        int indiceLetra  = indiceGlobal / NUMEROS_POR_LETRA; // 0-4
+        int numero       = (indiceGlobal % NUMEROS_POR_LETRA) + 1; // 1-10
+        return new int[]{indiceLetra, numero};
+    }
+
+    /**
      * Verifica si una ficha fue emitida en un día diferente al de hoy.
      */
     private boolean esDeOtroDia(Ficha ficha) {
-        String fechaHoy = LocalDate.now(ZONA_CR).format(FORMATO_FECHA);
+        String fechaHoy  = LocalDate.now(ZONA_CR).format(FORMATO_FECHA);
         // fechaHoraEmision tiene formato "dd-MM-yyyy HH:mm:ss"
         // los primeros 10 caracteres son la fecha
         String fechaFicha = ficha.getFechaHoraEmision().substring(0, 10);
         return !fechaFicha.equals(fechaHoy);
-    }
-
-    /**
-     * Calcula el siguiente número de ficha para un trámite específico en el día.
-     * Cuenta cuántas fichas de ese trámite ya existen hoy y suma 1.
-     */
-    private int calcularSiguienteNumero(List<Ficha> fichasActivas, String tramiteId) {
-        long cantidad = fichasActivas.stream()
-                .filter(f -> f.getTramiteId().equals(tramiteId))
-                .count();
-        return (int) cantidad + 1;
     }
 
     /**
