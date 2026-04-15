@@ -70,6 +70,32 @@ public class TramiteService {
         return activos;
     }
 
+    /**
+     * Genera el siguiente ID disponible para un nuevo trámite.
+     *
+     * Los IDs siguen la convención de letra única: A, B, C... Z.
+     * Recorre el alfabeto y retorna la primera letra que no esté en uso.
+     * Si todas las letras (A-Z) están ocupadas, genera un ID numérico
+     * con formato "T-NNN" basado en el tamaño actual de la lista.
+     *
+     * Ejemplo:
+     *   Lista actual: [A, B, C] → retorna "D"
+     *   Lista actual: [A, C]    → retorna "B" (primer hueco)
+     *   Lista actual: [A..Z]    → retorna "T-027"
+     *
+     * @return id sugerido para el siguiente trámite
+     */
+    public String generarSiguienteId() {
+        for (char letra = 'A'; letra <= 'Z'; letra++) {
+            String candidato = String.valueOf(letra);
+            if (!existe(candidato)) {
+                return candidato;
+            }
+        }
+        // Fallback numérico si las 26 letras están ocupadas
+        return String.format("T-%03d", listaDeTramites.size() + 1);
+    }
+
     // ── CRUD ──────────────────────────────────────────────────────────────────
 
     /**
@@ -82,6 +108,8 @@ public class TramiteService {
         try {
             if (tramite == null)
                 return new Respuesta(false, "El trámite no puede ser nulo.", "");
+            if (tramite.getId() == null || tramite.getId().isBlank())
+                return new Respuesta(false, "El ID del trámite es obligatorio.", "");
             if (existe(tramite.getId()))
                 return new Respuesta(false, "Ya existe un trámite con ese id.", "");
 
@@ -170,8 +198,12 @@ public class TramiteService {
 
     // ── Privados ──────────────────────────────────────────────────────────────
 
+    /**
+     * Guarda la lista de trámites en disco y la propaga a los peers en red.
+     * Usa guardarYPropagar para que todos los módulos en LAN se actualicen.
+     */
     private void guardar() {
-        GsonUtil.guardar(new ArrayList<>(listaDeTramites), ARCHIVO_JSON);
+        GsonUtil.guardarYPropagar(new ArrayList<>(listaDeTramites), ARCHIVO_JSON);
     }
 
     private void cargarTramites() {

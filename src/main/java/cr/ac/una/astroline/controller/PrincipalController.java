@@ -4,6 +4,7 @@ import cr.ac.una.astroline.model.Empresa;
 import cr.ac.una.astroline.util.AppContext;
 import cr.ac.una.astroline.util.FlowController;
 import cr.ac.una.astroline.util.GsonUtil;
+import cr.ac.una.astroline.util.SessionManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
@@ -23,6 +24,8 @@ public class PrincipalController extends Controller {
 
     @FXML
     private Label lblNombreEmpresa;
+    
+    private static String acceso = "";
 
     @Override
     public void initialize() {
@@ -54,12 +57,14 @@ public class PrincipalController extends Controller {
 
     @FXML
     private void irAdministrador() { 
-        FlowController.getInstance().goMain("Admin");
+        SessionManager.getInstancia().setModoAcceso("admin"); 
+        FlowController.getInstance().goViewInWindow("LoginFuncionarioView");
         getStage().close();
     }
 
     @FXML
     private void irFuncionario() {
+        SessionManager.getInstancia().setModoAcceso("funcionario"); 
         FlowController.getInstance().goViewInWindow("LoginFuncionarioView");
         getStage().close();
     }

@@ -3,6 +3,7 @@ package cr.ac.una.astroline;
 
 import cr.ac.una.astroline.util.DataInitializer;
 import cr.ac.una.astroline.util.FlowController;
+import cr.ac.una.astroline.util.SessionManager;
 import cr.ac.una.astroline.util.SyncManager;
 import javafx.scene.Scene;
 import static javafx.application.Application.launch;
@@ -39,10 +40,12 @@ public class App extends Application {
 
         switch (modo) {
             case "admin":
-                FlowController.getInstance().goMain("Admin");
+                SessionManager.getInstancia().setModoAcceso("admin"); 
+                FlowController.getInstance().goViewInWindow("LoginFuncionarioView");
                 break;
 
             case "funcionario":
+                SessionManager.getInstancia().setModoAcceso("funcionario");
                 FlowController.getInstance().goViewInWindow("LoginFuncionarioView");
                 break;
 
