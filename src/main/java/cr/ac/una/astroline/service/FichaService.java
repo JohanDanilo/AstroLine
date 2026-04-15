@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @author AstroLine
  */
-public class FichaService {
+public class FichaService{
 
     private static final String ARCHIVO_FICHAS    = "fichas.json";
     private static final String ARCHIVO_HISTORIAL = "historial.json";

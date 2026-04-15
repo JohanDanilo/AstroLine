@@ -130,4 +130,13 @@ public class Ficha {
                 "', preferencial=" + preferencial +
                 ", estado=" + estado + "}";
     }
+    
+    public String obtenerMensajeDeLlamda(){
+        String codigoMsg = "Codigo : ", cedulaMsg = "";
+        if(cedulaCliente != null)
+            cedulaMsg =" Cedula : " + cedulaCliente;
+        
+        codigoMsg += getCodigo();
+        return codigoMsg + cedulaMsg;
+    }
 }

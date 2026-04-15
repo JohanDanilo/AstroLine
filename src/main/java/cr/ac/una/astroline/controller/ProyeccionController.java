@@ -1,13 +1,17 @@
 package cr.ac.una.astroline.controller;
 
+import javafx.animation.Timeline;
+import javafx.animation.KeyFrame;
 import cr.ac.una.astroline.App;
 import cr.ac.una.astroline.model.Empresa;
 import cr.ac.una.astroline.model.Ficha;
 import cr.ac.una.astroline.util.*;
 import cr.ac.una.astroline.service.FichaService;
+import cr.ac.una.astroline.service.PiperTTSService;
 import java.net.URL;
-import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -17,10 +21,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
 /**
  * Controller placeholder del módulo Kiosko.
@@ -36,6 +38,8 @@ public class ProyeccionController extends Controller implements Initializable {
     
     List<Ficha> listaFichas;
     
+    Ficha fichaLlamada;
+    
     List<Label> lblCodesEnEspera;
     List<Label> lblCedsEnEspera;
     List<ImageView> imgsPrefEnEspera;
@@ -45,13 +49,9 @@ public class ProyeccionController extends Controller implements Initializable {
     List<Label> lblEstacionesAtendidas;
     List<Label> lblCedsAtendidas;
     List<ImageView> imgsPrefAtendidas;
-    
-    @FXML
-    private VBox primerFichaEspera;
-    @FXML
-    private VBox segundaFichaEspera;
-    @FXML
-    private VBox terceraFichaEspera;
+
+    private static final ZoneId ZONA_CR = ZoneId.of("America/Costa_Rica");
+
     @FXML
     private ImageView imgEsperandoPref1;
     @FXML
@@ -72,8 +72,6 @@ public class ProyeccionController extends Controller implements Initializable {
     private ImageView imgEsperandoPref3;
     @FXML
     private ImageView imgLogo;
-    @FXML
-    private Label lblEmpresa;
     @FXML
     private Label lblAtendiendoCode1;
     @FXML
@@ -98,11 +96,16 @@ public class ProyeccionController extends Controller implements Initializable {
     private Label lblAtendiendoEstacion3;
     @FXML
     private ImageView imgAtendiendoPref3;
+    @FXML
+    private Label lblFechaYHora;
+    @FXML
+    private Label lblEmpresa;
 
     @Override
     public void initialize() {
         setNombreVista("Proyeccion");
         cargarEmpresa();
+        cargarHoraYFecha();
     }
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -118,10 +121,23 @@ public class ProyeccionController extends Controller implements Initializable {
         lblCedsAtendidas = List.of(lblAtendiendoCed1, lblAtendiendoCed2, lblAtendiendoCed3);
         imgsPrefAtendidas = List.of(imgAtendiendoPref1, imgAtendiendoPref2, imgAtendiendoPref3);
         
-        
-        cargarFichas();
+        iniciarActualizacionDeFichas();
         
     }    
+    
+    //__________________ ACTUALIZACION DE FICHAS CONSTANTE
+    private void iniciarActualizacionDeFichas(){
+       // IMPLEMENTAR DATANOTIFIER DE FORMA EFICIENTE
+        Timeline actualizacion = new Timeline(
+                new KeyFrame(Duration.seconds(10), e -> {
+                    limpiarUI();
+                    cargarFichas();
+            })
+        );
+        
+        actualizacion.setCycleCount(Timeline.INDEFINITE);
+        actualizacion.play();
+    }
     
     //__________________ CARGADO DE FICHAS
     private void cargarFichas(){
@@ -172,8 +188,14 @@ public class ProyeccionController extends Controller implements Initializable {
         
     // __________________ FILTRAR FICHAS SEGUN EL ESTADO
     private List<Ficha> obtenerFichasEnEsperaParaUI(){
-                
-      Comparator<Ficha> comparador = (ficha1, ficha2) -> {
+        
+        List<Ficha> listaEsperando = new ArrayList();
+        
+        for (Ficha actual : listaFichas)
+            if(actual.estaEsperando())
+                listaEsperando.add(actual);
+        
+        listaEsperando.sort((ficha1, ficha2) -> {
           
           if(ficha1.isPreferencial() && !ficha2.isPreferencial()) return -1;
           if(!ficha1.isPreferencial() && ficha2.isPreferencial()) return 1;
@@ -185,29 +207,40 @@ public class ProyeccionController extends Controller implements Initializable {
           if(ficha1.getNumero() > ficha2.getNumero()) return 1;
           
           return 0;
-      };
-      
+      });
               
-              
-       return listaFichas.stream().
-               filter(f -> f.estaEsperando()).sorted(comparador).
-               limit(3).toList();
+        List<Ficha> ordenada = new ArrayList<>();
+        
+        for(int i = 0; i < listaEsperando.size() && i < 3; i++)
+            ordenada.add(listaEsperando.get(i));
+        
+        return ordenada;
+    
     }
     
     private List<Ficha> obtenerFichasAtendidasParaUI(){
         
-        Comparator<Ficha> comparador = (ficha1, ficha2) -> {
+        List<Ficha> listaAtendidas = new ArrayList<>();
+        
+        for(Ficha actual : listaFichas)
+            if(actual.getEstado() == Ficha.Estado.ATENDIDA)
+                listaAtendidas.add(actual);
+        
+        listaAtendidas.sort((ficha1, ficha2) -> {
             
           ZonedDateTime timeFicha1 = ZonedDateTime.parse(ficha1.getFechaHoraLlamado());
           ZonedDateTime timeFicha2 = ZonedDateTime.parse(ficha2.getFechaHoraLlamado());
           
           return timeFicha2.compareTo(timeFicha1);
           
-      };
-      
-       return listaFichas.stream().
-              filter(f -> (f.getEstado() == Ficha.Estado.ATENDIDA)).
-              sorted(comparador).limit(3).toList();
+        });
+        
+        List<Ficha> ordenada = new ArrayList<>();
+        
+        for (int i = 0; i < listaAtendidas.size() && i < 3; i++)
+            ordenada.add(listaAtendidas.get(i));
+        
+        return ordenada;
     }
     
     
@@ -228,10 +261,6 @@ public class ProyeccionController extends Controller implements Initializable {
             
             lblCed.setText(ficha.getCedulaCliente());
         }
-        else{
-            lblCed.setVisible(false);
-            lblCed.setManaged(false);
-        }
             
     }
     
@@ -250,10 +279,6 @@ public class ProyeccionController extends Controller implements Initializable {
             lblCed.setManaged(true);
             lblCed.setText(ficha.getCedulaCliente());
         }
-        else{
-            lblCed.setVisible(false);
-            lblCed.setManaged(false);
-        }
         
     }
     
@@ -263,7 +288,7 @@ public class ProyeccionController extends Controller implements Initializable {
         
         for (int i = 0; i < lblCodesAtendidas.size(); i++){
             
-            lblCodesAtendidas.get(i).setText("");
+            lblCodesAtendidas.get(i).setText(" Codigo ");
             
             lblCedsAtendidas.get(i).setVisible(false);
             lblCedsAtendidas.get(i).setManaged(false);
@@ -274,7 +299,8 @@ public class ProyeccionController extends Controller implements Initializable {
         }
         
         for (int i = 0; i < lblCodesEnEspera.size(); i++){
-            lblCodesEnEspera.get(i).setText("");
+            lblCodesEnEspera.get(i).setText(" Codigo ");
+            lblEstacionesAtendidas.get(i).setText(" Estacion ");
             
             lblCedsEnEspera.get(i).setVisible(false);
             lblCedsEnEspera.get(i).setManaged(false);
@@ -284,7 +310,7 @@ public class ProyeccionController extends Controller implements Initializable {
         }
     }
     
-    //__________________ CARGAR DATOS DE LA EMPRESA
+    //__________________ CARGAR DATOS DEL TOP
     
     private void cargarEmpresa(){
         
@@ -308,6 +334,45 @@ public class ProyeccionController extends Controller implements Initializable {
         
     }
     
+    private void cargarHoraYFecha(){
+        
+        DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        
+        Timeline tiempo = new Timeline (
+                new KeyFrame(Duration.seconds(1), e-> {
+                  ZonedDateTime horaActual = ZonedDateTime.now(ZONA_CR);
+                  lblFechaYHora.setText(horaActual.format(formatoFecha));
+                })
+        );
+        tiempo.setCycleCount(Timeline.INDEFINITE);
+        tiempo.play();
+    }
+    
     //________________ ANUNCIO DEL LLAMADO DE UNA FICHA -- PENDIENTE
+    
+    private void verficarLlamadoDeFicha() throws Exception{
+        
+        Ficha actualFichaLlamada = null;
+        
+        for(Ficha actual : listaFichas){
+            if(actual.getEstado() == Ficha.Estado.LLAMADA){
+                actualFichaLlamada = actual;
+                break;
+            }
+        }
+                
+        if(actualFichaLlamada == null) 
+            return;
+        
+        fichaLlamada = actualFichaLlamada;
+        
+        actualizarFichaEnEspera(fichaLlamada, lblAtendiendoCode1, lblAtendiendoCed1, imgAtendiendoPref1);
+        
+        PiperTTSService.getInstancia().hablar(fichaLlamada.obtenerMensajeDeLlamda());
+        
+        //EL ESTADO DE LA FICHA LO CAMBIARA DIRECTAMENTE FUNCIONARIO, ESTA SOLO SE ENCARGAR DE RECIBIR LOS CAMBIOS 
+        
+    }
+    
     
 }
