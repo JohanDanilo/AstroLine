@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import io.github.palexdev.materialfx.controls.MFXButton?>
+<?import io.github.palexdev.materialfx.controls.MFXComboBox?>
+<?import io.github.palexdev.materialfx.controls.MFXToggleButton?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane fx:id="root" prefHeight="360.0" prefWidth="420.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.MantenimientoEstacionesController">
+   <children>
+      <VBox alignment="CENTER" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <Label alignment="CENTER" prefHeight="33.0" prefWidth="169.0" text="Configure de estación" />
+            <MFXComboBox fx:id="cmbSucursal" floatingText="Sucursal" onAction="#onCmbSucursal" prefWidth="320.0" />
+            <MFXComboBox fx:id="cmbEstacion" floatingText="Estacion" prefWidth="320.0" />
+            <MFXToggleButton fx:id="tglModoKiosko" onAction="#onTglModo" text="Usar como kiosko" />
+            <Label fx:id="lblModo" text="Modo actual" />
+            <MFXButton fx:id="btnGuardar" onAction="#onBtnGuardar" text="Guardar configuracion" />
+         </children>
+         <padding>
+            <Insets bottom="24.0" left="24.0" right="24.0" top="24.0" />
+         </padding>
+      </VBox>
+   </children>
+</AnchorPane>

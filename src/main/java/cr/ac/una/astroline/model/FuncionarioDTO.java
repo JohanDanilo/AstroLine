@@ -7,11 +7,11 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 /**
- * DTO de Cliente para binding con formularios JavaFX.
+ * DTO de Funcionario para binding con formularios JavaFX.
  *
  * @author JohanDanilo
  */
-public class ClienteDTO {
+public class FuncionarioDTO {
 
     private StringProperty cedula;
     private StringProperty nombre;
@@ -20,14 +20,19 @@ public class ClienteDTO {
     private StringProperty correo;
     private String fotoPath;
     private ObjectProperty<LocalDate> fechaNacimiento;
+    private StringProperty username;
+    private StringProperty password;
+    private boolean esAdmin;
 
-    public ClienteDTO() {
+    public FuncionarioDTO() {
         this.cedula = new SimpleStringProperty("");
         this.nombre = new SimpleStringProperty("");
         this.apellidos = new SimpleStringProperty("");
         this.telefono = new SimpleStringProperty("");
         this.correo = new SimpleStringProperty("");
         this.fechaNacimiento = new SimpleObjectProperty<>();
+        this.username = new SimpleStringProperty("");
+        this.password = new SimpleStringProperty("");
 
     }
 
@@ -63,4 +68,18 @@ public class ClienteDTO {
     public ObjectProperty<LocalDate> getFechaNacimientoProperty() {
         return fechaNacimiento;
     }
+    
+        // Username
+    public String getUsername() { return username.get(); }
+    public void setUsername(String username) { this.username.set(username); }
+    public StringProperty getUsernameProperty() { return username; }
+
+    // Password
+    public String getPassword() { return password.get(); }
+    public void setPassword(String password) { this.password.set(password); }
+    public StringProperty getPasswordProperty() { return password; }
+
+    // esAdmin  (no necesita Property si no lo bindeas a un control)
+    public boolean isEsAdmin() { return esAdmin; }
+    public void setEsAdmin(boolean esAdmin) { this.esAdmin = esAdmin; }
 }

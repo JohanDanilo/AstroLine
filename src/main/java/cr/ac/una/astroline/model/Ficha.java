@@ -9,6 +9,11 @@ import java.time.format.DateTimeFormatter;
  * Es el objeto central del sistema — todos los módulos lo usan.
  * Se persiste en data/fichas.json
  *
+ * El código visible (ej: A-001) se determina por posición global,
+ * NO por el trámite elegido. Las primeras 10 fichas del día son A-001
+ * a A-010, las siguientes B-001 a B-010, y así hasta E-010 (50 fichas),
+ * luego se reinicia en A-001.
+ *
  * @author JohanDanilo
  */
 public class Ficha {
@@ -25,7 +30,8 @@ public class Ficha {
 
     private String id;
     private int numero;
-    private String tramiteId;
+    private String codigoLetra;      // letra asignada por posición global (A-E)
+    private String tramiteId;        // trámite que el cliente eligió (se guarda, no determina la letra)
     private String sucursalId;
     private String estacionId;       // se asigna cuando el funcionario la llama
     private String cedulaCliente;    // null si el cliente no se identificó
@@ -42,10 +48,11 @@ public class Ficha {
         this.estado = Estado.ESPERANDO;
     }
 
-    public Ficha(String id, int numero, String tramiteId,
+    public Ficha(String id, int numero, String codigoLetra, String tramiteId,
             String sucursalId, String cedulaCliente, boolean preferencial) {
         this.id = id;
         this.numero = numero;
+        this.codigoLetra = codigoLetra;
         this.tramiteId = tramiteId;
         this.sucursalId = sucursalId;
         this.cedulaCliente = cedulaCliente;
@@ -83,11 +90,27 @@ public class Ficha {
         return estado == Estado.ESPERANDO;
     }
 
+    /**
+     * Retorna el código visible de la ficha: letra por posición global + número.
+     * Ejemplo: "A-001", "B-005", "E-010"
+     * La letra NO proviene del trámite elegido, sino de la posición global del día.
+     *
+     * @return código legible de la ficha
+     */
+    public String getCodigo() {
+        return codigoLetra + "-" + getNumeroFormateado();
+    }
+
+    // ── Getters y Setters ─────────────────────────────────────────────────────
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
     public int getNumero() { return numero; }
     public void setNumero(int numero) { this.numero = numero; }
+
+    public String getCodigoLetra() { return codigoLetra; }
+    public void setCodigoLetra(String codigoLetra) { this.codigoLetra = codigoLetra; }
 
     public String getTramiteId() { return tramiteId; }
     public void setTramiteId(String tramiteId) { this.tramiteId = tramiteId; }
@@ -113,19 +136,9 @@ public class Ficha {
     public String getFechaHoraLlamado() { return fechaHoraLlamado; }
     public void setFechaHoraLlamado(String fechaHoraLlamado) { this.fechaHoraLlamado = fechaHoraLlamado; }
 
-    /**
-    * Retorna el código completo de la ficha: prefijo del trámite + número.
-    * Ejemplo: "A-001", "B-023"
-    * El tramiteId ya es la letra (A, B, C...)
-    *
-    * @return código legible de la ficha
-    */
-    public String getCodigo() {
-       return tramiteId + "-" + getNumeroFormateado();
-    }
     @Override
     public String toString() {
-        return "Ficha{numero=" + getNumeroFormateado() +
+        return "Ficha{codigo=" + getCodigo() +
                 ", tramite='" + tramiteId +
                 "', preferencial=" + preferencial +
                 ", estado=" + estado + "}";

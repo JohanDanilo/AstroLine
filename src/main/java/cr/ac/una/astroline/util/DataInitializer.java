@@ -3,6 +3,7 @@ package cr.ac.una.astroline.util;
 import cr.ac.una.astroline.model.ConfiguracionLocal;
 import cr.ac.una.astroline.model.Empresa;
 import cr.ac.una.astroline.model.Estacion;
+import cr.ac.una.astroline.model.Funcionario;
 import cr.ac.una.astroline.model.Sucursal;
 import cr.ac.una.astroline.model.Tramite;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public class DataInitializer {
         inicializarFichas();
         inicializarHistorial();
         inicializarClientes();
+        inicializarFuncionarios();
         inicializarSucursales();
         inicializarConfiguracion();
     }
@@ -63,6 +65,24 @@ public class DataInitializer {
         System.out.println("[DataInitializer] clientes.json creado vacío.");
     }
     
+    private static void inicializarFuncionarios() {
+        if (GsonUtil.existe("funcionarios.json")) return;
+
+        Funcionario funcionario = new Funcionario();
+        funcionario.setNombre("Administrador");
+        funcionario.setApellidos("General");
+        funcionario.setUsername("admin");
+        funcionario.setPassword("1234");
+        funcionario.setAdmin(true);
+        funcionario.setLastModified(System.currentTimeMillis());
+
+        List<Funcionario> lista = new ArrayList<>();
+        lista.add(funcionario);
+        GsonUtil.guardar(lista, "funcionarios.json"); // ← guarda [{}], no {}
+
+        System.out.println("[DataInitializer] funcionarios.json creado con funcionario predeterminado.");
+    }
+    
     private static void inicializarEmpresa() {
         if (GsonUtil.existe("empresa.json")) return;
         Empresa empresa = new Empresa();
@@ -81,7 +101,7 @@ public class DataInitializer {
 
         List<Tramite> lista = new ArrayList<>();
 
-        // El id ES la letra del prefijo de ficha
+        // El id ES la letra del id del tramite
         lista.add(new Tramite("A", "Pasaporte", "Trámites relacionados a pasaportes", true));
         lista.add(new Tramite("B", "Licencia", "Trámites relacionados a licencias", true));
         lista.add(new Tramite("C", "Cédula", "Trámites relacionados a cédulas", true));
