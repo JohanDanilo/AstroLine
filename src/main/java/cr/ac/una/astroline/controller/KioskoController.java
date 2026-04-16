@@ -57,7 +57,7 @@ public class KioskoController extends Controller implements Initializable {
     @FXML private HBox panelMensaje;
     @FXML private Label lblMensaje;
 
-    private final FichaService fichaService = new FichaService();
+    private final FichaService fichaService = FichaService.getInstancia();
     private final Mensaje utilMensaje = new Mensaje();
 
     // Empresa se carga una vez en initialize() y se reutiliza en PDF

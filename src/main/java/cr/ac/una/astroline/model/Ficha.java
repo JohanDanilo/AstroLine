@@ -144,12 +144,12 @@ public class Ficha {
                 ", estado=" + estado + "}";
     }
     
-    public String obtenerMensajeDeLlamda(){
-        String codigoMsg = "Codigo : ", cedulaMsg = "";
+    public String obtenerMensajeDeLlamada(){
+        String codigoMsg = "Ficha : " + getCodigo(), estacionMsg = " Pasar Estacion : " + getEstacionId() ,cedulaMsg = "";
+        
         if(cedulaCliente != null)
             cedulaMsg =" Cedula : " + cedulaCliente;
         
-        codigoMsg += getCodigo();
-        return codigoMsg + cedulaMsg;
+        return codigoMsg + cedulaMsg + estacionMsg;
     }
 }

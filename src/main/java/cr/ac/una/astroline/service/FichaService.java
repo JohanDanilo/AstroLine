@@ -1,10 +1,12 @@
 package cr.ac.una.astroline.service;
 
 import cr.ac.una.astroline.model.Ficha;
+import cr.ac.una.astroline.util.DataNotifier;
 import cr.ac.una.astroline.util.GsonUtil;
 import cr.ac.una.astroline.util.Respuesta;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +30,8 @@ import java.util.List;
  */
 public class FichaService{
 
+    private static FichaService instancia;
+    
     private static final String ARCHIVO_FICHAS    = "fichas.json";
     private static final String ARCHIVO_HISTORIAL = "historial.json";
     private static final ZoneId ZONA_CR           = ZoneId.of("America/Costa_Rica");
@@ -42,6 +46,16 @@ public class FichaService{
 
     /** Tamaño total del ciclo: 5 letras × 10 números = 50 fichas. */
     private static final int CICLO = LETRAS.length * NUMEROS_POR_LETRA;
+
+    private FichaService() {}
+    
+    public static FichaService getInstancia(){
+        if(instancia == null)
+            instancia = new FichaService();
+        return instancia;
+       
+    }
+    
 
     // -------------------------------------------------------------------------
     // GENERACIÓN DE FICHA
@@ -85,7 +99,7 @@ public class FichaService{
                     sucursalId, cedulaCliente, preferencial);
 
             fichasActivas.add(ficha);
-            GsonUtil.guardar(fichasActivas, ARCHIVO_FICHAS);
+            GsonUtil.guardarYPropagar(fichasActivas, ARCHIVO_FICHAS);
 
             return new Respuesta(true,
                     "Ficha generada: " + ficha.getCodigo(),
@@ -223,4 +237,45 @@ public class FichaService{
                     "FichaService.archivarFichas > " + e.getMessage());
         }
     }
+    
+    
+    //METODOOS PARA PROYECCION 
+    
+
+    public List<Ficha> obtenerFichasAtendidasParaUI(int nFichas){
+        
+        List<Ficha> listaActual = (List<Ficha>)obtenerFichasActivas().getResultado("lista");
+        List<Ficha> listaAtendidas = new ArrayList<>();
+        
+        for(Ficha actual : listaActual)
+            if(actual.getEstado() == Ficha.Estado.ATENDIDA)
+                listaAtendidas.add(actual);
+        
+        listaAtendidas.sort((ficha1, ficha2) -> {
+            
+          ZonedDateTime timeFicha1 = ZonedDateTime.parse(ficha1.getFechaHoraLlamado());
+          ZonedDateTime timeFicha2 = ZonedDateTime.parse(ficha2.getFechaHoraLlamado());
+          
+          return timeFicha2.compareTo(timeFicha1);
+          
+        });
+        
+        List<Ficha> ordenada = new ArrayList<>();
+        
+        for (int i = 0; i < listaAtendidas.size() && i < nFichas; i++)
+            ordenada.add(listaAtendidas.get(i));
+        
+        return ordenada;
+    }
+    
+    public Ficha obtenerFichaLlamada(){
+        List<Ficha> listaActual = (List<Ficha>) obtenerFichasActivas().getResultado("lista");
+        
+         for(Ficha actual : listaActual)
+            if(actual.getEstado() == Ficha.Estado.LLAMADA)
+                return actual;
+        
+        return null;
+    }
+    
 }
