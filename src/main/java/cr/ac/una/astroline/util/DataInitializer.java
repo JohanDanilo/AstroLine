@@ -74,6 +74,7 @@ public class DataInitializer {
         funcionario.setUsername("admin");
         funcionario.setPassword("1234");
         funcionario.setAdmin(true);
+        funcionario.setCedula("000000001");
         funcionario.setLastModified(System.currentTimeMillis());
 
         List<Funcionario> lista = new ArrayList<>();

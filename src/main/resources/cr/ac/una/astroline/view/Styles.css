@@ -71,7 +71,7 @@
 .mfx-password-field {
     
     /* Tamaño fijo */
-    -fx-pref-height: 45px;
+    -fx-pref-height: 30px;
     -fx-pref-width: 250px;
 
     /* Opcional: consistencia */

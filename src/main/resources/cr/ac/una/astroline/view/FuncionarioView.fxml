@@ -11,19 +11,12 @@
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="494.0" prefWidth="678.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.FuncionarioController">
    <top>
-      <VBox alignment="CENTER" BorderPane.alignment="CENTER">
+      <HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="30.0" prefWidth="600.0" spacing="15.0">
          <children>
-            <HBox alignment="CENTER_LEFT" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="23.0" prefWidth="600.0" spacing="190.0" VBox.vgrow="ALWAYS">
-               <children>
-                  <ImageView fx:id="logoEmpresa" fitHeight="35.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true" HBox.hgrow="ALWAYS" />
-                  <Label fx:id="nombreEmpresa" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Nombre de la Empresa" HBox.hgrow="ALWAYS" />
-               </children>
-               <VBox.margin>
-                  <Insets />
-               </VBox.margin>
-            </HBox>
+            <ImageView fx:id="logoEmpresa" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true" preserveRatio="true" HBox.hgrow="ALWAYS" />
+            <Label fx:id="nombreEmpresa" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Nombre de la Empresa" HBox.hgrow="ALWAYS" />
          </children>
-      </VBox>
+      </HBox>
    </top>
    <left>
       <VBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="459.0" prefWidth="285.0" spacing="15.0" BorderPane.alignment="CENTER">

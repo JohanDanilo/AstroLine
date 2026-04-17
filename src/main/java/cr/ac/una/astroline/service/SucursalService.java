@@ -2,20 +2,23 @@ package cr.ac.una.astroline.service;
 
 import cr.ac.una.astroline.model.Estacion;
 import cr.ac.una.astroline.model.Sucursal;
+import cr.ac.una.astroline.util.DataNotifier;
 import cr.ac.una.astroline.util.GsonUtil;
 import cr.ac.una.astroline.util.Respuesta;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 /**
  * Servicio singleton para la gestión persistente de sucursales y estaciones.
- * Es la fuente de verdad para toda la estructura física del sistema.
+ * Reactivo y sincronizado entre peers via DataNotifier.
+ * Estaciones viven embebidas dentro de cada Sucursal en sucursales.json.
  *
  * @author JohanDanilo
  */
-public class SucursalService {
+public class SucursalService implements DataNotifier.Listener {
 
     private static final String ARCHIVO_JSON = "sucursales.json";
     private final ObservableList<Sucursal> listaDeSucursales;
@@ -23,12 +26,13 @@ public class SucursalService {
 
     private SucursalService() {
         listaDeSucursales = FXCollections.observableArrayList();
+        cargarSucursales();
+        DataNotifier.subscribe(this);
     }
 
     public static SucursalService getInstancia() {
         if (instancia == null) {
             instancia = new SucursalService();
-            instancia.cargarSucursales();
         }
         return instancia;
     }
@@ -39,12 +43,6 @@ public class SucursalService {
 
     // ── Sucursales ────────────────────────────────────────────────────────────
 
-    /**
-     * Busca una sucursal por su id.
-     *
-     * @param sucursalId id de la sucursal
-     * @return la Sucursal encontrada o null
-     */
     public Sucursal buscarSucursal(String sucursalId) {
         if (sucursalId == null) return null;
         for (Sucursal s : listaDeSucursales) {
@@ -57,12 +55,6 @@ public class SucursalService {
         return buscarSucursal(sucursalId) != null;
     }
 
-    /**
-     * Agrega una nueva sucursal al sistema.
-     *
-     * @param sucursal la sucursal a agregar
-     * @return Respuesta con estado del resultado
-     */
     public Respuesta agregarSucursal(Sucursal sucursal) {
         try {
             if (sucursal == null)
@@ -79,13 +71,6 @@ public class SucursalService {
         }
     }
 
-    /**
-     * Actualiza los datos generales de una sucursal (nombre, textoAviso).
-     * No toca las estaciones — eso se maneja por separado.
-     *
-     * @param sucursalActualizada sucursal con los nuevos datos
-     * @return Respuesta con estado del resultado
-     */
     public Respuesta actualizarSucursal(Sucursal sucursalActualizada) {
         try {
             if (sucursalActualizada == null)
@@ -106,12 +91,6 @@ public class SucursalService {
         }
     }
 
-    /**
-     * Elimina una sucursal y todas sus estaciones.
-     *
-     * @param sucursalId id de la sucursal a eliminar
-     * @return Respuesta con estado del resultado
-     */
     public Respuesta eliminarSucursal(String sucursalId) {
         try {
             Sucursal encontrada = buscarSucursal(sucursalId);
@@ -131,10 +110,7 @@ public class SucursalService {
 
     /**
      * Busca una estación en cualquier sucursal por su id.
-     * Útil para cuando Ficha solo tiene estacionId sin saber en qué sucursal.
-     *
-     * @param estacionId id de la estación
-     * @return la Estacion encontrada o null
+     * Útil para cuando Ficha solo tiene estacionId.
      */
     public Estacion buscarEstacion(String estacionId) {
         if (estacionId == null) return null;
@@ -146,12 +122,13 @@ public class SucursalService {
     }
 
     /**
-     * Agrega una estación a una sucursal específica.
-     *
-     * @param sucursalId id de la sucursal destino
-     * @param estacion   la estación a agregar
-     * @return Respuesta con estado del resultado
+     * Retorna todas las estaciones de una sucursal específica.
      */
+    public List<Estacion> getEstacionesDeSucursal(String sucursalId) {
+        Sucursal s = buscarSucursal(sucursalId);
+        return s != null ? s.getEstaciones() : new ArrayList<>();
+    }
+
     public Respuesta agregarEstacion(String sucursalId, Estacion estacion) {
         try {
             Sucursal sucursal = buscarSucursal(sucursalId);
@@ -172,13 +149,6 @@ public class SucursalService {
         }
     }
 
-    /**
-     * Actualiza los datos de una estación dentro de su sucursal.
-     *
-     * @param sucursalId         id de la sucursal que contiene la estación
-     * @param estacionActualizada estación con los nuevos datos
-     * @return Respuesta con estado del resultado
-     */
     public Respuesta actualizarEstacion(String sucursalId, Estacion estacionActualizada) {
         try {
             Sucursal sucursal = buscarSucursal(sucursalId);
@@ -203,13 +173,6 @@ public class SucursalService {
         }
     }
 
-    /**
-     * Elimina una estación de una sucursal específica.
-     *
-     * @param sucursalId id de la sucursal
-     * @param estacionId id de la estación a eliminar
-     * @return Respuesta con estado del resultado
-     */
     public Respuesta eliminarEstacion(String sucursalId, String estacionId) {
         try {
             Sucursal sucursal = buscarSucursal(sucursalId);
@@ -228,15 +191,118 @@ public class SucursalService {
         }
     }
 
-    // ── Privados ──────────────────────────────────────────────────────────────
+    /**
+     * Genera un ID único para una nueva estación dentro de una sucursal.
+     * Formato: "estacion-N" donde N es incremental global entre todas las sucursales.
+     */
+    public String generarIdEstacion() {
+        int consecutivoMaximo = 0;
+        for (Sucursal sucursal : listaDeSucursales) {
+            for (Estacion estacion : sucursal.getEstaciones()) {
+                consecutivoMaximo = Math.max(
+                        consecutivoMaximo,
+                        extraerConsecutivo(estacion.getId(), "estacion-")
+                );
+            }
+        }
 
-    private void guardar() {
-        GsonUtil.guardar(new ArrayList<>(listaDeSucursales), ARCHIVO_JSON);
+        String candidato;
+        do {
+            consecutivoMaximo++;
+            candidato = "estacion-" + consecutivoMaximo;
+        } while (buscarEstacion(candidato) != null);
+
+        return candidato;
     }
+
+    /**
+     * Genera un ID único para una nueva sucursal.
+     * Formato: "sucursal-N".
+     */
+    public String generarIdSucursal() {
+        int consecutivoMaximo = 0;
+        for (Sucursal sucursal : listaDeSucursales) {
+            consecutivoMaximo = Math.max(
+                    consecutivoMaximo,
+                    extraerConsecutivo(sucursal.getId(), "sucursal-")
+            );
+        }
+
+        String candidato;
+        do {
+            consecutivoMaximo++;
+            candidato = "sucursal-" + consecutivoMaximo;
+        } while (existeSucursal(candidato));
+
+        return candidato;
+    }
+
+    // ── Carga inicial ─────────────────────────────────────────────────────────
 
     private void cargarSucursales() {
         List<Sucursal> lista = GsonUtil.leerLista(ARCHIVO_JSON, Sucursal.class);
         if (lista == null) lista = new ArrayList<>();
         listaDeSucursales.setAll(lista);
+    }
+
+    // ── Reactividad P2P ───────────────────────────────────────────────────────
+
+    /**
+     * Llamado por DataNotifier cuando SyncServer recibe sucursales.json de un peer.
+     * Ejecutado desde hilo HTTP — requiere Platform.runLater para tocar la UI.
+     */
+    @Override
+    public void onDataChanged(String fileName) {
+        if (!ARCHIVO_JSON.equals(fileName)) return;
+
+        System.out.println("[SucursalService] Detectado cambio externo, sincronizando...");
+
+        Platform.runLater(() -> {
+            List<Sucursal> remotas = GsonUtil.leerLista(ARCHIVO_JSON, Sucursal.class);
+            if (remotas != null) mergeSucursales(remotas);
+        });
+    }
+
+    /**
+     * Merge por ID de sucursal.
+     * La lista remota es autoritativa (solo el admin modifica sucursales).
+     * Se conserva cualquier sucursal local que no esté en el remoto como
+     * protección ante race conditions del poller de 15 segundos.
+     *
+     * Estaciones se reemplazan completas con las del remoto —
+     * viven embebidas y no tienen lastModified propio.
+     */
+    private void mergeSucursales(List<Sucursal> remotas) {
+        java.util.Map<String, Sucursal> mapaRemoto = new java.util.LinkedHashMap<>();
+        for (Sucursal r : remotas) mapaRemoto.put(r.getId(), r);
+
+        java.util.Map<String, Sucursal> mapaLocal = new java.util.LinkedHashMap<>();
+        for (Sucursal s : listaDeSucursales) mapaLocal.put(s.getId(), s);
+
+        // Remoto gana en colisión
+        mapaLocal.putAll(mapaRemoto);
+
+        // Eliminar sucursales que el remoto borró
+        mapaLocal.keySet().retainAll(mapaRemoto.keySet());
+
+        listaDeSucursales.setAll(mapaLocal.values());
+    }
+
+    // ── Privados ──────────────────────────────────────────────────────────────
+
+    private void guardar() {
+        GsonUtil.guardarYPropagar(new ArrayList<>(listaDeSucursales), ARCHIVO_JSON);
+    }
+
+    private int extraerConsecutivo(String id, String prefijo) {
+        if (id == null || !id.startsWith(prefijo)) {
+            return 0;
+        }
+
+        try {
+            return Integer.parseInt(id.substring(prefijo.length()));
+        } catch (NumberFormatException ex) {
+            return 0;
+        }
     }
 }

@@ -1,20 +1,22 @@
 package cr.ac.una.astroline.service;
 
 import cr.ac.una.astroline.model.Tramite;
+import cr.ac.una.astroline.util.DataNotifier;
 import cr.ac.una.astroline.util.GsonUtil;
 import cr.ac.una.astroline.util.Respuesta;
 import java.util.ArrayList;
 import java.util.List;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 /**
  * Servicio singleton para la gestión persistente de trámites.
- * Es la fuente de verdad del catálogo de trámites del sistema.
+ * Reactivo y sincronizado entre peers via DataNotifier.
  *
  * @author JohanDanilo
  */
-public class TramiteService {
+public class TramiteService implements DataNotifier.Listener {
 
     private static final String ARCHIVO_JSON = "tramites.json";
     private final ObservableList<Tramite> listaDeTramites;
@@ -22,12 +24,13 @@ public class TramiteService {
 
     private TramiteService() {
         listaDeTramites = FXCollections.observableArrayList();
+        cargarTramites();
+        DataNotifier.subscribe(this);
     }
 
     public static TramiteService getInstancia() {
         if (instancia == null) {
             instancia = new TramiteService();
-            instancia.cargarTramites();
         }
         return instancia;
     }
@@ -38,12 +41,6 @@ public class TramiteService {
 
     // ── Consultas ─────────────────────────────────────────────────────────────
 
-    /**
-     * Busca un trámite por su id.
-     *
-     * @param tramiteId id del trámite (ej: "A", "B", "C")
-     * @return el Tramite encontrado o null
-     */
     public Tramite buscarPorId(String tramiteId) {
         if (tramiteId == null) return null;
         for (Tramite t : listaDeTramites) {
@@ -56,12 +53,6 @@ public class TramiteService {
         return buscarPorId(tramiteId) != null;
     }
 
-    /**
-     * Retorna solo los trámites activos.
-     * Es lo que el Kiosko usa para mostrar opciones al cliente.
-     *
-     * @return lista de trámites con activo = true
-     */
     public List<Tramite> getTramitesActivos() {
         List<Tramite> activos = new ArrayList<>();
         for (Tramite t : listaDeTramites) {
@@ -71,39 +62,18 @@ public class TramiteService {
     }
 
     /**
-     * Genera el siguiente ID disponible para un nuevo trámite.
-     *
-     * Los IDs siguen la convención de letra única: A, B, C... Z.
-     * Recorre el alfabeto y retorna la primera letra que no esté en uso.
-     * Si todas las letras (A-Z) están ocupadas, genera un ID numérico
-     * con formato "T-NNN" basado en el tamaño actual de la lista.
-     *
-     * Ejemplo:
-     *   Lista actual: [A, B, C] → retorna "D"
-     *   Lista actual: [A, C]    → retorna "B" (primer hueco)
-     *   Lista actual: [A..Z]    → retorna "T-027"
-     *
-     * @return id sugerido para el siguiente trámite
+     * Genera el siguiente ID disponible para un nuevo trámite (A-Z, luego T-NNN).
      */
     public String generarSiguienteId() {
         for (char letra = 'A'; letra <= 'Z'; letra++) {
             String candidato = String.valueOf(letra);
-            if (!existe(candidato)) {
-                return candidato;
-            }
+            if (!existe(candidato)) return candidato;
         }
-        // Fallback numérico si las 26 letras están ocupadas
         return String.format("T-%03d", listaDeTramites.size() + 1);
     }
 
     // ── CRUD ──────────────────────────────────────────────────────────────────
 
-    /**
-     * Agrega un nuevo trámite al catálogo.
-     *
-     * @param tramite el trámite a agregar
-     * @return Respuesta con estado del resultado
-     */
     public Respuesta agregar(Tramite tramite) {
         try {
             if (tramite == null)
@@ -122,12 +92,6 @@ public class TramiteService {
         }
     }
 
-    /**
-     * Actualiza los datos de un trámite existente.
-     *
-     * @param tramiteActualizado trámite con los nuevos datos
-     * @return Respuesta con estado del resultado
-     */
     public Respuesta actualizar(Tramite tramiteActualizado) {
         try {
             if (tramiteActualizado == null)
@@ -148,14 +112,6 @@ public class TramiteService {
         }
     }
 
-    /**
-     * Elimina un trámite del catálogo por su id.
-     * Precaución: no verifica si estaciones lo tienen asignado.
-     * Esa validación es responsabilidad del controlador.
-     *
-     * @param tramiteId id del trámite a eliminar
-     * @return Respuesta con estado del resultado
-     */
     public Respuesta eliminar(String tramiteId) {
         try {
             Tramite encontrado = buscarPorId(tramiteId);
@@ -171,14 +127,6 @@ public class TramiteService {
         }
     }
 
-    /**
-     * Cambia el estado activo/inactivo de un trámite sin reemplazar el objeto.
-     * Más limpio que actualizar el objeto completo solo por el estado.
-     *
-     * @param tramiteId id del trámite
-     * @param activo    nuevo estado
-     * @return Respuesta con estado del resultado
-     */
     public Respuesta cambiarEstado(String tramiteId, boolean activo) {
         try {
             Tramite encontrado = buscarPorId(tramiteId);
@@ -196,19 +144,58 @@ public class TramiteService {
         }
     }
 
-    // ── Privados ──────────────────────────────────────────────────────────────
-
-    /**
-     * Guarda la lista de trámites en disco y la propaga a los peers en red.
-     * Usa guardarYPropagar para que todos los módulos en LAN se actualicen.
-     */
-    private void guardar() {
-        GsonUtil.guardarYPropagar(new ArrayList<>(listaDeTramites), ARCHIVO_JSON);
-    }
+    // ── Carga inicial ────────────────────────────────────────────────────────
 
     private void cargarTramites() {
         List<Tramite> lista = GsonUtil.leerLista(ARCHIVO_JSON, Tramite.class);
         if (lista == null) lista = new ArrayList<>();
         listaDeTramites.setAll(lista);
+    }
+
+    // ── Reactividad P2P ───────────────────────────────────────────────────────
+
+    @Override
+    public void onDataChanged(String fileName) {
+        if (!ARCHIVO_JSON.equals(fileName)) return;
+
+        System.out.println("[TramiteService] Detectado cambio externo, sincronizando...");
+
+        Platform.runLater(() -> {
+            List<Tramite> remotos = GsonUtil.leerLista(ARCHIVO_JSON, Tramite.class);
+            if (remotos != null) mergeTramites(remotos);
+        });
+    }
+
+    /**
+     * Merge por ID. Trámites no tienen lastModified porque el admin es la
+     * única fuente de verdad — no hay conflictos concurrentes esperados.
+     * La lista remota reemplaza la local si viene de una escritura del admin.
+     *
+     * Estrategia: la lista remota es autoritativa. Se conservan trámites
+     * locales que no estén en la remota (evita borrados por race condition
+     * en el polling de 15 segundos).
+     */
+    private void mergeTramites(List<Tramite> remotos) {
+        // Construir mapa remoto por ID
+        java.util.Map<String, Tramite> mapaRemoto = new java.util.LinkedHashMap<>();
+        for (Tramite r : remotos) mapaRemoto.put(r.getId(), r);
+
+        // Construir mapa local por ID
+        java.util.Map<String, Tramite> mapaLocal = new java.util.LinkedHashMap<>();
+        for (Tramite t : listaDeTramites) mapaLocal.put(t.getId(), t);
+
+        // Remoto gana en colisión (es el admin quien escribe)
+        mapaLocal.putAll(mapaRemoto);
+
+        // Eliminar los que el remoto ya no tiene (borrado propagado)
+        mapaLocal.keySet().retainAll(mapaRemoto.keySet());
+
+        listaDeTramites.setAll(mapaLocal.values());
+    }
+
+    // ── Privados ──────────────────────────────────────────────────────────────
+
+    private void guardar() {
+        GsonUtil.guardarYPropagar(new ArrayList<>(listaDeTramites), ARCHIVO_JSON);
     }
 }

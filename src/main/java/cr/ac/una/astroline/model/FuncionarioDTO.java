@@ -80,6 +80,6 @@ public class FuncionarioDTO {
     public StringProperty getPasswordProperty() { return password; }
 
     // esAdmin  (no necesita Property si no lo bindeas a un control)
-    public boolean isEsAdmin() { return esAdmin; }
+    public boolean esAdmin() { return esAdmin; }
     public void setEsAdmin(boolean esAdmin) { this.esAdmin = esAdmin; }
 }
