@@ -1,6 +1,7 @@
 package cr.ac.una.astroline.service;
 
 import cr.ac.una.astroline.model.Ficha;
+import cr.ac.una.astroline.model.Tramite;
 import cr.ac.una.astroline.util.GsonUtil;
 import cr.ac.una.astroline.util.Respuesta;
 import java.time.LocalDate;
@@ -223,4 +224,25 @@ public class FichaService {
                     "FichaService.archivarFichas > " + e.getMessage());
         }
     }
+    
+    /**
+    * Retorna el nombre del trámite asociado a una ficha.
+    * Delega la búsqueda al TramiteService (fuente de verdad del catálogo).
+    *
+    * @param ficha la ficha de la que se quiere conocer el trámite
+    * @return nombre del trámite, o "Trámite no encontrado" si el id no existe
+    */
+    public String getNombreTramite(Ficha ficha) {
+       if (ficha == null || ficha.getTramiteId() == null) return "Sin trámite";
+
+       Tramite tramite = TramiteService.getInstancia().buscarPorId(ficha.getTramiteId());
+       return tramite != null ? tramite.getNombre() : "Trámite no encontrado";
+   }
+    
+    public String getCodigoLetra(Ficha ficha) {
+        if (ficha == null || ficha.getCodigoLetra() == null) return "-";
+        return ficha.getCodigoLetra();
+    }
+       
+       
 }
