@@ -195,6 +195,8 @@ public class KioskoController extends Controller implements Initializable {
         if (empresa == null) return;
 
         lblNombreEmpresa.setText(empresa.getNombre());
+        
+        this.pinAdminCorrecto = empresa.getPinAdmin();
 
         if (empresa.getLogoPath() != null && !empresa.getLogoPath().isBlank()) {
             try {
