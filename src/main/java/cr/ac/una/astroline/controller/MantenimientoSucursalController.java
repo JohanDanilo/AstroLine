@@ -5,6 +5,8 @@ import cr.ac.una.astroline.model.Sucursal;
 import cr.ac.una.astroline.model.Tramite;
 import cr.ac.una.astroline.service.SucursalService;
 import cr.ac.una.astroline.service.TramiteService;
+import cr.ac.una.astroline.util.AppContext;
+import cr.ac.una.astroline.util.FlowController;
 import cr.ac.una.astroline.util.Respuesta;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXComboBox;
@@ -19,6 +21,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -34,6 +37,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.AnchorPane;
 import javafx.util.StringConverter;
 
 public class MantenimientoSucursalController extends Controller implements Initializable {
@@ -44,12 +48,8 @@ public class MantenimientoSucursalController extends Controller implements Initi
     private MFXComboBox<Sucursal> cmbSucursal;
     @FXML
     private MFXTextField txtBarraBusquedaEstaciones;
-    @FXML
-    private MFXButton btnAgregarSucursal;
-    @FXML
-    private MFXButton btnEliminarSucursal;
-    @FXML
-    private MFXButton btnAgregar;
+    @FXML private Button btnEliminarSucursal;
+    @FXML private Button btnAgregarEstacion;
 
     @FXML
     private ListView<Estacion> listaEstaciones;
@@ -89,6 +89,10 @@ public class MantenimientoSucursalController extends Controller implements Initi
                 ? existing
                 : new DataFormat("application/astroline-tramite");
     }
+    @FXML
+    private AnchorPane root;
+    @FXML
+    private Label lblSucursal1;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -118,110 +122,7 @@ public class MantenimientoSucursalController extends Controller implements Initi
     private void onActionCmbSucursal(ActionEvent event) {
         seleccionarSucursal(cmbSucursal.getValue());
     }
-
-    @FXML
-    private void onActionBtnAgregarSucursal() {
-        String nombre = solicitarTexto(
-                "Nueva sucursal",
-                "Registrar sucursal",
-                "Nombre de la sucursal:"
-        );
-
-        if (nombre == null) {
-            return;
-        }
-        if (existeNombreSucursal(nombre)) {
-            mostrarAlerta(Alert.AlertType.WARNING, "Ya existe una sucursal con ese nombre.");
-            return;
-        }
-
-        Sucursal nuevaSucursal = new Sucursal(
-                sucursalService.generarIdSucursal(),
-                nombre
-        );
-
-        Respuesta respuesta = sucursalService.agregarSucursal(nuevaSucursal);
-        if (!respuesta.getEstado()) {
-            mostrarAlerta(Alert.AlertType.ERROR, respuesta.getMensaje());
-            return;
-        }
-
-        sucursalActualId = nuevaSucursal.getId();
-        txtBarraBusquedaEstaciones.clear();
-        refrescarSucursales();
-    }
-
-    @FXML
-    private void onActionBtnEliminarSucursal() {
-        if (sucursalActual == null) {
-            mostrarAlerta(Alert.AlertType.WARNING, "Selecciona una sucursal primero.");
-            return;
-        }
-
-        Alert confirmacion = new Alert(
-                Alert.AlertType.CONFIRMATION,
-                "Se eliminara la sucursal \"" + sucursalActual.getNombre()
-                + "\" con todas sus estaciones.\nEsta accion no se puede deshacer.",
-                ButtonType.YES,
-                ButtonType.NO
-        );
-        confirmacion.setTitle("Confirmar eliminacion");
-        confirmacion.setHeaderText(null);
-
-        confirmacion.showAndWait().ifPresent(tipo -> {
-            if (tipo != ButtonType.YES) {
-                return;
-            }
-
-            String idEliminada = sucursalActual.getId();
-            Respuesta respuesta = sucursalService.eliminarSucursal(idEliminada);
-            if (!respuesta.getEstado()) {
-                mostrarAlerta(Alert.AlertType.ERROR, respuesta.getMensaje());
-                return;
-            }
-
-            if (idEliminada.equals(sucursalActualId)) {
-                sucursalActualId = null;
-            }
-            txtBarraBusquedaEstaciones.clear();
-            refrescarSucursales();
-        });
-    }
-
-    @FXML
-    private void onActionBtnAgregar() {
-        if (sucursalActual == null) {
-            mostrarAlerta(Alert.AlertType.WARNING, "Selecciona o crea una sucursal primero.");
-            return;
-        }
-
-        String nombre = solicitarTexto(
-                "Nueva estacion",
-                "Agregar estacion en " + sucursalActual.getNombre(),
-                "Nombre de la estacion:"
-        );
-
-        if (nombre == null) {
-            return;
-        }
-        if (existeNombreEstacion(nombre)) {
-            mostrarAlerta(Alert.AlertType.WARNING, "Ya existe una estacion con ese nombre en la sucursal.");
-            return;
-        }
-
-        String estacionId = sucursalService.generarIdEstacion();
-        Estacion nueva = new Estacion(estacionId, nombre, sucursalActual.getId(), false, true);
-
-        Respuesta respuesta = sucursalService.agregarEstacion(sucursalActual.getId(), nueva);
-        if (!respuesta.getEstado()) {
-            mostrarAlerta(Alert.AlertType.ERROR, respuesta.getMensaje());
-            return;
-        }
-
-        refrescarSucursales();
-        seleccionarEstacionPorId(estacionId);
-    }
-
+    
     @FXML
     private void onMousePressedEstaciones(MouseEvent event) {
         if (listaEstaciones.getSelectionModel().getSelectedItem() == null) {
@@ -237,73 +138,48 @@ public class MantenimientoSucursalController extends Controller implements Initi
             return;
         }
 
-        Estacion seleccionada = listaEstaciones.getSelectionModel().getSelectedItem();
-        if (seleccionada == null || sucursalActual == null) {
-            return;
-        }
-
-        Alert confirmacion = new Alert(
-                Alert.AlertType.CONFIRMATION,
-                "Desea eliminar la estacion \"" + seleccionada.getNombre()
-                + "\"?\nEsta accion no se puede deshacer.",
-                ButtonType.YES,
-                ButtonType.NO
-        );
-        confirmacion.setTitle("Confirmar eliminacion");
-        confirmacion.setHeaderText(null);
-
-        confirmacion.showAndWait().ifPresent(tipo -> {
-            if (tipo != ButtonType.YES) {
-                return;
-            }
-
-            Respuesta respuesta = sucursalService.eliminarEstacion(
-                    sucursalActual.getId(),
-                    seleccionada.getId()
-            );
-
-            if (!respuesta.getEstado()) {
-                mostrarAlerta(Alert.AlertType.ERROR, respuesta.getMensaje());
-                return;
-            }
-
-            refrescarSucursales();
-        });
+        eliminarEstacion();
     }
 
     @FXML
     private void onDragDetectedAsignados(MouseEvent event) {
-        if (estacionSeleccionada == null) {
-            return;
-        }
-
+        if (estacionSeleccionada == null) return;
         Tramite seleccionado = tableTramitesAsignados.getSelectionModel().getSelectedItem();
-        if (seleccionado == null) {
-            return;
-        }
-
-        Dragboard dragboard = tableTramitesAsignados.startDragAndDrop(TransferMode.MOVE);
+        if (seleccionado == null) return;
+ 
+        Dragboard db = tableTramitesAsignados.startDragAndDrop(TransferMode.MOVE);
         ClipboardContent content = new ClipboardContent();
         content.put(TRAMITE_FORMAT, seleccionado.getId());
-        dragboard.setContent(content);
+        db.setContent(content);
         event.consume();
     }
 
     @FXML
     private void onDragDroppedAsignados(DragEvent event) {
-        Dragboard dragboard = event.getDragboard();
+        Dragboard db = event.getDragboard();
         boolean exito = false;
-
-        if (dragboard.hasContent(TRAMITE_FORMAT) && estacionSeleccionada != null) {
-            String tramiteId = (String) dragboard.getContent(TRAMITE_FORMAT);
-            if (!estacionSeleccionada.atiendeTramite(tramiteId)) {
-                boolean agregado = estacionSeleccionada.agregarTramite(tramiteId);
-                if (agregado) {
-                    exito = persistirEstacionSeleccionada();
-                }
+ 
+        if (db.hasContent(TRAMITE_FORMAT) && estacionSeleccionada != null) {
+            String tramiteId = (String) db.getContent(TRAMITE_FORMAT);
+            Tramite tramite  = tramiteService.buscarPorId(tramiteId);
+ 
+            if (tramite != null && !estacionSeleccionada.atiendeTramite(tramiteId)) {
+                // 1. Actualizar UI de inmediato
+                tramitesDisponibles.remove(tramite);
+                tramitesAsignados.add(tramite);
+ 
+                // 2. Actualizar modelo y persistir
+                estacionSeleccionada.agregarTramite(tramiteId);
+                sucursalService.actualizarEstacion(sucursalActual.getId(), estacionSeleccionada);
+ 
+                // 3. Forzar refresco visual (workaround JavaFX TableView)
+                tableTramitesAsignados.refresh();
+                tableTramitesDiponibles.refresh();
+ 
+                exito = true;
             }
         }
-
+ 
         event.setDropCompleted(exito);
         event.consume();
     }
@@ -326,37 +202,43 @@ public class MantenimientoSucursalController extends Controller implements Initi
 
     @FXML
     private void onDragDetectedDisponibles(MouseEvent event) {
-        if (estacionSeleccionada == null) {
-            return;
-        }
-
+        if (estacionSeleccionada == null) return;
         Tramite seleccionado = tableTramitesDiponibles.getSelectionModel().getSelectedItem();
-        if (seleccionado == null) {
-            return;
-        }
-
-        Dragboard dragboard = tableTramitesDiponibles.startDragAndDrop(TransferMode.MOVE);
+        if (seleccionado == null) return;
+ 
+        Dragboard db = tableTramitesDiponibles.startDragAndDrop(TransferMode.MOVE);
         ClipboardContent content = new ClipboardContent();
         content.put(TRAMITE_FORMAT, seleccionado.getId());
-        dragboard.setContent(content);
+        db.setContent(content);
         event.consume();
     }
 
     @FXML
     private void onDragDroppedDisponibles(DragEvent event) {
-        Dragboard dragboard = event.getDragboard();
+        Dragboard db = event.getDragboard();
         boolean exito = false;
-
-        if (dragboard.hasContent(TRAMITE_FORMAT) && estacionSeleccionada != null) {
-            String tramiteId = (String) dragboard.getContent(TRAMITE_FORMAT);
-            if (estacionSeleccionada.atiendeTramite(tramiteId)) {
-                boolean quitado = estacionSeleccionada.quitarTramite(tramiteId);
-                if (quitado) {
-                    exito = persistirEstacionSeleccionada();
-                }
+ 
+        if (db.hasContent(TRAMITE_FORMAT) && estacionSeleccionada != null) {
+            String tramiteId = (String) db.getContent(TRAMITE_FORMAT);
+            Tramite tramite  = tramiteService.buscarPorId(tramiteId);
+ 
+            if (tramite != null && estacionSeleccionada.atiendeTramite(tramiteId)) {
+                // 1. Actualizar UI de inmediato
+                tramitesAsignados.remove(tramite);
+                tramitesDisponibles.add(tramite);
+ 
+                // 2. Actualizar modelo y persistir
+                estacionSeleccionada.quitarTramite(tramiteId);
+                sucursalService.actualizarEstacion(sucursalActual.getId(), estacionSeleccionada);
+ 
+                // 3. Forzar refresco visual (workaround JavaFX TableView)
+                tableTramitesAsignados.refresh();
+                tableTramitesDiponibles.refresh();
+ 
+                exito = true;
             }
         }
-
+ 
         event.setDropCompleted(exito);
         event.consume();
     }
@@ -462,6 +344,10 @@ public class MantenimientoSucursalController extends Controller implements Initi
     private void refrescarSucursales() {
         Sucursal seleccionada = buscarSucursalPorId(sucursalActualId);
 
+        // 1. LIMPIAR LA SELECCIÓN ANTES DE ACTUALIZAR (Esta es la solución)
+        cmbSucursal.getSelectionModel().clearSelection();
+
+        // 2. AHORA SÍ, ACTUALIZAR LA LISTA
         cmbSucursal.getItems().setAll(sucursalService.getListaDeSucursales());
 
         if (seleccionada == null && !cmbSucursal.getItems().isEmpty()) {
@@ -588,7 +474,7 @@ public class MantenimientoSucursalController extends Controller implements Initi
 
         txtBarraBusquedaEstaciones.setDisable(!haySucursal);
         listaEstaciones.setDisable(!haySucursal);
-        btnAgregar.setDisable(!haySucursal);
+        btnAgregarEstacion.setDisable(!haySucursal);
         btnEliminarSucursal.setDisable(!haySucursal);
         tableTramitesAsignados.setDisable(!hayEstacion);
         tableTramitesDiponibles.setDisable(!hayEstacion);
@@ -664,5 +550,144 @@ public class MantenimientoSucursalController extends Controller implements Initi
         Alert alerta = new Alert(tipo, mensaje, ButtonType.OK);
         alerta.setHeaderText(null);
         alerta.showAndWait();
+    }
+    
+    private void agregarSucursal(){
+        String nombre = solicitarTexto(
+                "Nueva sucursal", "Registrar sucursal", "Nombre de la sucursal:");
+        if (nombre == null) return;
+ 
+        if (existeNombreSucursal(nombre)) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Ya existe una sucursal con ese nombre.");
+            return;
+        }
+ 
+        Sucursal nueva = new Sucursal(sucursalService.generarIdSucursal(), nombre);
+        Respuesta r = sucursalService.agregarSucursal(nueva);
+        if (!r.getEstado()) { mostrarAlerta(Alert.AlertType.ERROR, r.getMensaje()); return; }
+ 
+        sucursalActualId = nueva.getId();
+        txtBarraBusquedaEstaciones.clear();
+        refrescarSucursales();
+    }
+    
+    private void eliminarSucursal(){
+        if (sucursalActual == null) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Selecciona una sucursal primero.");
+            return;
+        }
+
+        Alert confirmacion = new Alert(
+                Alert.AlertType.CONFIRMATION,
+                "Se eliminara la sucursal \"" + sucursalActual.getNombre()
+                + "\" con todas sus estaciones.\nEsta accion no se puede deshacer.",
+                ButtonType.YES,
+                ButtonType.NO
+        );
+        confirmacion.setTitle("Confirmar eliminacion");
+        confirmacion.setHeaderText(null);
+
+        confirmacion.showAndWait().ifPresent(tipo -> {
+            if (tipo != ButtonType.YES) {
+                return;
+            }
+
+            String idEliminada = sucursalActual.getId();
+            Respuesta respuesta = sucursalService.eliminarSucursal(idEliminada);
+            if (!respuesta.getEstado()) {
+                mostrarAlerta(Alert.AlertType.ERROR, respuesta.getMensaje());
+                return;
+            }
+
+            if (idEliminada.equals(sucursalActualId)) {
+                sucursalActualId = null;
+            }
+            txtBarraBusquedaEstaciones.clear();
+            refrescarSucursales();
+        });
+    }
+    
+    private void agregarEstacion(){
+        
+        if (sucursalActual == null) {
+            mostrarAlerta(Alert.AlertType.WARNING, "Seleccioná o creá una sucursal primero.");
+            return;
+        }
+ 
+        // Pasar contexto al formulario de registro
+        AppContext.getInstance().set("sucursalParaEstacion", sucursalActual.getId());
+        AppContext.getInstance().set("estacionParaEditar", null);
+ 
+        FlowController.getInstance().goViewInWindowModal(
+                "RegistroEstacionView", getStage(), true);
+ 
+        // Este código corre cuando el modal se cierra
+        String nuevaId = (String) AppContext.getInstance().get("ultimaEstacionAgregadaId");
+        AppContext.getInstance().delete("ultimaEstacionAgregadaId");
+        refrescarSucursales();
+        if (nuevaId != null) seleccionarEstacionPorId(nuevaId);
+    }
+
+    private void eliminarEstacion() {
+        Estacion seleccionada = listaEstaciones.getSelectionModel().getSelectedItem();
+        if (seleccionada == null || sucursalActual == null) {
+            return;
+        }
+
+        Alert confirmacion = new Alert(
+                Alert.AlertType.CONFIRMATION,
+                "Desea eliminar la estacion \"" + seleccionada.getNombre()
+                + "\"?\nEsta accion no se puede deshacer.",
+                ButtonType.YES,
+                ButtonType.NO
+        );
+        confirmacion.setTitle("Confirmar eliminacion");
+        confirmacion.setHeaderText(null);
+
+        confirmacion.showAndWait().ifPresent(tipo -> {
+            if (tipo != ButtonType.YES) {
+                return;
+            }
+
+            Respuesta respuesta = sucursalService.eliminarEstacion(
+                    sucursalActual.getId(),
+                    seleccionada.getId()
+            );
+
+            if (!respuesta.getEstado()) {
+                mostrarAlerta(Alert.AlertType.ERROR, respuesta.getMensaje());
+                return;
+            }
+
+            refrescarSucursales();
+        });
+    }
+
+    @FXML
+    private void onBtnAgregarSucursal(ActionEvent event) {
+        agregarSucursal();
+    }
+
+    @FXML
+    private void onBtnEditarSucursal(ActionEvent event) {
+    }
+
+    @FXML
+    private void onBtnEiminarSucursal(ActionEvent event) {
+        eliminarSucursal();
+    }
+
+    @FXML
+    private void onBtnAgregarEstacion(ActionEvent event) {
+        agregarEstacion();
+    }
+
+    @FXML
+    private void onBtnEditarEstacion(ActionEvent event) {
+    }
+
+    @FXML
+    private void onBtnEliminarEstacion(ActionEvent event) {
+        eliminarEstacion();
     }
 }
