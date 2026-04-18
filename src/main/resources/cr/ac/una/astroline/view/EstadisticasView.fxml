@@ -68,20 +68,14 @@
 
                     <!-- Card 1 -->
                     <VBox alignment="CENTER_LEFT" maxWidth="Infinity" styleClass="kpi-card" HBox.hgrow="ALWAYS">
-                        <Label styleClass="kpi-label" text="Clientes Hoy" />
+                        <Label fx:id="lblTituloClientes" styleClass="kpi-label" text="Clientes Hoy" />
                         <Label fx:id="lblClientesHoy" styleClass="kpi-value" text="—" />
                     </VBox>
 
                     <!-- Card 2 -->
                     <VBox alignment="CENTER_LEFT" maxWidth="Infinity" styleClass="kpi-card" HBox.hgrow="ALWAYS">
-                        <Label styleClass="kpi-label" text="Trámites Hoy" />
+                        <Label fx:id="lblTituloTramites" styleClass="kpi-label" text="Trámites Hoy" />
                         <Label fx:id="lblTramitesHoy" styleClass="kpi-value" text="—" />
-                    </VBox>
-
-                    <!-- Card 3 -->
-                    <VBox alignment="CENTER_LEFT" maxWidth="Infinity" styleClass="kpi-card" HBox.hgrow="ALWAYS">
-                        <Label styleClass="kpi-label" text="Promedio Espera" />
-                        <Label fx:id="lblTiempoPromedio" styleClass="kpi-value" text="—" />
                     </VBox>
 
                 </HBox>

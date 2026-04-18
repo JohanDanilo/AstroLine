@@ -1,89 +1,204 @@
 package cr.ac.una.astroline.controller;
 
+import cr.ac.una.astroline.service.EstadisticasService;
+import cr.ac.una.astroline.service.EstadisticasService.EstadisticasResumen;
+import cr.ac.una.astroline.service.EstadisticasService.PeriodoEstadistico;
+import cr.ac.una.astroline.service.EstadisticasService.RankingItem;
+import cr.ac.una.astroline.service.EstadisticasService.SucursalOpcion;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.chart.*;
-import javafx.scene.control.*;
-import javafx.collections.*;
 import javafx.fxml.Initializable;
+import javafx.scene.chart.LineChart;
+import javafx.scene.chart.PieChart;
+import javafx.scene.chart.XYChart;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
 
-public class EstadisticasController extends Controller implements Initializable{
+public class EstadisticasController extends Controller implements Initializable {
 
-    @FXML private Label lblClientesHoy;
-    @FXML private Label lblTramitesHoy;
-    @FXML private Label lblTiempoPromedio;
+    private static final DateTimeFormatter FORMATO_EJE =
+            DateTimeFormatter.ofPattern("dd/MM");
+    private static final String MENSAJE_SIN_DATOS =
+            "Sin datos para el filtro seleccionado.";
 
-    @FXML private LineChart<String, Number> lineChart;
-    @FXML private PieChart pieChart;
+    private final EstadisticasService estadisticasService = new EstadisticasService();
+    private final Map<String, String> sucursalesPorEtiqueta = new LinkedHashMap<>();
 
-    @FXML private ListView<String> lvTopClientes;
-    @FXML private ListView<String> lvTopTramites;
-
-    @FXML private ComboBox<String> cbFiltroTiempo;
-    @FXML private ComboBox<String> cbSucursal;
+    private boolean listenersConfigurados;
+    private boolean ajustandoFiltros;
 
     @FXML
+    private Label lblTituloClientes;
+    @FXML
+    private Label lblTituloTramites;
+    @FXML
+    private Label lblClientesHoy;
+    @FXML
+    private Label lblTramitesHoy;
+    
+
+    @FXML
+    private LineChart<String, Number> lineChart;
+    @FXML
+    private PieChart pieChart;
+
+    @FXML
+    private ListView<String> lvTopClientes;
+    @FXML
+    private ListView<String> lvTopTramites;
+
+    @FXML
+    private ComboBox<String> cbFiltroTiempo;
+    @FXML
+    private ComboBox<String> cbSucursal;
+
+    @Override
     public void initialize() {
+        setNombreVista("Estadisticas");
         cargarFiltros();
-        cargarKPIs();
-        cargarLineChart();
-        cargarPieChart();
-        cargarRankings();
+        configurarListeners();
+        refrescarVista();
     }
 
     private void cargarFiltros() {
-        cbFiltroTiempo.setItems(FXCollections.observableArrayList(
-                "Hoy", "Semana", "Mes"
-        ));
+        ajustandoFiltros = true;
+        try {
+            String periodoActual = cbFiltroTiempo.getValue();
+            if (cbFiltroTiempo.getItems().isEmpty()) {
+                cbFiltroTiempo.setItems(FXCollections.observableArrayList(
+                        PeriodoEstadistico.HOY.getEtiquetaFiltro(),
+                        PeriodoEstadistico.SEMANA.getEtiquetaFiltro(),
+                        PeriodoEstadistico.MES.getEtiquetaFiltro()
+                ));
+            }
+            if (periodoActual != null && cbFiltroTiempo.getItems().contains(periodoActual)) {
+                cbFiltroTiempo.setValue(periodoActual);
+            } else {
+                cbFiltroTiempo.getSelectionModel().selectFirst();
+            }
 
-        cbSucursal.setItems(FXCollections.observableArrayList(
-                "Sucursal Centro", "Sucursal Norte", "Sucursal Sur"
-        ));
+            String sucursalActual = cbSucursal.getValue();
+            sucursalesPorEtiqueta.clear();
+
+            ObservableList<String> opcionesSucursal = FXCollections.observableArrayList();
+            for (SucursalOpcion opcion : estadisticasService.obtenerSucursalesDisponibles()) {
+                String etiqueta = construirEtiquetaSucursal(opcion);
+                sucursalesPorEtiqueta.put(etiqueta, opcion.getId());
+                opcionesSucursal.add(etiqueta);
+            }
+
+            cbSucursal.setItems(opcionesSucursal);
+            if (sucursalActual != null && sucursalesPorEtiqueta.containsKey(sucursalActual)) {
+                cbSucursal.setValue(sucursalActual);
+            } else if (!opcionesSucursal.isEmpty()) {
+                cbSucursal.getSelectionModel().selectFirst();
+            }
+        } finally {
+            ajustandoFiltros = false;
+        }
     }
 
-    private void cargarKPIs() {
-        lblClientesHoy.setText("120");
-        lblTramitesHoy.setText("95");
-        lblTiempoPromedio.setText("15 min");
+    private String construirEtiquetaSucursal(SucursalOpcion opcion) {
+        if (opcion.getId() == null) {
+            return opcion.getNombre();
+        }
+        String etiquetaBase = opcion.getNombre();
+        if (!sucursalesPorEtiqueta.containsKey(etiquetaBase)) {
+            return etiquetaBase;
+        }
+        return opcion.getNombre() + " (" + opcion.getId() + ")";
     }
 
-    private void cargarLineChart() {
+    private void configurarListeners() {
+        if (listenersConfigurados) {
+            return;
+        }
+
+        cbFiltroTiempo.setOnAction(event -> {
+            if (!ajustandoFiltros) {
+                refrescarVista();
+            }
+        });
+        cbSucursal.setOnAction(event -> {
+            if (!ajustandoFiltros) {
+                refrescarVista();
+            }
+        });
+
+        listenersConfigurados = true;
+    }
+
+    private void refrescarVista() {
+        EstadisticasResumen resumen = estadisticasService.obtenerResumen(
+                cbFiltroTiempo.getValue(),
+                sucursalesPorEtiqueta.get(cbSucursal.getValue())
+        );
+
+        actualizarTitulos(resumen.getPeriodo());
+        cargarKPIs(resumen);
+        cargarLineChart(resumen);
+        cargarPieChart(resumen);
+        cargarRankings(resumen);
+    }
+
+    private void actualizarTitulos(PeriodoEstadistico periodo) {
+        lblTituloClientes.setText(periodo.getTituloClientes());
+        lblTituloTramites.setText(periodo.getTituloTramites());
+    }
+
+    private void cargarKPIs(EstadisticasResumen resumen) {
+        lblClientesHoy.setText(String.valueOf(resumen.getTotalClientes()));
+        lblTramitesHoy.setText(String.valueOf(resumen.getTotalTramites()));
+    }
+
+    private void cargarLineChart(EstadisticasResumen resumen) {
         XYChart.Series<String, Number> series = new XYChart.Series<>();
         series.setName("Trámites");
 
-        series.getData().add(new XYChart.Data<>("Lun", 20));
-        series.getData().add(new XYChart.Data<>("Mar", 35));
-        series.getData().add(new XYChart.Data<>("Mié", 25));
-        series.getData().add(new XYChart.Data<>("Jue", 40));
-        series.getData().add(new XYChart.Data<>("Vie", 30));
+        for (Map.Entry<LocalDate, Long> entry : resumen.getTramitesPorDia().entrySet()) {
+            series.getData().add(new XYChart.Data<>(
+                    entry.getKey().format(FORMATO_EJE),
+                    entry.getValue()
+            ));
+        }
 
-        lineChart.getData().add(series);
+        lineChart.getData().setAll(series);
     }
 
-    private void cargarPieChart() {
-        ObservableList<PieChart.Data> data = FXCollections.observableArrayList(
-                new PieChart.Data("Pagos", 40),
-                new PieChart.Data("Consultas", 25),
-                new PieChart.Data("Reclamos", 20),
-                new PieChart.Data("Otros", 15)
-        );
-
+    private void cargarPieChart(EstadisticasResumen resumen) {
+        ObservableList<PieChart.Data> data = FXCollections.observableArrayList();
+        for (Map.Entry<String, Long> entry : resumen.getDistribucionTramites().entrySet()) {
+            data.add(new PieChart.Data(entry.getKey(), entry.getValue()));
+        }
         pieChart.setData(data);
     }
 
-    private void cargarRankings() {
+    private void cargarRankings(EstadisticasResumen resumen) {
         lvTopClientes.setItems(FXCollections.observableArrayList(
-                "Juan Pérez - 45 trámites",
-                "María López - 40 trámites",
-                "Carlos Ruiz - 38 trámites"
+                formatearRanking(resumen.getTopClientes())
         ));
-
         lvTopTramites.setItems(FXCollections.observableArrayList(
-                "Pago de servicios - 60",
-                "Consulta general - 50",
-                "Reclamos - 30"
+                formatearRanking(resumen.getTopTramites())
         ));
+    }
+
+    private List<String> formatearRanking(List<RankingItem> ranking) {
+        if (ranking.isEmpty()) {
+            return List.of(MENSAJE_SIN_DATOS);
+        }
+
+        return ranking.stream()
+                .map(item -> item.getNombre() + " - " + item.getTotal() + " trámites")
+                .toList();
     }
 
     @Override
