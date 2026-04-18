@@ -89,6 +89,11 @@ public class AdminController extends Controller implements Initializable {
         FlowController.getInstance().goView("MantenimientoSucursalView");
     }
     
+    @FXML
+    private void onBtnRankings(ActionEvent event) {
+        FlowController.getInstance().goView("EstadisticasView");
+    }
+    
     // -------------------------------------------------------------------------
     // CARGA INICIAL
     // -------------------------------------------------------------------------
