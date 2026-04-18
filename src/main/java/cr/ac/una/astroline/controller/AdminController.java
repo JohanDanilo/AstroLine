@@ -59,10 +59,6 @@ public class AdminController extends Controller implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
     }    
-    
-    private void onActionBtnClientes(ActionEvent event) {
-        FlowController.getInstance().goView("MantenimientoClientesView");
-    }
 
     @FXML
     private void onActionBtnVerClientes(ActionEvent event) {

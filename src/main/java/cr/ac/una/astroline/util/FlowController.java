@@ -64,7 +64,6 @@ public class FlowController {
             synchronized (FlowController.class) {
                 if (loader == null) {
                     try {
-                        // CORRECCIÓN: Ruta absoluta desde la raíz de resources
                         loader = new FXMLLoader(App.class.getResource("/cr/ac/una/astroline/view/" + name + ".fxml"), this.idioma);
                         loader.load();
                         loaders.put(name, loader);
@@ -81,13 +80,13 @@ public class FlowController {
     public void goMain() {
         try {
             FXMLLoader loader = new FXMLLoader(
-                App.class.getResource("/cr/ac/una/astroline/view/PrincipalView.fxml"), 
+                App.class.getResource("/cr/ac/una/astroline/view/PrincipalView.fxml"),
                 this.idioma
             );
             Parent root = loader.load();
 
             Controller controller = loader.getController();
-            controller.setStage(this.mainStage); // esta es la línea clave
+            controller.setStage(this.mainStage);
             controller.initialize();
 
             this.mainStage.setScene(new Scene(root));
@@ -100,15 +99,15 @@ public class FlowController {
                 .log(Level.SEVERE, "Error inicializando la vista base.", ex);
         }
     }
-    
+
     public void goMain(String acceso) {
         try {
             if (acceso == null || acceso.isBlank()) {
-                acceso = "Principal"; // fallback seguro
+                acceso = "Principal";
             }
-            
+
             FXMLLoader loader = new FXMLLoader(
-                App.class.getResource("/cr/ac/una/astroline/view/" + acceso + "View.fxml"), 
+                App.class.getResource("/cr/ac/una/astroline/view/" + acceso + "View.fxml"),
                 this.idioma
             );
 
@@ -132,7 +131,6 @@ public class FlowController {
 
     public void goView(String viewName) {
         goView(viewName, "Center", null);
-
     }
 
     public void goView(String viewName, String accion) {
@@ -152,13 +150,13 @@ public class FlowController {
         switch (location) {
             case "Center":
                 BorderPane borderPane = (BorderPane) stage.getScene().getRoot();
-                VBox vBox = (VBox)borderPane.getCenter();
+                VBox vBox = (VBox) borderPane.getCenter();
                 vBox.getChildren().clear();
                 vBox.getChildren().add(loader.getRoot());
                 break;
             case "Top":
                 BorderPane borderPane2 = (BorderPane) stage.getScene().getRoot();
-                HBox hBox = (HBox)borderPane2.getTop();
+                HBox hBox = (HBox) borderPane2.getTop();
                 hBox.getChildren().clear();
                 hBox.getChildren().add(loader.getRoot());
                 break;
@@ -168,6 +166,62 @@ public class FlowController {
         stage.centerOnScreen();
         stage.show();
     }
+
+    // -------------------------------------------------------------------------
+    // NUEVO MÉTODO — navega dentro del mismo Stage del controller llamante.
+    //
+    // Úsalo desde ventanas flotantes (abiertas con goViewInWindow) que NO forman
+    // parte del layout principal con BorderPane+VBox.  De esta forma la
+    // navegación queda contenida en su propia ventana y nunca toca mainStage.
+    //
+    // Si el caller aún no tiene Stage asignado, cae al mainStage como fallback.
+    // -------------------------------------------------------------------------
+    public void goViewInCallerStage(String viewName, Controller caller) {
+        FXMLLoader loader = getLoader(viewName);
+        Controller controller = loader.getController();
+        controller.initialize();
+
+        Stage targetStage = caller.getStage();
+        if (targetStage == null) {
+            targetStage = this.mainStage;
+        }
+        controller.setStage(targetStage);
+
+        MFXThemeManager.addOn(targetStage.getScene(), Themes.DEFAULT, Themes.LEGACY);
+        targetStage.getScene().setRoot(loader.getRoot());
+
+        // ← NUEVO: actualizar el listener para que limpie el root correcto al cerrar
+        final Stage stageCapturado = targetStage;
+        targetStage.setOnHidden((WindowEvent e) -> {
+            if (stageCapturado.getScene() != null) {
+                stageCapturado.getScene().setRoot(new Pane());
+            }
+            controller.setStage(null);
+        });
+
+        targetStage.centerOnScreen();
+        targetStage.show();
+    }
+
+    // Sobrecarga con acción por si se necesita en el futuro
+    public void goViewInCallerStage(String viewName, Controller caller, String accion) {
+        FXMLLoader loader = getLoader(viewName);
+        Controller controller = loader.getController();
+        controller.setAccion(accion);
+        controller.initialize();
+
+        Stage targetStage = caller.getStage();
+        if (targetStage == null) {
+            targetStage = this.mainStage;
+        }
+        controller.setStage(targetStage);
+
+        MFXThemeManager.addOn(targetStage.getScene(), Themes.DEFAULT, Themes.LEGACY);
+        targetStage.getScene().setRoot(loader.getRoot());
+        targetStage.centerOnScreen();
+        targetStage.show();
+    }
+    // -------------------------------------------------------------------------
 
     public void goViewInStage(String viewName, Stage stage) {
         FXMLLoader loader = getLoader(viewName);
@@ -191,6 +245,9 @@ public class FlowController {
             applyIcon(stage);
             stage.setTitle(controller.getNombreVista());
             stage.setOnHidden((WindowEvent event) -> {
+                if (stage.getScene() != null) {
+                    stage.getScene().setRoot(new Pane()); // ← desconecta el root del caché de la escena
+                }
                 controller.setStage(null);
             });
             controller.setStage(stage);
@@ -230,26 +287,20 @@ public class FlowController {
         stage.showAndWait();
     }
 
-        public Controller goViewInPane(String viewName, Pane container){
-	
-	try {
-	
-	FXMLLoader loader = getLoader(viewName);
-
-	Controller controller = loader.getController();	
-        controller.initialize();
-        
-        Parent root = loader.getRoot();
-	container.getChildren().clear();
-	container.getChildren().add(root);
-	
-	return controller;
-	
-	}
-	
-	
-	catch(Exception e){return null;}
+    public Controller goViewInPane(String viewName, Pane container) {
+        try {
+            FXMLLoader loader = getLoader(viewName);
+            Controller controller = loader.getController();
+            controller.initialize();
+            Parent root = loader.getRoot();
+            container.getChildren().clear();
+            container.getChildren().add(root);
+            return controller;
+        } catch (Exception e) {
+            return null;
+        }
     }
+
     public Controller getController(String viewName) {
         return getLoader(viewName).getController();
     }
@@ -257,18 +308,18 @@ public class FlowController {
     private void applyIcon(Stage stage) {
         stage.getIcons().clear();
         stage.getIcons().add(new Image(
-                App.class.getResourceAsStream("/cr/ac/una/astroline/resource/logo.png")
+            App.class.getResourceAsStream("/cr/ac/una/astroline/resource/logo.png")
         ));
     }
-    
-    public void limpiarLoader(String view){
+
+    public void limpiarLoader(String view) {
         this.loaders.remove(view);
     }
 
     public static void setIdioma(ResourceBundle idioma) {
         FlowController.idioma = idioma;
     }
-    
+
     public void initialize() {
         this.loaders.clear();
     }
@@ -276,9 +327,8 @@ public class FlowController {
     public void salir() {
         this.mainStage.close();
     }
-    
-      public Stage getMainStage(){
+
+    public Stage getMainStage() {
         return mainStage;
     }
-
 }

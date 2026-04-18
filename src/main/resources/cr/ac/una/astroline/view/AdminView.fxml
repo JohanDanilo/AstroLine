@@ -16,7 +16,7 @@
             <MFXButton fx:id="btnSucursales" layoutX="20.0" layoutY="20.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onBtnSucursales" prefHeight="0.0" prefWidth="136.0" styleClass="jfx-btn-secundario" text="Sucursales" VBox.vgrow="ALWAYS" />
             <MFXButton fx:id="btnTramites" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onBtnTramites" styleClass="jfx-btn-secundario" text="Tramites" VBox.vgrow="ALWAYS" />
             <MFXButton fx:id="btnClientes" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onActionBtnVerClientes" prefWidth="67.0" styleClass="jfx-btn-secundario" text="Clientes" VBox.vgrow="ALWAYS" />
-            <MFXButton fx:id="btnRankings" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onBtnRankings" text="Rankings" VBox.vgrow="ALWAYS">
+            <MFXButton fx:id="btnRankings" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onBtnRankings" styleClass="jfx-btn-secundario" text="Rankings" VBox.vgrow="ALWAYS">
                <VBox.margin>
                   <Insets />
                </VBox.margin>
