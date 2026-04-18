@@ -1,6 +1,7 @@
 package cr.ac.una.astroline.service;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import javafx.application.Platform;
 import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.Media;
 
@@ -13,6 +14,8 @@ public class PiperTTSService {
     private final String vocesPath;
     private final String piperPath;
     
+    private MediaPlayer mediaPlayerActivo;
+    
     private static PiperTTSService INSTANCIA;
     
     private PiperTTSService(String vocesPath, String piperPath){
@@ -23,7 +26,7 @@ public class PiperTTSService {
     public static PiperTTSService getInstancia(){
         
         if(INSTANCIA == null) {
-            INSTANCIA = new PiperTTSService("./TTS/Linux/piper-tts/Modelos", detectarPiperPath());
+            INSTANCIA = new PiperTTSService("./TTS/Modelos", detectarPiperPath());
         }
         return INSTANCIA;
         
@@ -80,9 +83,8 @@ public class PiperTTSService {
         );
 
         processBuilder.redirectErrorStream(true);
-
         Process process = processBuilder.start();
-        
+     
         //__ CONVERSION DE TEXTO A AUIDO
         try (OutputStream stdin = process.getOutputStream()) {
             stdin.write(msg.getBytes(StandardCharsets.UTF_8));
@@ -104,18 +106,29 @@ public class PiperTTSService {
     
     // ________________ REPRODUCE EL AUDIO GENERADO 
     private void reproducir(File audioArchivo){
+        if(mediaPlayerActivo != null) mediaPlayerActivo.stop();
         
         Media media = new Media(audioArchivo.toURI().toString());
-        MediaPlayer mediaPlayer = new MediaPlayer(media);
-        mediaPlayer.play();
+        mediaPlayerActivo = new MediaPlayer(media);
+        mediaPlayerActivo.setOnEndOfMedia(() -> audioArchivo.delete());
+        mediaPlayerActivo.play();
         
     }
     
     //________________ SINTENTIZA Y REPRODUCE EL TEXTO 
-    public void hablar(String msg) throws Exception{
-        
-        File audioFile = sintetizar(msg);
-        reproducir(audioFile);
+    public void hablar(String msg){
+        new Thread (()->{
+           try{
+                File audioFile = sintetizar(msg);
+                Platform.runLater(()-> {reproducir(audioFile);});
+               System.out.println("Se reproduce el audio");
+           } 
+           catch(Exception e){
+              System.err.println("[PiperTTS] Error: " + e.getMessage());
+              e.printStackTrace();
+           }
+        }).start();
+
         
     }
 }

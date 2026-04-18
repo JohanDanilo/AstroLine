@@ -4,16 +4,19 @@ package cr.ac.una.astroline.controller;
 import cr.ac.una.astroline.App;
 import cr.ac.una.astroline.model.Empresa;
 import cr.ac.una.astroline.model.Ficha;
+import cr.ac.una.astroline.model.Sucursal;
+import cr.ac.una.astroline.service.ConfiguracionService;
 import cr.ac.una.astroline.util.*;
 import cr.ac.una.astroline.service.FichaService;
 import cr.ac.una.astroline.service.PiperTTSService;
+import cr.ac.una.astroline.service.SucursalService;
 
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import javafx.animation.FadeTransition;
@@ -26,7 +29,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
 import javafx.util.Duration;
 
 /**
@@ -34,25 +36,26 @@ import javafx.util.Duration;
  * Será implementado por todos.
  *
  * */
-public class ProyeccionController extends Controller implements Initializable,DataNotifier.Listener {
+public class ProyeccionController extends Controller implements Initializable, DataNotifier.Listener{
     
-    private FichaService fichas;
-        
-    private String fichaLlamadaId;
+    private FichaService fichas = FichaService.getInstancia();
+    private String sucursalId = ConfiguracionService.getInstancia().getSucursalId();
+    
+    private ZonedDateTime ultimaFechaLlamada;
+    private String ultimaFichaLlamadaId;
     
     private List<Label> lblCodesAtendidas;
     private List<Label> lblEstacionesAtendidas;
     private List<ImageView> imgsPrefAtendidas;
     
-    private List<String> anuncios;
-    int indiceDeAnuncios;
+    private List<String> avisos;
+    private int indiceDeAvisos;
 
     private static final ZoneId ZONA_CR = ZoneId.of("America/Costa_Rica");
-    
-    private static final String FICHAS_ARCHIVO_JSON = "fichas.json";
-    
-    @FXML
-    private BorderPane root;
+    private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter
+                            .ofPattern("dd-MM-yyyy HH:mm:ss");
+    private static final String ARCHIVO_FICHAS = "fichas.json";
+   
     @FXML
     private ImageView imgLogo;
     @FXML
@@ -91,72 +94,67 @@ public class ProyeccionController extends Controller implements Initializable,Da
         setNombreVista("Proyeccion");
         cargarEmpresa();
         cargarHoraYFecha();
-        rotarBarraDeAnuncios();
+        rotarBarraDeAvisos();
     }
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         DataNotifier.subscribe(this);
-        fichas = FichaService.getInstancia();
+        cargadoInicial();
+    }    
+    
+    // ACCION EN CASO DE CAMBIOS EN FICHAS SERVICE 
+    @Override
+    public void onDataChanged(String fileName) {
+        if(!fileName.equals(ARCHIVO_FICHAS)) return;
         
-
-        //____________Ordenar Recursos de UI - Fichas Atendidas        
+        System.out.println("[ProyeccionController] Detectado cambio externo, sincronizando...");
+        
+        Platform.runLater(() -> { actualizarVista(); });
+    }
+    
+    
+    //__________________ CARGADO DE FICHAS
+    private void cargadoInicial(){
+        
         lblCodesAtendidas = List.of(lblAtendiendoCode1, lblAtendiendoCode2, lblAtendiendoCode3, lblAtendiendoCode4);
         lblEstacionesAtendidas = List.of(lblAtendiendoEstacion1, lblAtendiendoEstacion2, lblAtendiendoEstacion3, lblAtendiendoEstacion4);
         imgsPrefAtendidas = List.of(imgAtendiendoPref1, imgAtendiendoPref2, imgAtendiendoPref3, imgAtendiendoPref4);
-        
-        
-        cargarFichas();
-        
-    }    
-    
-    @Override
-    public void onDataChanged(String fileName){
-        
-        if(!FICHAS_ARCHIVO_JSON.equals(fileName)) 
-            return;
-        
-        System.out.println("[ProyeccionController] Detectando Cambio externo, sincronizando . . .");
-
-        Platform.runLater(() -> {
-            cargarFichas();
-        });
+        actualizarVista();
         
     }
     
-    //__________________ CARGADO DE FICHAS
-    private void cargarFichas(){
+    private void actualizarVista(){
+        verificarFichaLlamada();
         limpiarUI();
-        verficarLlamadoDeFicha();
-        cargarFichasAtendidasAUI();
+        cargarFichasAUI();
     }
     
     
     //__________________ CARGAR FICHAS A LA UI    
     
-    private void cargarFichasAtendidasAUI(){
-        int nFichasAMostrar = 4;
-        List<Ficha> filtrada = fichas.obtenerFichasAtendidasParaUI(nFichasAMostrar);
+    private void cargarFichasAUI(){
+        List<Ficha> filtrada = fichas.obtenerFichasParaProyeccion(sucursalId, true, 4);
      
+        if(filtrada == null || filtrada.isEmpty()) return;
+        
         for(int i = 0; i < filtrada.size(); i++)
-            actualizarFicha(filtrada.get(i),
-                    lblCodesAtendidas.get(i),
-                    lblEstacionesAtendidas.get(i), 
-                    imgsPrefAtendidas.get(i));
+            actualizarFicha(filtrada.get(i), i);
     }
     
     
     //__________________ ACTUALIZAR FICHA EN UI SEGUN EL ESTADO
     
-    private void actualizarFicha(Ficha ficha, Label lblCode, Label lblEstacion, ImageView imgPref){
+    private void actualizarFicha(Ficha ficha, int indice){
         if(ficha == null) return;
         
-        lblCode.setText(ficha.getCodigo());
-        lblEstacion.setText(ficha.getEstacionId());
+        lblCodesAtendidas.get(indice).setText(ficha.getCodigo());
+        lblEstacionesAtendidas.get(indice).setText(ficha.getEstacionId());
         
-        imgPref.setVisible(ficha.isPreferencial());
-        imgPref.setManaged(ficha.isPreferencial());
+        imgsPrefAtendidas.get(indice).setVisible(ficha.isPreferencial());
+        imgsPrefAtendidas.get(indice).setManaged(ficha.isPreferencial());
        
     }
+    
     
     //__________________ LIMPIEZA DE UI
     
@@ -164,8 +162,9 @@ public class ProyeccionController extends Controller implements Initializable,Da
         
         for (int i = 0; i < lblCodesAtendidas.size(); i++){
             
-            lblCodesAtendidas.get(i).setText(" Codigo ");
-
+            lblCodesAtendidas.get(i).setText(" Ficha : ");
+            lblEstacionesAtendidas.get(i).setText("Estacion : ");
+            
             imgsPrefAtendidas.get(i).setVisible(false);
             imgsPrefAtendidas.get(i).setManaged(false);
             
@@ -190,52 +189,68 @@ public class ProyeccionController extends Controller implements Initializable,Da
                     imgLogo.setImage(new Image(stream));
                 }
             } catch (Exception e) {
-                System.err.println("[KioskoController] Logo no encontrado: " + e.getMessage());
+                System.err.println("[ProyeccionCrontroller] Logo no encontrado: " + e.getMessage());
             }
         }
         
     }
     
     private void cargarHoraYFecha(){
-        
-        DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-        
+                
         Timeline tiempo = new Timeline (
                 new KeyFrame(Duration.seconds(1), e-> {
                   ZonedDateTime horaActual = ZonedDateTime.now(ZONA_CR);
-                  lblFechaYHora.setText(horaActual.format(formatoFecha));
+                  lblFechaYHora.setText(horaActual.format(FORMATO_FECHA));
                 })
         );
         tiempo.setCycleCount(Timeline.INDEFINITE);
         tiempo.play();
     }
     
-    //________________ ANUNCIO DEL LLAMADO DE UNA FICHA -- PENDIENTE
+    //__________________ VERIFICACION Y CONFRIMACION DE LLAMADO DE FICHAS 
     
-    private void verficarLlamadoDeFicha(){
-        Ficha llamada = FichaService.getInstancia().obtenerFichaLlamada();
-        if(llamada == null) return;
-        if(llamada.getId().equals(fichaLlamadaId))
-            return;
-                
-        fichaLlamadaId = llamada.getId();
-                
-        anunciarLlamadoDeFicha(llamada);
-                 
+    private void verificarFichaLlamada(){
+        
+        List<Ficha> lista = fichas.obtenerFichasParaProyeccion(sucursalId, true ,4);
+        
+        for(int i = 0; i < lista.size() && 
+                lista.get(i).getEstado() != Ficha.Estado.LLAMADA; i++) 
+            anunciarLlamadoDeFicha(lista.get(i));
+            
     }
     
     private void anunciarLlamadoDeFicha(Ficha ficha){
-        try{
-            actualizarFicha(ficha, lblAtendiendoCode1,lblAtendiendoEstacion1, imgAtendiendoPref1);
-            PiperTTSService.getInstancia().hablar(ficha.obtenerMensajeDeLlamada());
-        }
-        catch(Exception e){}
+        
+        if(!puedoVolverALlamar(ficha)) return;
+        
+        ultimaFechaLlamada = LocalDateTime.parse(ficha.getFechaHoraLlamado(),
+                            FORMATO_FECHA).atZone(ZONA_CR);
+        ultimaFichaLlamadaId = ficha.getId();
+               
+        System.out.println("Se ha llamado a la ficha " + ficha.getCodigo());
+        PiperTTSService.getInstancia().hablar(ficha.obtenerMensajeDeLlamada());
+
     }
     
+    private boolean puedoVolverALlamar(Ficha aVerificar){
+        
+        if(aVerificar == null || aVerificar.getFechaHoraLlamado() == null) return false;
+       
+        
+        ZonedDateTime fechaActual =
+            LocalDateTime.parse(aVerificar.getFechaHoraLlamado(), 
+                    FORMATO_FECHA).atZone(ZONA_CR);
+
+        if(aVerificar.getId().equals(ultimaFichaLlamadaId))
+             return ultimaFechaLlamada != null && 
+                     fechaActual.isAfter(ultimaFechaLlamada);
+        
+        return true;
+    }
     
     //________________ Barra de anuncios
     
-    private void rotarBarraDeAnuncios(){
+    private void rotarBarraDeAvisos(){
         anuncios = List.of("Texto 1",
                  "Texto 2",
                  "Texto 3",
@@ -243,7 +258,7 @@ public class ProyeccionController extends Controller implements Initializable,Da
                  "Texto 5"
                 );
         Timeline rotacion = new Timeline(new KeyFrame(Duration.seconds(5), e -> {
-                animarBarraDeAnuncios(anuncios.get(indiceDeAnuncios));
+                animarBarraDeAvisos(anuncios.get(indiceDeAnuncios));
                 indiceDeAnuncios++;
                 
                 if(indiceDeAnuncios >= anuncios.size())
@@ -256,7 +271,7 @@ public class ProyeccionController extends Controller implements Initializable,Da
         rotacion.play();
     }
     
-    private void animarBarraDeAnuncios(String texto){
+    private void animarBarraDeAvisos(String texto){
         
         FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), lblAnuncios);
         fadeOut.setToValue(0);
@@ -270,5 +285,14 @@ public class ProyeccionController extends Controller implements Initializable,Da
         });
         
         fadeOut.play();
+    }
+
+    private void cargarAvisos(){
+        // Ajustar la rotacino de avisos en base a un solo aviso largoan
+        Sucursal sucursal = SucursalService.getInstancia().buscarSucursal(sucursalId);
+        
+        if(sucursal == null) return;
+        
+        sucursal.getTextoAviso();
     }
 }

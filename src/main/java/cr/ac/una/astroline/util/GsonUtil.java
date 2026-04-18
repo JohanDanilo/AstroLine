@@ -122,6 +122,7 @@ public class GsonUtil {
     public static void guardarYPropagar(Object objeto, String nombreArchivo) {
         guardar(objeto, nombreArchivo);
         SyncManager.getInstancia().propagar(nombreArchivo);
+        DataNotifier.notifyChange(nombreArchivo);
     }
     
     public static String toJson(Object objeto) {

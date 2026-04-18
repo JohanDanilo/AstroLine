@@ -5,11 +5,15 @@ import cr.ac.una.astroline.util.DataNotifier;
 import cr.ac.una.astroline.util.GsonUtil;
 import cr.ac.una.astroline.util.Respuesta;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import javafx.application.Platform;
 
 /**
  * Lógica de negocio para la gestión de fichas.
@@ -28,7 +32,7 @@ import java.util.List;
  *
  * @author AstroLine
  */
-public class FichaService{
+public class FichaService implements DataNotifier.Listener{
 
     private static FichaService instancia;
     
@@ -47,7 +51,7 @@ public class FichaService{
     /** Tamaño total del ciclo: 5 letras × 10 números = 50 fichas. */
     private static final int CICLO = LETRAS.length * NUMEROS_POR_LETRA;
 
-    private FichaService() {}
+    private FichaService() {DataNotifier.subscribe(this);}
     
     public static FichaService getInstancia(){
         if(instancia == null)
@@ -100,7 +104,7 @@ public class FichaService{
 
             fichasActivas.add(ficha);
             GsonUtil.guardarYPropagar(fichasActivas, ARCHIVO_FICHAS);
-
+            
             return new Respuesta(true,
                     "Ficha generada: " + ficha.getCodigo(),
                     "", "ficha", ficha);
@@ -158,7 +162,7 @@ public class FichaService{
      * @param fichaId id de la ficha a actualizar
      * @param estado  nuevo estado
      */
-    public Respuesta actualizarEstado(String fichaId, Ficha.Estado estado) {
+    public Respuesta actualizarEstado(String fichaId, Ficha.Estado estado, String estacionId) {
         try {
             List<Ficha> fichas = GsonUtil.leerLista(ARCHIVO_FICHAS, Ficha.class);
 
@@ -167,13 +171,14 @@ public class FichaService{
                     .findFirst()
                     .orElse(null);
 
-            if (encontrada == null) {
+            if (encontrada == null) 
                 return new Respuesta(false, "Ficha no encontrada.", "");
-            }
-
+            
+            if(estado == Ficha.Estado.LLAMADA && estacionId != null)
+                encontrada.registrarLlamado(estacionId);
+            
             encontrada.setEstado(estado);
-            GsonUtil.guardar(fichas, ARCHIVO_FICHAS);
-
+            GsonUtil.guardarYPropagar(fichas, ARCHIVO_FICHAS);
             return new Respuesta(true, "Estado actualizado.", "", "ficha", encontrada);
 
         } catch (Exception e) {
@@ -239,22 +244,31 @@ public class FichaService{
     }
     
     
-    //METODOOS PARA PROYECCION 
-    
+    //METODO PARA PROYECCION 
 
-    public List<Ficha> obtenerFichasAtendidasParaUI(int nFichas){
+    public List<Ficha> obtenerFichasParaProyeccion(String sucursalId, boolean esOrdenDesendente ,int nFichas){
         
         List<Ficha> listaActual = (List<Ficha>)obtenerFichasActivas().getResultado("lista");
+        if(listaActual == null || listaActual.isEmpty()) return new ArrayList<>();
         List<Ficha> listaAtendidas = new ArrayList<>();
         
         for(Ficha actual : listaActual)
-            if(actual.getEstado() == Ficha.Estado.ATENDIDA)
+            if((actual.getEstado() == Ficha.Estado.ATENDIDA 
+                    || actual.getEstado() == Ficha.Estado.LLAMADA) 
+                    && actual.getSucursalId().equals(sucursalId))
                 listaAtendidas.add(actual);
         
-        listaAtendidas.sort((ficha1, ficha2) -> {
-            
-          ZonedDateTime timeFicha1 = ZonedDateTime.parse(ficha1.getFechaHoraLlamado());
-          ZonedDateTime timeFicha2 = ZonedDateTime.parse(ficha2.getFechaHoraLlamado());
+         listaAtendidas.sort((ficha1, ficha2) -> {
+          if(esOrdenDesendente){
+            if(ficha1.getFechaHoraLlamado() == null) return 1;
+            if(ficha2.getFechaHoraLlamado() == null) return -1; 
+          }
+          else {
+            if(ficha1.getFechaHoraLlamado() == null) return -1;
+            if(ficha2.getFechaHoraLlamado() == null) return 1; 
+          }
+          ZonedDateTime timeFicha1 = LocalDateTime.parse(ficha1.getFechaHoraLlamado()).atZone(ZONA_CR);
+          ZonedDateTime timeFicha2 = LocalDateTime.parse(ficha2.getFechaHoraLlamado()).atZone(ZONA_CR);
           
           return timeFicha2.compareTo(timeFicha1);
           
@@ -267,15 +281,11 @@ public class FichaService{
         
         return ordenada;
     }
-    
-    public Ficha obtenerFichaLlamada(){
-        List<Ficha> listaActual = (List<Ficha>) obtenerFichasActivas().getResultado("lista");
+
+    @Override
+    public void onDataChanged(String fileName) {
+        if(!fileName.equals(ARCHIVO_FICHAS)) return;
         
-         for(Ficha actual : listaActual)
-            if(actual.getEstado() == Ficha.Estado.LLAMADA)
-                return actual;
-        
-        return null;
+        System.out.println("[FichaService] Detectado cambio externo, sincronizando...");
     }
-    
 }
