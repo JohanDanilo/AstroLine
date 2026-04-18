@@ -267,8 +267,9 @@ public class FichaService implements DataNotifier.Listener{
             if(ficha1.getFechaHoraLlamado() == null) return -1;
             if(ficha2.getFechaHoraLlamado() == null) return 1; 
           }
-          ZonedDateTime timeFicha1 = LocalDateTime.parse(ficha1.getFechaHoraLlamado()).atZone(ZONA_CR);
-          ZonedDateTime timeFicha2 = LocalDateTime.parse(ficha2.getFechaHoraLlamado()).atZone(ZONA_CR);
+          DateTimeFormatter formatoParaComparar = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+          ZonedDateTime timeFicha1 = LocalDateTime.parse(ficha1.getFechaHoraLlamado(),formatoParaComparar).atZone(ZONA_CR);
+          ZonedDateTime timeFicha2 = LocalDateTime.parse(ficha2.getFechaHoraLlamado(),formatoParaComparar).atZone(ZONA_CR);
           
           return timeFicha2.compareTo(timeFicha1);
           
