@@ -24,7 +24,7 @@ public class Ficha {
     public enum Estado {
         ESPERANDO,  // asignada en el Kiosko, esperando ser llamada
         LLAMADA,    // el funcionario la llamó
-        //ATENDIDA,   // ya fue atendida
+        ATENDIDA,   // ya fue atendida
         AUSENTE     // fue llamada pero el cliente no se presentó
     }
 

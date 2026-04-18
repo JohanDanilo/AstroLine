@@ -11,6 +11,7 @@ import cr.ac.una.astroline.util.Respuesta;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.css.themes.MFXThemeManager;
 import io.github.palexdev.materialfx.css.themes.Themes;
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -24,6 +25,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -35,6 +37,10 @@ import javafx.stage.WindowEvent;
 public class VentanaFuncionarioController extends Controller implements Initializable {
 
     @FXML
+    private ImageView imagenCliente;
+    @FXML
+    private ImageView logoEmpresa;
+    @FXML
     private MFXButton btnRegistroClientes;
     @FXML
     private MFXButton btnSiguienteFicha;
@@ -43,7 +49,11 @@ public class VentanaFuncionarioController extends Controller implements Initiali
     @FXML
     private MFXButton btnSiguientePreferencial;
     @FXML
+    private MFXButton btnAusente;
+    @FXML
     private Label nombreEmpresa;
+    @FXML
+    private Label fichasEnEspera;
     @FXML
     private Label lblSucursal;
     @FXML
@@ -69,14 +79,26 @@ public class VentanaFuncionarioController extends Controller implements Initiali
     @Override
     public void initialize() {
         setNombreVista("Funcionario");
+        actualizarContadorDeFichasEnEspera();
     }
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {}
-
-    // -------------------------------------------------------------------------
-    // REPETIR FICHA
-    // -------------------------------------------------------------------------
+    
+      private void actualizarContadorDeFichasEnEspera() {
+        Respuesta respuesta = fichaService.obtenerFichasActivas();
+        if (!respuesta.getEstado()) {
+            fichasEnEspera.setText("0");
+            return;
+        }
+ 
+        List<Ficha> activas = (List<Ficha>) respuesta.getResultado("lista");
+        long cantidad = activas.stream()
+                .filter(Ficha::estaEsperando)
+                .count();
+ 
+        fichasEnEspera.setText(String.valueOf(cantidad));
+    }
 
     @FXML
     private void onRepetirFicha(ActionEvent event) {
@@ -89,21 +111,14 @@ public class VentanaFuncionarioController extends Controller implements Initiali
         cargarFicha(fichaActual);
     }
 
-    // -------------------------------------------------------------------------
-    // CARGA DE FICHA
-    // -------------------------------------------------------------------------
-
-    /**
-     * Recibe la ficha llamada y actualiza todos los labels de la vista.
-     */
     public void cargarFicha(Ficha ficha) {
         this.fichaActual = ficha;
 
         lblLetraFicha.setText(fichaService.getCodigoLetra(ficha));
         lblNumeroFicha.setText(ficha.getNumeroFormateado());
         lblNombreTramiteCliente.setText(fichaService.getNombreTramite(ficha));
-        lblSucursal.setText(ficha.getSucursalId());
-        lblEstacion.setText(ficha.getEstacionId() != null ? ficha.getEstacionId() : "-");
+//        lblSucursal.setText(ficha.getSucursalId());
+//        lblEstacion.setText(ficha.getEstacionId() != null ? ficha.getEstacionId() : "-");
         lblValidacionPreferencial.setText(ficha.isPreferencial() ? "Preferencial" : "Regular");
 
         String cedula = ficha.getCedulaCliente();
@@ -113,12 +128,10 @@ public class VentanaFuncionarioController extends Controller implements Initiali
             lblNumeroCedula.setText("No identificado");
             lblNombreCliente.setText("-");
             lblApellidosCliente.setText("-");
+            limpiarFotoCliente();
         }
     }
 
-    /**
-     * Busca el cliente por cédula y rellena los labels de nombre y apellidos.
-     */
     private void cargarDatosCliente(String cedula) {
         lblNumeroCedula.setText(cedula);
 
@@ -127,22 +140,65 @@ public class VentanaFuncionarioController extends Controller implements Initiali
         if (cliente != null && !cliente.isEliminado()) {
             lblNombreCliente.setText(cliente.getNombre());
             lblApellidosCliente.setText(cliente.getApellidos());
+             cargarFotoCliente(cliente.getFotoPath());
         } else {
             lblNombreCliente.setText("-");
             lblApellidosCliente.setText("-");
+            limpiarFotoCliente();
         }
     }
-
-    // -------------------------------------------------------------------------
-    // SIGUIENTE FICHA
-    // -------------------------------------------------------------------------
-
+    
+/**************************************************************/
+    
+ private void cargarFotoCliente(String fotoPath) {
+        if (fotoPath == null || fotoPath.isBlank()) {
+            limpiarFotoCliente();
+            return;
+        }
+        
+         File archivo = new File(fotoPath);
+        if (archivo.exists()) {
+            try {
+                Image imagen = new Image(archivo.toURI().toString(), true);
+                imagenCliente.setImage(imagen);
+                return;
+            } catch (Exception ex) {
+                java.util.logging.Logger.getLogger(VentanaFuncionarioController.class.getName())
+                        .log(Level.WARNING, "No se pudo cargar foto" + fotoPath, ex);
+            }
+        }
+        URL recurso = App.class.getResource(fotoPath);
+        if (recurso != null) {
+            try {
+                Image imagen = new Image(recurso.toExternalForm(), true);
+                imagenCliente.setImage(imagen);
+                return;
+            } catch (Exception ex) {
+                java.util.logging.Logger.getLogger(VentanaFuncionarioController.class.getName())
+                        .log(Level.WARNING, "No se pudo cargar foto " + fotoPath, ex);
+            }
+        }
+ 
+        // 3. Si ninguno funcionó, dejar el ImageView vacío
+        limpiarFotoCliente();
+    }
+    
+    
+   private void limpiarFotoCliente() {
+        imagenCliente.setImage(null);
+    }
+    
+    
+    
+/**************************************************************/
     @FXML
     private void onSiguienteFicha(ActionEvent event) {
+         marcarFichaActualAtendida();
         Ficha siguiente = obtenerSiguienteFicha();
 
         if (siguiente == null) {
             limpiarLabels("Sin fichas en espera");
+            actualizarContadorDeFichasEnEspera();
             return;
         }
 
@@ -150,6 +206,7 @@ public class VentanaFuncionarioController extends Controller implements Initiali
         fichaService.actualizarEstado(siguiente.getId(), Ficha.Estado.LLAMADA);
 
         cargarFicha(siguiente);
+        actualizarContadorDeFichasEnEspera();
     }
 
     private Ficha obtenerSiguienteFicha() {
@@ -163,16 +220,15 @@ public class VentanaFuncionarioController extends Controller implements Initiali
                 .orElse(null);
     }
 
-    // -------------------------------------------------------------------------
-    // SIGUIENTE PREFERENCIAL
-    // -------------------------------------------------------------------------
 
     @FXML
     private void onSiguientePreferencial(ActionEvent event) {
+         marcarFichaActualAtendida();
         Ficha siguiente = obtenerSiguienteFichaPreferencial();
 
         if (siguiente == null) {
             limpiarLabels("Sin fichas preferenciales");
+            actualizarContadorDeFichasEnEspera();
             return;
         }
 
@@ -181,6 +237,7 @@ public class VentanaFuncionarioController extends Controller implements Initiali
         fichaService.actualizarEstado(siguiente.getId(), Ficha.Estado.LLAMADA);
 
         cargarFicha(siguiente);
+        actualizarContadorDeFichasEnEspera();
     }
 
     private Ficha obtenerSiguienteFichaPreferencial() {
@@ -209,16 +266,13 @@ public class VentanaFuncionarioController extends Controller implements Initiali
         lblNumeroCedula.setText("-");
         lblNombreCliente.setText("-");
         lblApellidosCliente.setText("-");
+         limpiarFotoCliente();
     }
 
     // -------------------------------------------------------------------------
     // NAVEGACIÓN
     // -------------------------------------------------------------------------
 
-    /**
-     * Abre la ventana de selección de ficha e inyecta este controller como
-     * padre para que pueda recibir la ficha elegida de vuelta.
-     */
     @FXML
     private void onSeleccionarFicha(ActionEvent event) {
          try {
@@ -253,6 +307,23 @@ public class VentanaFuncionarioController extends Controller implements Initiali
     
        // FlowController.getInstance().goViewInWindow("FuncionarioSeleccionarFichaView");
     }
+    
+    @FXML
+    private void onMarcarClienteAusente(ActionEvent event) {
+          if (fichaActual == null) return;
+ 
+        fichaService.actualizarEstado(fichaActual.getId(), Ficha.Estado.AUSENTE);
+        fichaActual.setEstado(Ficha.Estado.AUSENTE);
+ 
+        limpiarLabels("Cliente ausente");
+        actualizarContadorDeFichasEnEspera();
+    }
+     private void marcarFichaActualAtendida() {
+        if (fichaActual != null && fichaActual.getEstado() == Ficha.Estado.LLAMADA) {
+            fichaService.actualizarEstado(fichaActual.getId(), Ficha.Estado.ATENDIDA);
+            fichaActual.setEstado(Ficha.Estado.ATENDIDA);
+        }
+    }
 
     @FXML
     private void onRegistroClientes(ActionEvent event) {
@@ -265,98 +336,3 @@ public class VentanaFuncionarioController extends Controller implements Initiali
         getStage().close();
     }
 }
-//
-//import cr.ac.una.astroline.model.Ficha;
-//import cr.ac.una.astroline.service.FichaService;
-//import cr.ac.una.astroline.util.FlowController;
-//import cr.ac.una.astroline.util.Respuesta;
-//import io.github.palexdev.materialfx.controls.MFXButton;
-//import io.github.palexdev.materialfx.controls.MFXComboBox;
-//import java.net.URL;
-//import java.util.List;
-//import java.util.ResourceBundle;
-//import java.util.stream.Collectors;
-//import javafx.collections.FXCollections;
-//import javafx.event.ActionEvent;
-//import javafx.fxml.FXML;
-//import javafx.fxml.Initializable;
-//
-///**
-// *
-// * @author USUARIO UNA PZ
-// */
-//
-//public class FuncionarioSeleccionarFichaController extends Controller implements Initializable {
-//
-//    @FXML
-//    private MFXComboBox<Ficha> cmbFichas;
-//    @FXML
-//    private MFXButton btnLlamarFichaSeleccionada ;
-//    
-//    private final FichaService fichaService = new FichaService();
-//    
-//    @Override
-//    public void initialize() {
-//    setNombreVista("FuncionarioSeleccionarFicha");
-//        cargarFichasEnEspera();
-//    }
-//
-//    @Override
-//    public void initialize(URL url, ResourceBundle rb) {}
-//
-//    
-//    private void cargarFichasEnEspera() {
-//        Respuesta respuesta = fichaService.obtenerFichasActivas();
-//        if (!respuesta.getEstado()) return;
-// 
-//        List<Ficha> activas = (List<Ficha>) respuesta.getResultado("lista");
-//        List<Ficha> enEspera = activas.stream()
-//                .filter(Ficha::estaEsperando)
-//                .collect(Collectors.toList());
-// 
-//        cmbFichas.setItems(FXCollections.observableArrayList(enEspera));
-// 
-//        // Muestra texto legible en el combo usando el código + trámite + tipo
-//        cmbFichas.setConverter(new javafx.util.StringConverter<Ficha>() {
-//            @Override
-//            public String toString(Ficha ficha) {
-//                if (ficha == null) return "";
-//                String tipo = ficha.isPreferencial() ? " ★ Preferencial" : "";
-//                return ficha.getCodigo() + " | " + ficha.getTramiteId() + tipo;
-//            }
-// 
-//            @Override
-//            public Ficha fromString(String string) {
-//                return null; // No se necesita conversión inversa
-//            }
-//        });
-//    }
-//    @FXML
-//    private void OnLlamarFichaSeleccionada(ActionEvent event) {
-//        Ficha seleccionada = cmbFichas.getValue();
-// 
-//        if (seleccionada == null) {
-//            return; // Nada seleccionado, no hace nada
-//        }
-// 
-//        // Registrar llamado y persistir estado
-//        seleccionada.registrarLlamado(seleccionada.getEstacionId() != null
-//                ? seleccionada.getEstacionId() : "EST-01");
-//        fichaService.actualizarEstado(seleccionada.getId(), Ficha.Estado.LLAMADA);
-// 
-//        // Enviar la ficha a VentanaFuncionario y navegar hacia ella
-//        VentanaFuncionarioController ventana =
-//                (VentanaFuncionarioController) FlowController.getInstance()
-//                        .getController("FuncionarioView");
-// 
-//        if (ventana != null) {
-//            ventana.cargarFicha(seleccionada);
-//        }
-// 
-//        // Cerrar esta ventana y volver a VentanaFuncionario
-//        FlowController.getInstance().goViewInWindow("FuncionarioView");
-//        getStage().close();
-//    }
-//    
-//    
-//}
