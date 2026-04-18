@@ -24,7 +24,7 @@ public class Ficha {
     public enum Estado {
         ESPERANDO,  // asignada en el Kiosko, esperando ser llamada
         LLAMADA,    // el funcionario la llamó
-        ATENDIDA,   // ya fue atendida
+        //ATENDIDA,   // ya fue atendida
         AUSENTE     // fue llamada pero el cliente no se presentó
     }
 
@@ -135,7 +135,7 @@ public class Ficha {
 
     public String getFechaHoraLlamado() { return fechaHoraLlamado; }
     public void setFechaHoraLlamado(String fechaHoraLlamado) { this.fechaHoraLlamado = fechaHoraLlamado; }
-
+    
     @Override
     public String toString() {
         return "Ficha{codigo=" + getCodigo() +

@@ -8,20 +8,20 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane fx:id="root" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.AdminController">
+<BorderPane fx:id="root" prefHeight="600.0" prefWidth="800.0" styleClass="jfx-root" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.AdminController">
    <left>
       <VBox alignment="CENTER" prefHeight="800.0" prefWidth="156.0" spacing="10.0" BorderPane.alignment="CENTER">
          <children>
-            <MFXButton fx:id="btnConfiguracionGeneral" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onActionBtnGeneral" prefHeight="0.0" prefWidth="136.0" text="Config. General" VBox.vgrow="ALWAYS" />
-            <MFXButton fx:id="btnSucursales" layoutX="20.0" layoutY="20.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onBtnSucursales" prefHeight="0.0" prefWidth="136.0" text="Sucursales" VBox.vgrow="ALWAYS" />
-            <MFXButton fx:id="btnTramites" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onBtnTramites" text="Tramites" VBox.vgrow="ALWAYS" />
-            <MFXButton fx:id="btnClientes" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onActionBtnVerClientes" prefWidth="67.0" text="Clientes" VBox.vgrow="ALWAYS" />
+            <MFXButton fx:id="btnConfiguracionGeneral" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onActionBtnGeneral" prefHeight="0.0" prefWidth="136.0" styleClass="jfx-btn-secundario" text="Config. General" VBox.vgrow="ALWAYS" />
+            <MFXButton fx:id="btnSucursales" layoutX="20.0" layoutY="20.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onBtnSucursales" prefHeight="0.0" prefWidth="136.0" styleClass="jfx-btn-secundario" text="Sucursales" VBox.vgrow="ALWAYS" />
+            <MFXButton fx:id="btnTramites" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onBtnTramites" styleClass="jfx-btn-secundario" text="Tramites" VBox.vgrow="ALWAYS" />
+            <MFXButton fx:id="btnClientes" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onActionBtnVerClientes" prefWidth="67.0" styleClass="jfx-btn-secundario" text="Clientes" VBox.vgrow="ALWAYS" />
             <MFXButton fx:id="btnRankings" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onBtnRankings" text="Rankings" VBox.vgrow="ALWAYS">
                <VBox.margin>
                   <Insets />
                </VBox.margin>
             </MFXButton>
-            <MFXButton fx:id="btnConfigEstacion" layoutX="10.0" layoutY="411.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onBtnConfigEstacion" text="Config. Estación" textOverrun="CENTER_ELLIPSIS" VBox.vgrow="ALWAYS" />
+            <MFXButton fx:id="btnConfigEstacion" layoutX="10.0" layoutY="411.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onBtnConfigEstacion" styleClass="jfx-btn-secundario" text="Config. Estación" textOverrun="CENTER_ELLIPSIS" VBox.vgrow="ALWAYS" />
          </children>
          <padding>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -32,10 +32,10 @@
       <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER" />
    </center>
    <top>
-      <HBox alignment="CENTER_LEFT" prefHeight="51.0" prefWidth="647.0" spacing="10.0" BorderPane.alignment="CENTER">
+      <HBox alignment="CENTER_LEFT" prefHeight="51.0" prefWidth="647.0" spacing="5.0" stylesheets="@Styles.css" BorderPane.alignment="CENTER">
          <children>
-            <ImageView fx:id="logoEmpresa" fitHeight="70.0" fitWidth="70.0" pickOnBounds="true" preserveRatio="true" />
-            <Label fx:id="nombreEmpresa" text="Nombre de la empresa" />
+            <ImageView fx:id="logoEmpresa" fitHeight="42.0" fitWidth="47.0" pickOnBounds="true" preserveRatio="true" />
+            <Label fx:id="nombreEmpresa" styleClass="jfx-label-titulo" text="Nombre de la empresa" />
          </children>
          <padding>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />

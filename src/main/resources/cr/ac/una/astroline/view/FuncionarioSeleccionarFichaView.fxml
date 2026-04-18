@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import io.github.palexdev.materialfx.controls.MFXButton?>
+<?import io.github.palexdev.materialfx.controls.MFXComboBox?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="88.0" prefWidth="225.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.FuncionarioSeleccionarFichaController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="117.0" prefWidth="225.0" styleClass="jfx-root" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.FuncionarioSeleccionarFichaController">
    <children>
       <VBox alignment="CENTER" prefHeight="128.0" prefWidth="288.0" spacing="5.0" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="7.0" AnchorPane.rightAnchor="7.0" AnchorPane.topAnchor="7.0">
          <children>
-            <HBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="106.0" prefWidth="284.0" spacing="10.0" VBox.vgrow="ALWAYS">
-               <children>
-                  <ComboBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="150.0" prefWidth="150.0" promptText="Ficha" HBox.hgrow="ALWAYS" />
-               </children>
+            <HBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="13.0" prefWidth="211.0" spacing="10.0" VBox.vgrow="ALWAYS">
                <padding>
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </padding>
+               <children>
+                  <MFXComboBox fx:id="cmbFichas" prefHeight="5.0" prefWidth="181.0" styleClass="combo-neon" />
+               </children>
             </HBox>
-            <MFXButton maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="151.0" text="Llamar Ficha" VBox.vgrow="ALWAYS" />
+            <MFXButton fx:id="btnLlamarFichaSeleccionada" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#OnLlamarFichaSeleccionada" prefHeight="31.0" prefWidth="177.0" styleClass="jfx-btn-secundario" text="Llamar Ficha" VBox.vgrow="ALWAYS" />
          </children>
       </VBox>
    </children>
