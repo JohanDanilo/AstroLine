@@ -23,6 +23,7 @@ import javafx.animation.FadeTransition;
 
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
+import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -48,8 +49,7 @@ public class ProyeccionController extends Controller implements Initializable, D
     private List<Label> lblEstacionesAtendidas;
     private List<ImageView> imgsPrefAtendidas;
     
-    private List<String> avisos;
-    private int indiceDeAvisos;
+    private String textoAviso;
 
     private static final ZoneId ZONA_CR = ZoneId.of("America/Costa_Rica");
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter
@@ -137,7 +137,7 @@ public class ProyeccionController extends Controller implements Initializable, D
      
         if(filtrada == null || filtrada.isEmpty()) return;
         
-        for(int i = 0; i < filtrada.size(); i++)
+        for(int i =0 ;i < filtrada.size(); i++)
             actualizarFicha(filtrada.get(i), i);
     }
     
@@ -211,7 +211,7 @@ public class ProyeccionController extends Controller implements Initializable, D
     
     private void verificarFichaLlamada(){
         
-        List<Ficha> lista = fichas.obtenerFichasParaProyeccion(sucursalId, true ,4);
+        List<Ficha> lista = fichas.obtenerFichasParaProyeccion(sucursalId, false ,4);
         
         for(int i = 0; i < lista.size() && 
                 lista.get(i).getEstado() != Ficha.Estado.LLAMADA; i++) 
@@ -228,7 +228,6 @@ public class ProyeccionController extends Controller implements Initializable, D
         ultimaFichaLlamadaId = ficha.getId();
                
         System.out.println("Se ha llamado a la ficha " + ficha.getCodigo());
-        PiperTTSService.getInstancia().hablar(ficha.obtenerMensajeDeLlamada());
 
     }
     
@@ -251,48 +250,33 @@ public class ProyeccionController extends Controller implements Initializable, D
     //________________ Barra de anuncios
     
     private void rotarBarraDeAvisos(){
-        avisos = List.of("Texto 1",
-                 "Texto 2",
-                 "Texto 3",
-                 "Texto 4",
-                 "Texto 5"
-                );
-        Timeline rotacion = new Timeline(new KeyFrame(Duration.seconds(5), e -> {
-                animarBarraDeAvisos(avisos.get(indiceDeAvisos));
-                indiceDeAvisos++;
-                
-                if(indiceDeAvisos >= avisos.size())
-                    indiceDeAvisos = 0;
-                }
-            )
-        );
+        
+        textoAviso = SucursalService.getInstancia().buscarSucursal(sucursalId).getTextoAviso();
+        
+        if (textoAviso == null || textoAviso.isBlank()) return;
+        
+        Timeline rotacion = new Timeline(new KeyFrame(Duration.seconds(20), e -> {
+                animarTextoDezplazado();   
+          }
+        ));
 
         rotacion.setCycleCount(Timeline.INDEFINITE);
         rotacion.play();
     }
     
-    private void animarBarraDeAvisos(String texto){
-        
-        FadeTransition fadeOut = new FadeTransition(Duration.seconds(0.5), lblAnuncios);
-        fadeOut.setToValue(0);
+    private void animarTextoDezplazado(){
+        lblAnuncios.setText(textoAviso);
+        lblAnuncios.setText(sucursalId);
     
-        fadeOut.setOnFinished(a ->{
-            lblAnuncios.setText(texto);
-            
-            FadeTransition fadeIn = new FadeTransition(Duration.seconds(0.5), lblAnuncios);
-            fadeIn.setToValue(1);
-            fadeIn.play();
-        });
+        lblAnuncios.setTranslateX(800);
         
-        fadeOut.play();
+        TranslateTransition mov = new TranslateTransition(Duration.seconds(10), lblAnuncios);
+        
+        mov.setFromX(800);
+        mov.setToX(-800);
+        
+        mov.setCycleCount(TranslateTransition.INDEFINITE);
+        mov.play();
     }
 
-    private void cargarAvisos(){
-        // Ajustar la rotacino de avisos en base a un solo aviso largoan
-        Sucursal sucursal = SucursalService.getInstancia().buscarSucursal(sucursalId);
-        
-        if(sucursal == null) return;
-        
-        sucursal.getTextoAviso();
-    }
 }
