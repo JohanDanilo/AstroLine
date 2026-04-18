@@ -251,18 +251,18 @@ public class ProyeccionController extends Controller implements Initializable, D
     //________________ Barra de anuncios
     
     private void rotarBarraDeAvisos(){
-        anuncios = List.of("Texto 1",
+        avisos = List.of("Texto 1",
                  "Texto 2",
                  "Texto 3",
                  "Texto 4",
                  "Texto 5"
                 );
         Timeline rotacion = new Timeline(new KeyFrame(Duration.seconds(5), e -> {
-                animarBarraDeAvisos(anuncios.get(indiceDeAnuncios));
-                indiceDeAnuncios++;
+                animarBarraDeAvisos(avisos.get(indiceDeAvisos));
+                indiceDeAvisos++;
                 
-                if(indiceDeAnuncios >= anuncios.size())
-                    indiceDeAnuncios = 0;
+                if(indiceDeAvisos >= avisos.size())
+                    indiceDeAvisos = 0;
                 }
             )
         );
