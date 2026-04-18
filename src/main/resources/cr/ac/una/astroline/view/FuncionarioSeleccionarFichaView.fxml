@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="117.0" prefWidth="225.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.FuncionarioSeleccionarFichaController">
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="117.0" prefWidth="225.0" styleClass="jfx-root" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.FuncionarioSeleccionarFichaController">
    <children>
       <VBox alignment="CENTER" prefHeight="128.0" prefWidth="288.0" spacing="5.0" AnchorPane.bottomAnchor="7.0" AnchorPane.leftAnchor="7.0" AnchorPane.rightAnchor="7.0" AnchorPane.topAnchor="7.0">
          <children>
@@ -16,10 +16,10 @@
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </padding>
                <children>
-                  <MFXComboBox fx:id="cmbFichas" prefHeight="5.0" prefWidth="181.0" />
+                  <MFXComboBox fx:id="cmbFichas" prefHeight="5.0" prefWidth="181.0" styleClass="combo-neon" />
                </children>
             </HBox>
-            <MFXButton maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#OnLlamarFicha" prefHeight="25.0" prefWidth="151.0" text="Llamar Ficha" VBox.vgrow="ALWAYS" />
+            <MFXButton fx:id="btnLlamarFichaSeleccionada" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#OnLlamarFichaSeleccionada" prefHeight="31.0" prefWidth="177.0" styleClass="jfx-btn-secundario" text="Llamar Ficha" VBox.vgrow="ALWAYS" />
          </children>
       </VBox>
    </children>

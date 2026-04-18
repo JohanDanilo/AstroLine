@@ -47,8 +47,6 @@ public class LoginFuncionarioController extends Controller implements Initializa
     private void onBtnIngresarLoginFuncionario(ActionEvent event) {
         String username = txtUsername.getText().trim();
         String password = txtPassword.getText().trim();
-        FlowController.getInstance().goMain("VentanaFuncionario");
-        getStage().close();
 
         // Validación de campos vacíos
         if (username.isEmpty() || password.isEmpty()) {
@@ -75,7 +73,7 @@ public class LoginFuncionarioController extends Controller implements Initializa
                 FlowController.getInstance().goMain("Admin");
             } else {
                 // Modo funcionario — tanto admins como funcionarios normales pueden entrar
-                FlowController.getInstance().goMain("Funcionario");
+                FlowController.getInstance().goMain("VentanaFuncionario");
             }
 
             getStage().close();
