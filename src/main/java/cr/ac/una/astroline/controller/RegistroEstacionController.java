@@ -1,6 +1,7 @@
 package cr.ac.una.astroline.controller;
 
 import cr.ac.una.astroline.model.Estacion;
+import cr.ac.una.astroline.service.ConfiguracionService;
 import cr.ac.una.astroline.service.SucursalService;
 import cr.ac.una.astroline.util.AppContext;
 import cr.ac.una.astroline.util.Respuesta;
@@ -44,7 +45,8 @@ public class RegistroEstacionController extends Controller implements Initializa
     @FXML private MFXButton    btnAgregar;
     @FXML private MFXButton    btnCancelar;
 
-    private final SucursalService sucursalService = SucursalService.getInstancia();
+    private final SucursalService      sucursalService      = SucursalService.getInstancia();
+    private final ConfiguracionService configuracionService = ConfiguracionService.getInstancia();
 
     private String   sucursalId;
     private Estacion estacionParaEditar;
@@ -157,10 +159,41 @@ public class RegistroEstacionController extends Controller implements Initializa
         Respuesta respuesta = sucursalService.actualizarEstacion(sucursalId, estacionParaEditar);
 
         if (respuesta.getEstado()) {
+            // Si la estación editada es la configurada en este equipo, sincronizar configuracion.json
+            sincronizarConfiguracionSiCorresponde(estacionParaEditar);
             AppContext.getInstance().set("ultimaEstacionAgregadaId", estacionParaEditar.getId());
             getStage().close();
         } else {
             mostrarAlerta(Alert.AlertType.ERROR, "Error al guardar", respuesta.getMensaje());
+        }
+    }
+
+    /**
+     * Si la estación editada coincide con la configurada en este equipo,
+     * actualiza configuracion.json para mantener nombre, tramiteIds y preferencial
+     * sincronizados con sucursales.json.
+     *
+     * guardarNueva no necesita esta lógica porque una estación recién creada
+     * no puede ser la estación configurada todavía.
+     *
+     * @param estacion estación ya actualizada en sucursales.json
+     */
+    private void sincronizarConfiguracionSiCorresponde(Estacion estacion) {
+        String estacionConfigurada = configuracionService.getEstacionId();
+        if (estacion == null || estacionConfigurada == null) return;
+        if (!estacion.getId().equals(estacionConfigurada)) return;
+
+        Respuesta respuesta = configuracionService.guardarConfiguracion(
+                configuracionService.getSucursalId(),
+                estacion.getId(),
+                new java.util.ArrayList<>(estacion.getTramiteIds()),
+                estacion.isPreferencial()
+        );
+
+        if (!respuesta.getEstado()) {
+            System.err.println("[RegistroEstacionController] "
+                    + "No se pudo sincronizar configuracion.json: "
+                    + respuesta.getMensaje());
         }
     }
 

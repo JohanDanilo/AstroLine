@@ -21,19 +21,20 @@ public class ConfiguracionLocal {
 
     // ── Identidad de la máquina ───────────────────────────────────────────────
     private String sucursalId;
-    private String estacionId; // null si esta máquina es un Kiosko o la pantalla de proyección
 
-    // ── Snapshot reactivo (se actualiza automáticamente desde SucursalService) ─
-    private List<String> tramiteIds; // IDs de trámites asignados a esta estación
+    private String estacionId; // null si esta máquina es un Kiosko o la pantalla de proyeccion
+    private List<String> tramiteIds;
+    private boolean preferencial;
 
     public ConfiguracionLocal() {
         this.tramiteIds = new ArrayList<>();
     }
 
-    public ConfiguracionLocal(String sucursalId, String estacionId) {
-        this.sucursalId = sucursalId;
-        this.estacionId = estacionId;
-        this.tramiteIds = new ArrayList<>();
+    public ConfiguracionLocal(String sucursalId, String estacionId, List<String> tramiteIds, boolean preferencial) {
+        this.sucursalId  = sucursalId;
+        this.estacionId  = estacionId;
+        this.tramiteIds  = tramiteIds != null ? tramiteIds : new ArrayList<>();
+        this.preferencial = preferencial;
     }
 
     /**
@@ -51,15 +52,17 @@ public class ConfiguracionLocal {
 
     public String getEstacionId() { return estacionId; }
     public void setEstacionId(String estacionId) { this.estacionId = estacionId; }
-
-    // ── Snapshot ──────────────────────────────────────────────────────────────
-
+    
     public List<String> getTramiteIds() {
-        return tramiteIds != null ? tramiteIds : new ArrayList<>();
+        return tramiteIds;
     }
+
     public void setTramiteIds(List<String> tramiteIds) {
         this.tramiteIds = tramiteIds != null ? tramiteIds : new ArrayList<>();
     }
+
+    public boolean isPreferencial() { return preferencial; }
+    public void setPreferencial(boolean preferencial) { this.preferencial = preferencial; }
 
     @Override
     public String toString() {
