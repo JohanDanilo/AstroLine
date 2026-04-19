@@ -336,7 +336,7 @@ public class MantenimientoSucursalController extends Controller implements Initi
                 tramitesAsignados.remove(tramite);
                 tramitesDisponibles.add(tramite);
 
-                // 🔥 CLAVE: trabajar con copia
+                // CLAVE: trabajar con copia
                 Estacion copia = estacionSeleccionada.clonarEstacion(estacionSeleccionada);
                 copia.quitarTramite(tramiteId);
 
