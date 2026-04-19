@@ -135,16 +135,16 @@
 }
 .jfx-btn-terciario:pressed {
     -fx-background-color: linear-gradient(to right, #06b6d4, #4338ca);
-    
+
 }
 
 /********************************Botones Modulo Funcionario***********************/
 
 .jfx-btn-repetirficha, .jfx-btn-repetirficha:armed, .jfx-btn-repetirficha:focused{
     -fx-background-color:#06b6d4;
-    -fx-effect: dropshadow(gaussian, #06b6d4, 15, 0.4, 0, 0); 
+    -fx-effect: dropshadow(gaussian, #06b6d4, 15, 0.4, 0, 0);
     -fx-text-fill: -fx-base-color-textoboton;
-    
+
 }
 
 .jfx-btn-repetirficha > ImageView{
@@ -152,7 +152,7 @@
 }
 .jfx-btn-siguienteficha, .jfx-btn-siguienteficha:armed, .jfx-btn-siguienteficha:focused{
     -fx-background-color:#06b6d4;
-    -fx-effect: dropshadow(gaussian, #06b6d4, 15, 0.4, 0, 0); 
+    -fx-effect: dropshadow(gaussian, #06b6d4, 15, 0.4, 0, 0);
     -fx-text-fill: -fx-base-color-textoboton;
 }
 
@@ -162,7 +162,7 @@
 
 .jfx-btn-preferencialficha, .jfx-btn-preferencialficha:armed, .jfx-btn-preferencialficha:focused{
     -fx-background-color:#06b6d4;
-    -fx-effect: dropshadow(gaussian, #06b6d4, 15, 0.4, 0, 0); 
+    -fx-effect: dropshadow(gaussian, #06b6d4, 15, 0.4, 0, 0);
     -fx-text-fill: -fx-base-color-textoboton;
 }
 
@@ -171,7 +171,7 @@
 }
 .jfx-btn-seleccionarficha, .jfx-btn-seleccionarficha:armed, .jfx-btn-seleccionarficha:focused{
     -fx-background-color:#06b6d4;
-    -fx-effect: dropshadow(gaussian, #06b6d4, 15, 0.4, 0, 0); 
+    -fx-effect: dropshadow(gaussian, #06b6d4, 15, 0.4, 0, 0);
     -fx-text-fill: -fx-base-color-textoboton;
 }
 
@@ -283,9 +283,9 @@
 .mfx-text-field-neon {
     -mfx-float-mode: BORDER;
     -fx-alignment:TOP_LEFT;
-    
+
     -fx-background-color: white;
-    
+
     -fx-prompt-text-fill: rgba(0, 204, 204, 1);
     -fx-text-fill: #000000; /* color del texto */
     -fx-prompt-text-fill: #000000; /* color del texto */
