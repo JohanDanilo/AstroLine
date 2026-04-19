@@ -246,9 +246,7 @@ public class FichaService implements DataNotifier.Listener{
         List<Ficha> listaAtendidas = new ArrayList<>();
         
         for(Ficha actual : listaActual)
-            if((actual.getEstado() == Ficha.Estado.ATENDIDA 
-                    || actual.getEstado() == Ficha.Estado.LLAMADA) 
-                    && actual.getSucursalId().equals(sucursalId))
+            if(actual.getEstado() == Ficha.Estado.LLAMADA && actual.getSucursalId().equals(sucursalId))
                 listaAtendidas.add(actual);
         
          listaAtendidas.sort((ficha1, ficha2) -> {

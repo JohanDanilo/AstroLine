@@ -35,10 +35,13 @@ public class AudioManager {
             sonidos.put("ficha", cargarClip("ficha"));
             sonidos.put("llamado", cargarClip("llamado"));
             
+            sonidos.put("-", cargarClip("char_guion"));
+            
             sonidos.put("A", cargarClip("letra_a"));
             sonidos.put("B", cargarClip("letra_b"));
             sonidos.put("C", cargarClip("letra_c"));
             sonidos.put("D", cargarClip("letra_d"));
+            sonidos.put("E", cargarClip("letra_e"));
             
             sonidos.put("0", cargarClip("num_0"));
             sonidos.put("1", cargarClip("num_1"));
@@ -111,7 +114,6 @@ public class AudioManager {
     }
     
     
-    //Metodo Exclusivo de poyeccion
     public void llamarFicha(Ficha ficha) {
 
         List<String> secuencia = new java.util.ArrayList<>();
@@ -126,9 +128,13 @@ public class AudioManager {
         secuencia.add("llamado");
   
         secuencia.add("estacion");
-
-        secuencia.add(" ");
-
+        
+        String estacion = ficha.getEstacionId();
+        
+        for(char digito : estacion.toCharArray())
+                secuencia.add(String.valueOf(digito));
+        
+            
         new Thread(() -> reproducirSecuencia(secuencia)).start();
     }
     

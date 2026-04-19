@@ -226,9 +226,9 @@ public class ProyeccionController extends Controller implements Initializable, D
         ultimaFechaLlamada = LocalDateTime.parse(ficha.getFechaHoraLlamado(),
                             FORMATO_FECHA).atZone(ZONA_CR);
         ultimaFichaLlamadaId = ficha.getId();
+        
+        AudioManager.getINSTANCIA().llamarFicha(ficha);
                
-        System.out.println("Se ha llamado a la ficha " + ficha.getCodigo());
-
     }
     
     private boolean puedoVolverALlamar(Ficha aVerificar){
@@ -266,8 +266,7 @@ public class ProyeccionController extends Controller implements Initializable, D
     
     private void animarTextoDezplazado(){
         lblAnuncios.setText(textoAviso);
-        lblAnuncios.setText(sucursalId);
-    
+        
         lblAnuncios.setTranslateX(800);
         
         TranslateTransition mov = new TranslateTransition(Duration.seconds(10), lblAnuncios);
