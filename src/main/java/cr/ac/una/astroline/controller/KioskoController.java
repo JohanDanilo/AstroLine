@@ -6,6 +6,7 @@ import cr.ac.una.astroline.model.Empresa;
 import cr.ac.una.astroline.model.Ficha;
 import cr.ac.una.astroline.model.Tramite;
 import cr.ac.una.astroline.service.ClienteService;
+import cr.ac.una.astroline.service.EmpresaService;
 import cr.ac.una.astroline.service.FichaService;
 import cr.ac.una.astroline.service.PdfService;
 import cr.ac.una.astroline.service.TramiteService;
@@ -61,7 +62,7 @@ public class KioskoController extends Controller implements Initializable {
     private final Mensaje utilMensaje = new Mensaje();
 
     // Empresa se carga una vez en initialize() y se reutiliza en PDF
-    private Empresa empresa;
+    private Empresa empresa = EmpresaService.getInstancia().getEmpresa();;
 
     private String pinAdminCorrecto;
     private boolean preferencialPorPin = false;
@@ -138,7 +139,7 @@ public class KioskoController extends Controller implements Initializable {
                 : ClienteService.getInstancia().buscarPorCedula(cedula);
 
         Respuesta respuestaPDF = PdfService.getInstancia()
-                .generarFichaPDF(ficha, cliente, empresa);
+                .generarFichaPDF(ficha, cliente);
 
         if (respuestaPDF.getEstado()) {
             File archivoPDF = (File) respuestaPDF.getResultado("archivo");
@@ -190,26 +191,34 @@ public class KioskoController extends Controller implements Initializable {
     // -------------------------------------------------------------------------
 
     private void cargarEmpresa() {
-        empresa = GsonUtil.leer("empresa.json", Empresa.class);
+
         if (empresa == null) return;
 
         lblNombreEmpresa.setText(empresa.getNombre());
-        pinAdminCorrecto = empresa.getPinAdmin();
+        
+        this.pinAdminCorrecto = empresa.getPinAdmin();
 
         if (empresa.getLogoPath() != null && !empresa.getLogoPath().isBlank()) {
             try {
-                var stream = App.class.getResourceAsStream(
-                        "/cr/ac/una/astroline/resource/"
-                        + empresa.getLogoPath().replace("assets/", ""));
-                if (stream != null) {
-                    imgLogo.setImage(new Image(stream));
+                // Esto extrae SOLO el nombre del archivo (ejemplo: "logo_empresa.png")
+                // sin importar qué carpetas traiga el String original
+                String nombreSolo = new java.io.File(empresa.getLogoPath()).getName();
+
+                // Ahora construimos la ruta limpia
+                java.io.File archivoLogo = new java.io.File("data/logoEmpresa/" + nombreSolo);
+
+                if (archivoLogo.exists()) {
+                    imgLogo.setImage(new Image(archivoLogo.toURI().toString()));
+                } else {
+                    System.err.println("[KioskoController] No encontrado en: " + archivoLogo.getAbsolutePath());
                 }
             } catch (Exception e) {
-                System.err.println("[KioskoController] Logo no encontrado: " + e.getMessage());
+                e.printStackTrace();
             }
+        
         }
     }
-
+    
     private void cargarTramites() {
         List<Tramite> activos = TramiteService.getInstancia().getTramitesActivos();
         cmbTramite.setConverter(new javafx.util.StringConverter<Tramite>() {

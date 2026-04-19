@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.LineChart?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<!--
+    EstadisticasView.fxml — Responsive / resizable layout
+    ────────────────────────────────────────────────────────
+    Estrategia de responsividad:
+      · BorderPane ocupa todo el espacio de la escena automáticamente.
+      · ScrollPane (fitToWidth + fitToHeight) llena <center> y sólo
+        muestra scrollbar cuando la ventana es más pequeña que el
+        contenido mínimo.
+      · Cada fila de KPI cards usa HBox.hgrow="ALWAYS" + maxWidth="Infinity"
+        para que los tres cards se repartan el ancho por igual.
+      · Las filas de gráficas y listas usan VBox.vgrow="ALWAYS" en el HBox
+        y en los charts/listviews para crecer/encoger con la ventana.
+      · Los charts y listviews también llevan maxWidth/maxHeight="Infinity"
+        para no quedar limitados a su prefWidth/prefHeight.
+-->
+
+<BorderPane fx:id="root" prefHeight="500.0" prefWidth="700.0" styleClass="root" stylesheets="@estadisticas.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.EstadisticasController">
+
+    <!-- ══════════════════════ HEADER ══════════════════════ -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="header">
+            <padding>
+                <Insets bottom="12" left="20" right="20" top="12" />
+            </padding>
+
+            <Label styleClass="title" text="Estadísticas de la empresa" />
+
+            <!-- Spacer flexible -->
+            <Region HBox.hgrow="ALWAYS" />
+
+            <ComboBox fx:id="cbFiltroTiempo" prefWidth="130" promptText="Periodo" />
+            <ComboBox fx:id="cbSucursal" prefWidth="130" promptText="Sucursal" />
+        </HBox>
+    </top>
+
+    <!-- ══════════════════════ CONTENT ══════════════════════ -->
+    <center>
+        <!--
+            ScrollPane con fitToWidth + fitToHeight:
+              · El contenido se estira hasta llenar el viewport.
+              · Scrollbars sólo aparecen si la ventana es muy pequeña.
+        -->
+        <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="NEVER" styleClass="scroll-pane" vbarPolicy="AS_NEEDED">
+
+            <VBox spacing="20">
+                <padding>
+                    <Insets bottom="20" left="20" right="20" top="20" />
+                </padding>
+
+                <!-- ── Fila KPI ── -->
+                <HBox minHeight="100" spacing="20">
+
+                    <!-- Card 1 -->
+                    <VBox alignment="CENTER_LEFT" maxWidth="Infinity" styleClass="kpi-card" HBox.hgrow="ALWAYS">
+                        <Label fx:id="lblTituloClientes" styleClass="kpi-label" text="Clientes Hoy" />
+                        <Label fx:id="lblClientesHoy" styleClass="kpi-value" text="—" />
+                    </VBox>
+
+                    <!-- Card 2 -->
+                    <VBox alignment="CENTER_LEFT" maxWidth="Infinity" styleClass="kpi-card" HBox.hgrow="ALWAYS">
+                        <Label fx:id="lblTituloTramites" styleClass="kpi-label" text="Trámites Hoy" />
+                        <Label fx:id="lblTramitesHoy" styleClass="kpi-value" text="—" />
+                    </VBox>
+
+                </HBox>
+
+                <!-- ── Fila Gráficas ── -->
+                <!--
+                    VBox.vgrow="ALWAYS" en el HBox → la fila crece
+                    verticalmente cuando la ventana se amplía.
+                    minHeight garantiza que no colapsen a 0.
+                -->
+                <HBox minHeight="260" spacing="20" VBox.vgrow="ALWAYS">
+
+                    <!-- LineChart card -->
+                    <VBox maxWidth="Infinity" styleClass="card" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+
+                        <Label styleClass="card-title" text="Trámites por Día" />
+
+                        <LineChart fx:id="lineChart" animated="false" maxHeight="Infinity" maxWidth="Infinity" VBox.vgrow="ALWAYS">
+                            <xAxis>
+                                <CategoryAxis label="Día" side="BOTTOM" />
+                            </xAxis>
+                            <yAxis>
+                                <NumberAxis label="Cantidad" side="LEFT" />
+                            </yAxis>
+                        </LineChart>
+                    </VBox>
+
+                    <!-- PieChart card -->
+                    <VBox maxWidth="Infinity" styleClass="card" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+
+                        <Label styleClass="card-title" text="Tipos de Trámite" />
+
+                        <PieChart fx:id="pieChart" animated="false" labelsVisible="true" maxHeight="Infinity" maxWidth="Infinity" VBox.vgrow="ALWAYS" />
+                    </VBox>
+
+                </HBox>
+
+                <!-- ── Fila Listas ── -->
+                <HBox minHeight="180" spacing="20" VBox.vgrow="ALWAYS">
+
+                    <!-- Top Clientes -->
+                    <VBox maxWidth="Infinity" styleClass="card" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+
+                        <Label styleClass="card-title" text="Top Clientes" />
+
+                        <ListView fx:id="lvTopClientes" maxHeight="Infinity" maxWidth="Infinity" VBox.vgrow="ALWAYS" />
+                    </VBox>
+
+                    <!-- Top Trámites -->
+                    <VBox maxWidth="Infinity" styleClass="card" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS">
+
+                        <Label styleClass="card-title" text="Top Trámites" />
+
+                        <ListView fx:id="lvTopTramites" maxHeight="Infinity" maxWidth="Infinity" VBox.vgrow="ALWAYS" />
+                    </VBox>
+
+                </HBox>
+
+            </VBox>
+        </ScrollPane>
+    </center>
+
+</BorderPane>

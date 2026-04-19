@@ -22,7 +22,7 @@
 
 .jfx-label-titulo {
     -fx-text-fill: white;
-    -fx-font-size: 10px;
+    -fx-font-size: 15px;
     -fx-font-weight: bold;
 }
 .jfx-label-subtitulo {
@@ -57,6 +57,42 @@
 
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 15, 0.3, 0, 5);
     -fx-padding: 5;
+}
+
+/******************CheckBox******************/
+.mfx-checkbox.mfx-checkbox-seleccion{
+    -fx-background-color: transparent;
+    -fx-background-radius: 15;
+    -fx-border-radius: 15;
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 15, 0.3, 0, 5);
+    -fx-padding: 5;
+    -fx-font-fill: white;
+    -fx-text-fill: white;
+}
+
+.mfx-checkbox.mfx-checkbox-seleccion .label {
+    -fx-text-fill: white;
+}
+
+.mfx-checkbox.mfx-checkbox-seleccion .text {
+    -fx-fill: white;
+}
+
+.mfx-checkbox.mfx-checkbox-seleccion:selected .label {
+    -fx-text-fill: white;
+}
+
+.mfx-checkbox {
+    -fx-text-fill: white !important;
+}
+
+.mfx-checkbox.mfx-checkbox-seleccion .box {
+    -fx-border-color: linear-gradient(to right, #d946ef, #6366f1); /* color borde */
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-color: transparent;
 }
 
 /*************************Botón: Opcion 1***********************************/
@@ -304,10 +340,96 @@
     -fx-effect: dropshadow(gaussian, #6366f1, 20, 0.8, 0, 0);
 }
 
+.button.jfx-btn-agregar,
+.jfx-btn-agregar {
+    
+    -fx-background-color: #0099cc; 
+    
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    
+    /* Dimensiones fijas */
+    -fx-min-width: 50px; -fx-min-height: 50px;
+    -fx-pref-width: 50px; -fx-pref-height: 50px;
+    -fx-max-width: 50px; -fx-max-height: 50px;
+
+    /* Ocultar texto */
+    -fx-text-fill: transparent;
+    -fx-font-size: 0px;
+    
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+
+.jfx-btn-agregar > ImageView {
+    -fx-image: url(../resource/Agregar.png);
+    -fx-fit-width: 50px; 
+    -fx-fit-height: 50px;
+}
+
+.button.jfx-btn-editar,
+.jfx-btn-editar {
+    
+    -fx-background-color: #949292; 
+    
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    
+    /* Dimensiones fijas */
+    -fx-min-width: 50px; -fx-min-height: 50px;
+    -fx-pref-width: 50px; -fx-pref-height: 50px;
+    -fx-max-width: 50px; -fx-max-height: 50px;
+
+    /* Ocultar texto */
+    -fx-text-fill: transparent;
+    -fx-font-size: 0px;
+    
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+
+.jfx-btn-editar > ImageView {
+    -fx-image: url(../resource/Editar.png);
+    -fx-fit-width: 45px; 
+    -fx-fit-height: 45px;
+}
+
+.button.jfx-btn-eliminar,
+.jfx-btn-eliminar {
+    
+    -fx-background-color: #ff0080; 
+    
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    
+    /* Dimensiones fijas */
+    -fx-min-width: 50px; -fx-min-height: 50px;
+    -fx-pref-width: 50px; -fx-pref-height: 50px;
+    -fx-max-width: 50px; -fx-max-height: 50px;
+
+    /* Ocultar texto */
+    -fx-text-fill: transparent;
+    -fx-font-size: 0px;
+    
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+
+.jfx-btn-eliminar > ImageView {
+    -fx-image: url(../resource/Eliminar.png);
+    -fx-fit-width: 50px; 
+    -fx-fit-height: 50px;
+}
+
+/* Inputs estándar JavaFX */
 .text-field,
 .password-field,
 .mfx-text-field,
 .mfx-password-field {
+    
+    /* Tamaño fijo */
+    -fx-pref-height: 30px;
+    -fx-pref-width: 250px;
 
     /* Opcional: consistencia */
     -fx-font-fill: #000000;

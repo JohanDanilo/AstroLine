@@ -14,6 +14,7 @@ public class Empresa {
     private String telefono;
     private String correo;
     private String direccion;
+    private long lastModified; // epoch millis — se setea en cada CRUD
 
     public Empresa() {
     }
@@ -45,6 +46,11 @@ public class Empresa {
 
     public String getDireccion() { return direccion; }
     public void setDireccion(String direccion) { this.direccion = direccion; }
+    
+    public Long getLastModified() { return lastModified; }
+    public void setLastModified(Long last) {
+        this.lastModified = last;
+    }
 
     @Override
     public String toString() {

@@ -7,7 +7,11 @@ import java.util.List;
  * Representa una sucursal de atención.
  * Contiene una lista de estaciones propias y un texto de avisos
  * que se muestra corriendo en ciclo en la pantalla de Proyección.
- * Se persiste en data/sucursales.json
+ * Se persiste en data/sucursales.json.
+ *
+ * lastModified se actualiza automáticamente cada vez que SucursalService
+ * modifica esta sucursal (o cualquiera de sus estaciones embebidas).
+ * Es la clave de desempate en el merge P2P: gana el más reciente.
  *
  * @author JohanDanilo
  */
@@ -17,10 +21,12 @@ public class Sucursal {
     private String nombre;
     private String textoAviso; // se muestra en Proyección corriendo en ciclo
     private List<Estacion> estaciones;
+    private long lastModified; // timestamp de la última modificación (epoch ms)
 
     public Sucursal() {
         this.estaciones = new ArrayList<>();
         this.textoAviso = "";
+        this.lastModified = System.currentTimeMillis();
     }
 
     public Sucursal(String id, String nombre) {
@@ -28,6 +34,7 @@ public class Sucursal {
         this.nombre = nombre;
         this.textoAviso = "";
         this.estaciones = new ArrayList<>();
+        this.lastModified = System.currentTimeMillis();
     }
 
     /**
@@ -86,9 +93,21 @@ public class Sucursal {
         this.estaciones = estaciones != null ? estaciones : new ArrayList<>();
     }
 
+    public long getLastModified() { return lastModified; }
+    public void setLastModified(long lastModified) { this.lastModified = lastModified; }
+
+    /**
+     * Marca esta sucursal como modificada ahora mismo.
+     * Llamar desde SucursalService antes de persistir cualquier cambio.
+     */
+    public void marcarModificada() {
+        this.lastModified = System.currentTimeMillis();
+    }
+
     @Override
     public String toString() {
         return "Sucursal{id='" + id + "', nombre='" + nombre +
-                "', estaciones=" + estaciones.size() + "}";
+                "', estaciones=" + estaciones.size() +
+                ", lastModified=" + lastModified + "}";
     }
 }
