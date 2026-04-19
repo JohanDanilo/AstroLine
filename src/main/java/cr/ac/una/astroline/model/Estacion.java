@@ -89,6 +89,21 @@ public class Estacion {
     public boolean quitarTramite(String tramiteId) {
         return tramiteIds != null && tramiteIds.remove(tramiteId);
     }
+    
+    public Estacion clonarEstacion(Estacion original) {
+        if (original == null) return null;
+
+        Estacion copia = new Estacion(
+                original.getId(),
+                original.getNombre(),
+                original.getSucursalId(),
+                original.isPreferencial(),
+                original.isEstaActiva()
+        );
+
+        copia.setTramiteIds(new ArrayList<>(original.getTramiteIds()));
+        return copia;
+    }
 
     @Override
     public String toString() {

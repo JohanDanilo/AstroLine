@@ -11,6 +11,7 @@ import cr.ac.una.astroline.util.Respuesta;
 import io.github.palexdev.materialfx.controls.MFXCheckbox;
 import io.github.palexdev.materialfx.controls.MFXComboBox;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
@@ -145,15 +146,18 @@ public class ConfiguracionController extends Controller implements Initializable
         //       punto de fallo intermedio. GsonUtil.guardar() (no guardarYPropagar)
         //       garantiza que este archivo NUNCA se propague por P2P.
         try {
-            ConfiguracionLocal nuevaConfig = new ConfiguracionLocal(
-                    sucursal.getId(),
-                    estacion.getId()
-            );
-            GsonUtil.guardar(nuevaConfig, "configuracion.json");
+            Respuesta respuesta = ConfiguracionService.getInstancia()
+                    .guardarConfiguracion(
+                            sucursal.getId(),
+                            estacion.getId(),
+                            new ArrayList<>(estacion.getTramiteIds()),
+                            checkPreferencial.isSelected()
+                    );
 
-            // Actualizar en memoria el singleton para que el resto de la app
-            // vea la nueva config sin tener que releer el archivo.
-            ConfiguracionService.getInstancia().recargarConfiguracion();
+            if (!respuesta.getEstado()) {
+                mostrarAviso(respuesta.getMensaje());
+                return;
+            }
 
             mostrarAviso("Configuración guardada correctamente.");
             

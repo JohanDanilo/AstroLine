@@ -2,6 +2,7 @@ package cr.ac.una.astroline.service;
 
 import cr.ac.una.astroline.model.Estacion;
 import cr.ac.una.astroline.model.Sucursal;
+import cr.ac.una.astroline.model.Tramite;
 import cr.ac.una.astroline.util.DataNotifier;
 import cr.ac.una.astroline.util.GsonUtil;
 import cr.ac.una.astroline.util.Respuesta;
@@ -342,5 +343,24 @@ public class SucursalService implements DataNotifier.Listener {
         } catch (NumberFormatException ex) {
             return 0;
         }
+    }
+    
+    public List<Tramite> getTramitesDeEstacion(String estacionId) {
+        Estacion estacion = buscarEstacion(estacionId);
+
+        if (estacion == null || estacion.getTramiteIds() == null) {
+            return new ArrayList<>();
+        }
+
+        List<Tramite> tramites = new ArrayList<>();
+
+        for (String tramiteId : estacion.getTramiteIds()) {
+            Tramite tramite = TramiteService.getInstancia().buscarPorId(tramiteId);
+            if (tramite != null) {
+                tramites.add(tramite);
+            }
+        }
+
+        return tramites;
     }
 }

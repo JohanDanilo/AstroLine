@@ -94,7 +94,8 @@ public class KioskoController extends Controller implements Initializable {
         preferencialPorPin = false;
         btnCancelar.setVisible(false);
         btnCancelar.setManaged(false);
-        mostrarExito("Atención preferencial cancelada.");
+        panelMensaje.setVisible(false);
+        panelMensaje.setManaged(false);
     }
 
     @FXML
@@ -303,6 +304,37 @@ public class KioskoController extends Controller implements Initializable {
     // -------------------------------------------------------------------------
     // LÓGICA DE NEGOCIO
     // -------------------------------------------------------------------------
+
+    @FXML
+    private void onBtnNumero(ActionEvent event) {
+        MFXButton btn = (MFXButton) event.getSource();
+        if (panelPinAdmin.isVisible()) {
+            // Panel del PIN abierto → escribir en el password field (sin límite de longitud)
+            String actual = passwordFldAdmin.getText();
+            passwordFldAdmin.setText(actual + btn.getText());
+        } else {
+            // Panel cerrado → escribir en cédula (máximo 12 dígitos para DIMEX)
+            String actual = txtCedula.getText();
+            if (actual.length() < 12) {
+                txtCedula.setText(actual + btn.getText());
+            }
+        }
+    }
+
+    @FXML
+    private void onBtnBorrar(ActionEvent event) {
+        if (panelPinAdmin.isVisible()) {
+            String actual = passwordFldAdmin.getText();
+            if (!actual.isEmpty()) {
+                passwordFldAdmin.setText(actual.substring(0, actual.length() - 1));
+            }
+        } else {
+            String actual = txtCedula.getText();
+            if (!actual.isEmpty()) {
+                txtCedula.setText(actual.substring(0, actual.length() - 1));
+            }
+        }
+    }
 
     private boolean cedulaValida(String cedula) {
         return cedula.matches("\\d{9}");
