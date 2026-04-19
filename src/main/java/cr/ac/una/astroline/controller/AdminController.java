@@ -72,7 +72,7 @@ public class AdminController extends Controller implements Initializable {
 
     @FXML
     private void onBtnConfigEstacion(ActionEvent event) {
-        FlowController.getInstance().goView("MantenimientoEstacionesView");
+        FlowController.getInstance().goView("ConfiguracionView");
     }
 
     @FXML

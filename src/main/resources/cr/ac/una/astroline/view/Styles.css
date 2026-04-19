@@ -22,7 +22,7 @@
 
 .jfx-label-titulo {
     -fx-text-fill: white;
-    -fx-font-size: 10px;
+    -fx-font-size: 15px;
     -fx-font-weight: bold;
 }
 .jfx-label-subtitulo {
@@ -57,6 +57,42 @@
 
     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 15, 0.3, 0, 5);
     -fx-padding: 5;
+}
+
+/******************CheckBox******************/
+.mfx-checkbox.mfx-checkbox-seleccion{
+    -fx-background-color: transparent;
+    -fx-background-radius: 15;
+    -fx-border-radius: 15;
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 15, 0.3, 0, 5);
+    -fx-padding: 5;
+    -fx-font-fill: white;
+    -fx-text-fill: white;
+}
+
+.mfx-checkbox.mfx-checkbox-seleccion .label {
+    -fx-text-fill: white;
+}
+
+.mfx-checkbox.mfx-checkbox-seleccion .text {
+    -fx-fill: white;
+}
+
+.mfx-checkbox.mfx-checkbox-seleccion:selected .label {
+    -fx-text-fill: white;
+}
+
+.mfx-checkbox {
+    -fx-text-fill: white !important;
+}
+
+.mfx-checkbox.mfx-checkbox-seleccion .box {
+    -fx-border-color: linear-gradient(to right, #d946ef, #6366f1); /* color borde */
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-color: transparent;
 }
 
 /*************************Botón: Opcion 1***********************************/

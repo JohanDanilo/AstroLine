@@ -124,7 +124,7 @@ public class RegistroEstacionController extends Controller implements Initializa
             return;
         }
 
-        String estacionId = sucursalService.generarIdEstacion();
+        String estacionId = SucursalService.getInstancia().generarIdEstacion(sucursalId);
         Estacion nueva = new Estacion(
                 estacionId,
                 nombre,

@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import io.github.palexdev.materialfx.controls.MFXButton?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane id="AnchorPane" prefHeight="100.0" prefWidth="200.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.AvisoController">
+<AnchorPane id="AnchorPane" prefHeight="150.0" prefWidth="325.0" styleClass="jfx-root" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.AvisoController">
    <children>
-      <VBox alignment="CENTER" layoutX="50.0" layoutY="-50.0" prefHeight="200.0" prefWidth="100.0" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <VBox alignment="CENTER" layoutX="50.0" layoutY="-50.0" prefHeight="137.0" prefWidth="257.0" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <Label fx:id="lblAviso" text="Advertisement" />
-            <MFXButton fx:id="btnAceptar" onAction="#onActionBtnAceptar" text="Aceptar" />
+            <Label fx:id="lblAviso" styleClass="jfx-label-titulo" text="Advertisement" />
+            <MFXButton fx:id="btnAceptar" onAction="#onActionBtnAceptar" prefHeight="22.0" prefWidth="74.0" styleClass="jfx-btn-secundario" text="Aceptar">
+               <VBox.margin>
+                  <Insets top="10.0" />
+               </VBox.margin></MFXButton>
          </children>
       </VBox>
    </children>

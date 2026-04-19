@@ -77,4 +77,12 @@ public class ConfiguracionService {
         // Si no existe el archivo, configuracion queda null
         // getSucursalId() maneja ese caso con fallback
     }
+    
+
+    /**
+     * Fuerza la relectura de configuracion.json desde disco.
+     */
+    public void recargarConfiguracion() {
+        configuracion = GsonUtil.leer(ARCHIVO_JSON, ConfiguracionLocal.class);
+    }
 }

@@ -6,7 +6,9 @@ import cr.ac.una.astroline.util.DataNotifier;
 import cr.ac.una.astroline.util.GsonUtil;
 import cr.ac.una.astroline.util.Respuesta;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -15,6 +17,11 @@ import javafx.collections.ObservableList;
  * Servicio singleton para la gestión persistente de sucursales y estaciones.
  * Reactivo y sincronizado entre peers via DataNotifier.
  * Estaciones viven embebidas dentro de cada Sucursal en sucursales.json.
+ *
+ * Regla de merge P2P: por cada sucursal con el mismo id, gana la que
+ * tenga el lastModified más alto. Las sucursales que sólo existen en
+ * local se conservan (protección ante race conditions del poller de 15 s).
+ * Las sucursales que sólo existen en el remoto se agregan.
  *
  * @author JohanDanilo
  */
@@ -62,6 +69,7 @@ public class SucursalService implements DataNotifier.Listener {
             if (existeSucursal(sucursal.getId()))
                 return new Respuesta(false, "Ya existe una sucursal con ese id.", "");
 
+            sucursal.marcarModificada();
             listaDeSucursales.add(sucursal);
             guardar();
             return new Respuesta(true, "Sucursal agregada.", "", "sucursal", sucursal);
@@ -78,6 +86,7 @@ public class SucursalService implements DataNotifier.Listener {
 
             for (int i = 0; i < listaDeSucursales.size(); i++) {
                 if (listaDeSucursales.get(i).getId().equals(sucursalActualizada.getId())) {
+                    sucursalActualizada.marcarModificada();
                     listaDeSucursales.set(i, sucursalActualizada);
                     guardar();
                     return new Respuesta(true, "Sucursal actualizada.",
@@ -141,6 +150,7 @@ public class SucursalService implements DataNotifier.Listener {
             if (!agregada)
                 return new Respuesta(false, "Ya existe una estación con ese id.", "");
 
+            sucursal.marcarModificada(); // estacion embebida → toca a la sucursal padre
             guardar();
             return new Respuesta(true, "Estación agregada.", "", "estacion", estacion);
         } catch (Exception e) {
@@ -161,6 +171,7 @@ public class SucursalService implements DataNotifier.Listener {
             for (int i = 0; i < estaciones.size(); i++) {
                 if (estaciones.get(i).getId().equals(estacionActualizada.getId())) {
                     estaciones.set(i, estacionActualizada);
+                    sucursal.marcarModificada(); // estacion embebida → toca a la sucursal padre
                     guardar();
                     return new Respuesta(true, "Estación actualizada.",
                             "", "estacion", estacionActualizada);
@@ -183,6 +194,7 @@ public class SucursalService implements DataNotifier.Listener {
             if (!eliminada)
                 return new Respuesta(false, "Estación no encontrada.", "");
 
+            sucursal.marcarModificada(); // estacion embebida → toca a la sucursal padre
             guardar();
             return new Respuesta(true, "Estación eliminada.", "");
         } catch (Exception e) {
@@ -192,28 +204,37 @@ public class SucursalService implements DataNotifier.Listener {
     }
 
     /**
-     * Genera un ID único para una nueva estación dentro de una sucursal.
-     * Formato: "estacion-N" donde N es incremental global entre todas las sucursales.
-     */
-    public String generarIdEstacion() {
-        int consecutivoMaximo = 0;
-        for (Sucursal sucursal : listaDeSucursales) {
-            for (Estacion estacion : sucursal.getEstaciones()) {
-                consecutivoMaximo = Math.max(
-                        consecutivoMaximo,
-                        extraerConsecutivo(estacion.getId(), "estacion-")
-                );
-            }
-        }
+    * Genera un ID único para una nueva estación dentro de una sucursal específica.
+    * Formato: "E-{numSucursal}-{numEstacion}"
+    * Ejemplo: E-1-1 = primera estación de sucursal-1
+    *          E-2-3 = tercera estación de sucursal-2
+    *
+    * El contador es LOCAL a la sucursal: cada una tiene su propia secuencia.
+    * Esto hace el ID legible y trazable sin ambigüedad.
+    *
+    * @param sucursalId id de la sucursal donde se creará la estación (ej: "sucursal-1")
+    * @return id único para la nueva estación, o null si la sucursal no existe
+    */
+    public String generarIdEstacion(String sucursalId) {
+       Sucursal sucursal = buscarSucursal(sucursalId);
+       if (sucursal == null) return null;
 
-        String candidato;
-        do {
-            consecutivoMaximo++;
-            candidato = "estacion-" + consecutivoMaximo;
-        } while (buscarEstacion(candidato) != null);
+       int numSucursal = extraerConsecutivo(sucursalId, "sucursal-");
+       String prefijo = "E-" + numSucursal + "-";
 
-        return candidato;
-    }
+       int maxEstacion = 0;
+       for (Estacion e : sucursal.getEstaciones()) {
+           maxEstacion = Math.max(maxEstacion, extraerConsecutivo(e.getId(), prefijo));
+       }
+
+       String candidato;
+       do {
+           maxEstacion++;
+           candidato = prefijo + maxEstacion;
+       } while (buscarEstacion(candidato) != null);
+
+       return candidato;
+   }
 
     /**
      * Genera un ID único para una nueva sucursal.
@@ -264,28 +285,46 @@ public class SucursalService implements DataNotifier.Listener {
     }
 
     /**
-     * Merge por ID de sucursal.
-     * La lista remota es autoritativa (solo el admin modifica sucursales).
-     * Se conserva cualquier sucursal local que no esté en el remoto como
-     * protección ante race conditions del poller de 15 segundos.
+     * Merge por ID de sucursal con resolución de conflictos por lastModified.
      *
-     * Estaciones se reemplazan completas con las del remoto —
-     * viven embebidas y no tienen lastModified propio.
+     * Reglas:
+     * - Sucursal presente en ambos lados: gana la que tenga lastModified más alto.
+     * - Sucursal solo en remoto: se agrega (fue creada en otra máquina).
+     * - Sucursal solo en local: se conserva (puede haberse creado aquí y aún
+     *   no propagado, o el poller llegó antes de que la propagación terminara).
+     *
+     * Las estaciones se reemplazan completas con las de la sucursal ganadora
+     * porque viven embebidas y no tienen lastModified propio.
      */
     private void mergeSucursales(List<Sucursal> remotas) {
-        java.util.Map<String, Sucursal> mapaRemoto = new java.util.LinkedHashMap<>();
+        Map<String, Sucursal> mapaRemoto = new LinkedHashMap<>();
         for (Sucursal r : remotas) mapaRemoto.put(r.getId(), r);
 
-        java.util.Map<String, Sucursal> mapaLocal = new java.util.LinkedHashMap<>();
+        Map<String, Sucursal> mapaLocal = new LinkedHashMap<>();
         for (Sucursal s : listaDeSucursales) mapaLocal.put(s.getId(), s);
 
-        // Remoto gana en colisión
-        mapaLocal.putAll(mapaRemoto);
+        // Resultado final: empezamos con todas las remotas como base
+        Map<String, Sucursal> resultado = new LinkedHashMap<>(mapaRemoto);
 
-        // Eliminar sucursales que el remoto borró
-        mapaLocal.keySet().retainAll(mapaRemoto.keySet());
+        // Revisar cada sucursal local
+        for (Map.Entry<String, Sucursal> entradaLocal : mapaLocal.entrySet()) {
+            String id = entradaLocal.getKey();
+            Sucursal local = entradaLocal.getValue();
+            Sucursal remota = mapaRemoto.get(id);
 
-        listaDeSucursales.setAll(mapaLocal.values());
+            if (remota == null) {
+                // Solo existe en local → conservar (aún no propagada o race condition)
+                resultado.put(id, local);
+            } else {
+                // Existe en ambos → gana la más reciente por lastModified
+                if (local.getLastModified() > remota.getLastModified()) {
+                    resultado.put(id, local);
+                }
+                // Si remota es más nueva o igual, ya está en resultado por el putAll inicial
+            }
+        }
+
+        listaDeSucursales.setAll(resultado.values());
     }
 
     // ── Privados ──────────────────────────────────────────────────────────────
@@ -298,7 +337,6 @@ public class SucursalService implements DataNotifier.Listener {
         if (id == null || !id.startsWith(prefijo)) {
             return 0;
         }
-
         try {
             return Integer.parseInt(id.substring(prefijo.length()));
         } catch (NumberFormatException ex) {

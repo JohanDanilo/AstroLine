@@ -1,24 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import io.github.palexdev.materialfx.controls.MFXButton?>
+<?import io.github.palexdev.materialfx.controls.MFXCheckbox?>
 <?import io.github.palexdev.materialfx.controls.MFXComboBox?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane fx:id="root" prefHeight="477.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.ConfiguracionController">
+<AnchorPane fx:id="root" prefHeight="300.0" prefWidth="400.0" styleClass="jfx-root" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.ConfiguracionController">
    <children>
-      <VBox alignment="CENTER" layoutX="0.0" layoutY="0.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="400.0" spacing="24.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <VBox alignment="CENTER" layoutX="0.0" layoutY="0.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="400.0" spacing="25.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" text="Configuración de estación" VBox.vgrow="ALWAYS" />
-            <MFXComboBox fx:id="cmbSucursal" floatingText="Sucursal" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onCmbSucursal" prefWidth="320.0" VBox.vgrow="ALWAYS" />
-            <MFXComboBox fx:id="cmbEstacion" floatingText="Estación" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onCmbEstacion" prefWidth="320.0" VBox.vgrow="ALWAYS" />
-            <MFXButton onAction="#onBtnGuardar" prefWidth="320.0" text="Guardar configuración" />
-            <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="100.0" VBox.vgrow="ALWAYS" />
+            <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="jfx-label-titulo" text="Configuración de Estación para este equipo" />
+            <MFXComboBox fx:id="cmbSucursal" floatingText="Sucursal" maxWidth="1.7976931348623157E308" onAction="#onCmbSucursal" prefWidth="320.0" styleClass="mfx-text-field-neon" />
+            <MFXComboBox fx:id="cmbEstacion" floatingText="Estación" maxWidth="1.7976931348623157E308" prefWidth="320.0" styleClass="mfx-text-field-neon" />
+            <MFXCheckbox fx:id="checkPreferencial" onAction="#onCheckPreferencial" prefHeight="40.0" prefWidth="211.0" styleClass="mfx-checkbox-seleccion" text="Estación preferencial" textFill="WHITE" />
+            <HBox spacing="10.0">
+               <children>
+                  <MFXButton onAction="#onBtnGuardar" prefHeight="50.0" prefWidth="320.0" styleClass="jfx-btn-principal" text="Guardar configuración" />
+                  <MFXButton onAction="#onBtnRestablecer" prefHeight="50.0" prefWidth="320.0" styleClass="jfx-btn-principal" text="Restablecer configuración" />
+               </children>
+            </HBox>
          </children>
          <padding>
-            <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+            <Insets bottom="40.0" left="40.0" right="40.0" top="20.0" />
          </padding>
       </VBox>
    </children>

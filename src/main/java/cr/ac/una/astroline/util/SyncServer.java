@@ -7,6 +7,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.FileTime;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -20,6 +21,20 @@ public class SyncServer {
 
     private static final int PORT = 8080;
     private static HttpServer server;
+    
+    /**
+    * Archivos que participan en sincronización P2P.
+    * configuracion.json está EXCLUIDO — es por equipo, no compartido.
+    */
+   private static final Set<String> ARCHIVOS_SINCRONIZABLES = Set.of(
+       "sucursales.json",
+       "tramites.json",
+       "empresa.json",
+       "funcionarios.json",
+       "fichas.json",
+       "historial.json",
+       "clientes.json"
+   );
 
     private SyncServer() {}
 
@@ -58,7 +73,7 @@ public class SyncServer {
             Path dataDir = Paths.get(GsonUtil.getDataDir());
 
             if (Files.exists(dataDir)) {
-                File[] files = dataDir.toFile().listFiles((d, n) -> n.endsWith(".json"));
+                File[] files = dataDir.toFile().listFiles( (d, n) -> n.endsWith(".json") && ARCHIVOS_SINCRONIZABLES.contains(n));
                 if (files != null) {
                     for (int i = 0; i < files.length; i++) {
                         if (i > 0) json.append(",");
@@ -97,6 +112,11 @@ public class SyncServer {
                 try (OutputStream os = ex.getResponseBody()) { os.write(content); }
 
             } else if ("POST".equals(ex.getRequestMethod())) {
+                // Rechazar archivos que no participan en P2P
+                if (!ARCHIVOS_SINCRONIZABLES.contains(fileName)) {
+                    ex.sendResponseHeaders(403, -1);
+                    return;
+                }
                 // Registrar al peer que nos envió datos
                 String senderIp = ex.getRemoteAddress().getAddress().getHostAddress();
                 SyncManager.getInstancia().registrarPeer(senderIp);
