@@ -3,6 +3,7 @@ package cr.ac.una.astroline.controller;
 import cr.ac.una.astroline.model.Estacion;
 import cr.ac.una.astroline.model.Sucursal;
 import cr.ac.una.astroline.model.Tramite;
+import cr.ac.una.astroline.service.ConfiguracionService;
 import cr.ac.una.astroline.service.SucursalService;
 import cr.ac.una.astroline.service.TramiteService;
 import cr.ac.una.astroline.util.AppContext;
@@ -78,8 +79,9 @@ public class MantenimientoSucursalController extends Controller implements Initi
 
     // ── Servicios ─────────────────────────────────────────────────────────────
 
-    private final SucursalService sucursalService = SucursalService.getInstancia();
-    private final TramiteService  tramiteService  = TramiteService.getInstancia();
+    private final SucursalService      sucursalService      = SucursalService.getInstancia();
+    private final TramiteService       tramiteService       = TramiteService.getInstancia();
+    private final ConfiguracionService configuracionService = ConfiguracionService.getInstancia();
 
     // ── Estado ────────────────────────────────────────────────────────────────
 
@@ -259,14 +261,24 @@ public class MantenimientoSucursalController extends Controller implements Initi
 
         if (db.hasContent(TRAMITE_FORMAT) && estacionSeleccionada != null) {
             String tramiteId = (String) db.getContent(TRAMITE_FORMAT);
-            Tramite tramite  = tramiteService.buscarPorId(tramiteId);
+            Tramite tramite = tramiteService.buscarPorId(tramiteId);
 
             if (tramite != null && !estacionSeleccionada.atiendeTramite(tramiteId)) {
+
+                // UI
                 tramitesDisponibles.remove(tramite);
                 tramitesAsignados.add(tramite);
 
-                estacionSeleccionada.agregarTramite(tramiteId);
-                sucursalService.actualizarEstacion(sucursalActual.getId(), estacionSeleccionada);
+                Estacion copia = estacionSeleccionada.clonarEstacion(estacionSeleccionada);
+                copia.agregarTramite(tramiteId);
+
+                sucursalService.actualizarEstacion(sucursalActual.getId(), copia);
+
+                // actualizar referencia local
+                estacionSeleccionada = copia;
+
+                // Si esta estación es la configurada en este equipo, sincronizar configuracion.json
+                sincronizarConfiguracionSiCorresponde(copia);
 
                 tableTramitesAsignados.refresh();
                 tableTramitesDiponibles.refresh();
@@ -319,11 +331,22 @@ public class MantenimientoSucursalController extends Controller implements Initi
             Tramite tramite  = tramiteService.buscarPorId(tramiteId);
 
             if (tramite != null && estacionSeleccionada.atiendeTramite(tramiteId)) {
+
+                // UI
                 tramitesAsignados.remove(tramite);
                 tramitesDisponibles.add(tramite);
 
-                estacionSeleccionada.quitarTramite(tramiteId);
-                sucursalService.actualizarEstacion(sucursalActual.getId(), estacionSeleccionada);
+                // CLAVE: trabajar con copia
+                Estacion copia = estacionSeleccionada.clonarEstacion(estacionSeleccionada);
+                copia.quitarTramite(tramiteId);
+
+                sucursalService.actualizarEstacion(sucursalActual.getId(), copia);
+
+                // actualizar referencia local
+                estacionSeleccionada = copia;
+
+                // Si esta estación es la configurada en este equipo, sincronizar configuracion.json
+                sincronizarConfiguracionSiCorresponde(copia);
 
                 tableTramitesAsignados.refresh();
                 tableTramitesDiponibles.refresh();
@@ -397,6 +420,11 @@ public class MantenimientoSucursalController extends Controller implements Initi
                 return;
             }
 
+            // Si la sucursal eliminada era la configurada en este equipo, limpiar configuracion.json
+            if (idEliminada.equals(configuracionService.getSucursalId())) {
+                configuracionService.resetearConfiguracion();
+            }
+
             if (idEliminada.equals(sucursalActualId)) sucursalActualId = null;
             txtBarraBusquedaEstaciones.clear();
             refrescarSucursales();
@@ -445,6 +473,11 @@ public class MantenimientoSucursalController extends Controller implements Initi
             if (!respuesta.getEstado()) {
                 mostrarAlerta(Alert.AlertType.ERROR, respuesta.getMensaje());
                 return;
+            }
+
+            // Si la estación eliminada era la configurada en este equipo, limpiar configuracion.json
+            if (seleccionada.getId().equals(configuracionService.getEstacionId())) {
+                configuracionService.resetearConfiguracion();
             }
 
             refrescarSucursales();
@@ -638,6 +671,35 @@ public class MantenimientoSucursalController extends Controller implements Initi
             }
         }
         return false;
+    }
+
+    /**
+     * Si la estación modificada por drag-and-drop coincide con la que tiene
+     * configurada este equipo en configuracion.json, actualiza ese archivo
+     * para mantener sus tramiteIds sincronizados con sucursales.json.
+     *
+     * Esto resuelve el caso en que el admin reasigna trámites desde esta vista
+     * y el kiosko/estación local quedaba con una copia obsoleta de los trámites.
+     *
+     * @param estacionModificada copia actualizada de la estación tras el drag-and-drop
+     */
+    private void sincronizarConfiguracionSiCorresponde(Estacion estacionModificada) {
+        String estacionConfigurada = configuracionService.getEstacionId();
+        if (estacionModificada == null || estacionConfigurada == null) return;
+        if (!estacionModificada.getId().equals(estacionConfigurada)) return;
+
+        Respuesta respuesta = configuracionService.guardarConfiguracion(
+                configuracionService.getSucursalId(),
+                estacionModificada.getId(),
+                new java.util.ArrayList<>(estacionModificada.getTramiteIds()),
+                estacionModificada.isPreferencial()
+        );
+
+        if (!respuesta.getEstado()) {
+            System.err.println("[MantenimientoSucursalController] "
+                    + "No se pudo sincronizar configuracion.json: "
+                    + respuesta.getMensaje());
+        }
     }
 
     private void mostrarAlerta(Alert.AlertType tipo, String mensaje) {
