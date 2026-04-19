@@ -11,9 +11,7 @@ import java.util.ResourceBundle;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
@@ -21,9 +19,6 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 
 public class VerClienteController extends Controller implements Initializable {
 
@@ -38,7 +33,7 @@ public class VerClienteController extends Controller implements Initializable {
     @FXML private TableColumn<Cliente, String> telefonoColumn;
     @FXML private TableColumn<Cliente, String> correoColumn;
     @FXML private TableColumn<Cliente, String> fechaColumn;
-    @FXML private TableColumn<Cliente, String> fotoColumn; // ← nueva columna en el FXML
+    @FXML private TableColumn<Cliente, String> fotoColumn;
 
     private static final String DEFAULT_FOTO_PATH;
     static {
@@ -70,7 +65,6 @@ public class VerClienteController extends Controller implements Initializable {
         telefonoColumn.setCellValueFactory(new PropertyValueFactory<>("telefono"));
         correoColumn.setCellValueFactory(new PropertyValueFactory<>("correo"));
         fechaColumn.setCellValueFactory(new PropertyValueFactory<>("fechaNacimiento"));
-
         configurarColumnaFoto();
         configurarDeseleccion();
     }
@@ -79,14 +73,12 @@ public class VerClienteController extends Controller implements Initializable {
         fotoColumn.setCellValueFactory(new PropertyValueFactory<>("fotoPath"));
         fotoColumn.setCellFactory(col -> new TableCell<>() {
             private final ImageView imageView = new ImageView();
-
             {
                 imageView.setFitWidth(50);
                 imageView.setFitHeight(50);
                 imageView.setPreserveRatio(true);
                 imageView.setSmooth(true);
             }
-
             @Override
             protected void updateItem(String fotoPath, boolean empty) {
                 super.updateItem(fotoPath, empty);
@@ -105,8 +97,6 @@ public class VerClienteController extends Controller implements Initializable {
         TbMostrarClientes.setItems(clienteService.getListaDeClientes());
     }
 
-    // ── Resolver ruta → Image (mismo criterio que RegistroClienteController) ──
-
     private Image resolverImagen(String path) {
         try {
             if (path.startsWith("file:") || path.startsWith("jar:")) {
@@ -119,8 +109,42 @@ public class VerClienteController extends Controller implements Initializable {
         } catch (Exception e) {
             System.err.println("[VerCliente] No se pudo cargar imagen: " + e.getMessage());
         }
-        // Fallback al logo si la foto no se encuentra
         return new Image(DEFAULT_FOTO_PATH);
+    }
+
+    // ── Detección de contexto ─────────────────────────────────────────────────
+    //
+    // Admin  → goView("VerClienteView")       → stage == mainStage
+    // Func.  → goViewInWindow("VerClienteView") → stage == Stage flotante
+    //
+    // Este método decide cuál de los dos métodos de navegación usar:
+    //   true  (Admin)     → goView()              embebe en VBox center de AdminView
+    //   false (Funcionario) → goViewInCallerStage() reemplaza root de ventana flotante
+    //
+    private boolean estaEnMainStage() {
+        return getStage() == null
+            || getStage() == FlowController.getInstance().getMainStage();
+    }
+
+    // ── Navegación centralizada a RegistroCliente ─────────────────────────────
+
+    private void irARegistro(Cliente clienteParaEditar) {
+        if (estaEnMainStage()) {
+            // Contexto Admin: insertar en el VBox center del AdminView
+            FlowController.getInstance().goView("RegistroClienteView");
+        } else {
+            // Contexto Funcionario: reemplazar root de la ventana flotante
+            FlowController.getInstance().goViewInCallerStage("RegistroClienteView", this);
+        }
+
+        RegistroClienteController ctrl = (RegistroClienteController)
+            FlowController.getInstance().getController("RegistroClienteView");
+
+        if (clienteParaEditar != null) {
+            ctrl.cargarClienteParaEditar(clienteParaEditar);
+        } else {
+            ctrl.limpiarFormulario();
+        }
     }
 
     // ── Eventos ───────────────────────────────────────────────────────────────
@@ -129,10 +153,7 @@ public class VerClienteController extends Controller implements Initializable {
         TbMostrarClientes.setRowFactory(tv -> {
             javafx.scene.control.TableRow<Cliente> row = new javafx.scene.control.TableRow<>();
             row.setOnMouseClicked(e -> {
-                // Si el click fue en una fila vacía, limpiar selección
-                if (row.isEmpty()) {
-                    TbMostrarClientes.getSelectionModel().clearSelection();
-                }
+                if (row.isEmpty()) TbMostrarClientes.getSelectionModel().clearSelection();
             });
             return row;
         });
@@ -140,40 +161,30 @@ public class VerClienteController extends Controller implements Initializable {
 
     @FXML
     private void OnAgregarClientes(ActionEvent event) {
-        FlowController.getInstance().goView("RegistroClienteView");
-
-        // Limpiar el controlador cacheado para que no arrastre datos del cliente anterior
-        RegistroClienteController controller = (RegistroClienteController)
-            FlowController.getInstance().getController("RegistroClienteView");
-        controller.limpiarFormulario();
-
-        // Limpiar la selección de la tabla para que no quede ninguna fila resaltada
         TbMostrarClientes.getSelectionModel().clearSelection();
+        irARegistro(null);        // null = modo alta
     }
 
     @FXML
     private void OnEditarCliente(ActionEvent event) {
-        Cliente clienteSeleccionado = TbMostrarClientes.getSelectionModel().getSelectedItem();
-        if (clienteSeleccionado == null) {
+        Cliente seleccionado = TbMostrarClientes.getSelectionModel().getSelectedItem();
+        if (seleccionado == null) {
             mostrarAlerta(Alert.AlertType.WARNING, "Sin selección",
                           "Seleccioná un cliente para editar.");
             return;
         }
-        FlowController.getInstance().goView("RegistroClienteView");
-        RegistroClienteController controller = (RegistroClienteController)
-            FlowController.getInstance().getController("RegistroClienteView");
-        controller.cargarClienteParaEditar(clienteSeleccionado);
+        irARegistro(seleccionado); // cliente = modo edición
     }
 
     @FXML
     private void OnEliminarCliente(ActionEvent event) {
-        Cliente clienteSeleccionado = TbMostrarClientes.getSelectionModel().getSelectedItem();
-        if (clienteSeleccionado == null) {
+        Cliente seleccionado = TbMostrarClientes.getSelectionModel().getSelectedItem();
+        if (seleccionado == null) {
             mostrarAlerta(Alert.AlertType.WARNING, "Sin selección",
                           "Seleccioná un cliente para eliminar.");
             return;
         }
-        clienteService.remover(clienteSeleccionado);
+        clienteService.remover(seleccionado);
     }
 
     private void mostrarAlerta(Alert.AlertType tipo, String titulo, String mensaje) {

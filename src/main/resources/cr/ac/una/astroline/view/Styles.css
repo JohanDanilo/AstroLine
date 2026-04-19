@@ -1,17 +1,347 @@
 *{
     -fx-base-color-unfocus:        #00d9ff;
     -fx-base-color-focus:    #0099bb;
-    -fx-base-color-titulos:      #9d4edd;
+    -fx-base-color-titulos:      #3300cc;
     -fx-base-color-etiquetas:  #6a4c93;
     -fx-base-color-error:     #ff0080;
     -fx-base-color-exito:      #00ff88;
-    -fx-base-color-texto:     #080435;
+    -fx-base-color-texto:     #fcfcfc;
+    -fx-base-color-subtitulo:     #dfe2e7;
+    -fx-base-color-textoboton: #06b6d4;
     -mfx-main:-fx-base-color-focus;
     -mfx-purple:-fx-base-color-focus;
 }
 
-.button.jfx-btn-preferencial,
-.jfx-btn-preferencial {
+/***********Fondo***************/
+.jfx-root {
+    -fx-background-color: radial-gradient(center 50% 50%, radius 100%, #0b0f2a, #020617);
+}
+.jfx-root-blanco {
+    -fx-background-color: radial-gradient(center 50% 50%, radius 100%, #ffffff, #f0f1f7);
+}
+
+.jfx-label-titulo {
+    -fx-text-fill: white;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+.jfx-label-subtitulo {
+    -fx-text-fill: -fx-base-color-subtitulo;
+    -fx-font-size: 11px;
+}
+.jfx-label-texto {
+    -fx-text-fill: -fx-base-color-texto;
+    -fx-font-size: 10px;
+}
+.jfx-label-titulo-negro {
+    -fx-text-fill: black;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+.jfx-label-subtitulo-negro {
+    -fx-text-fill: #000000;
+    -fx-font-size: 11px;
+}
+.jfx-label-texto-negro {
+    -fx-text-fill: #000000;
+    -fx-font-size: 10px;
+}
+/******************Opcion 1: Contenedor******************/
+.jfx-panelcontenedor {
+    -fx-background-color: rgba(20, 25, 60, 0.6);
+    -fx-background-radius: 15;
+    -fx-border-radius: 15;
+
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-width: 1.5;
+
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 15, 0.3, 0, 5);
+    -fx-padding: 5;
+}
+
+/******************CheckBox******************/
+.mfx-checkbox.mfx-checkbox-seleccion{
+    -fx-background-color: transparent;
+    -fx-background-radius: 15;
+    -fx-border-radius: 15;
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 15, 0.3, 0, 5);
+    -fx-padding: 5;
+    -fx-font-fill: white;
+    -fx-text-fill: white;
+}
+
+.mfx-checkbox.mfx-checkbox-seleccion .label {
+    -fx-text-fill: white;
+}
+
+.mfx-checkbox.mfx-checkbox-seleccion .text {
+    -fx-fill: white;
+}
+
+.mfx-checkbox.mfx-checkbox-seleccion:selected .label {
+    -fx-text-fill: white;
+}
+
+.mfx-checkbox {
+    -fx-text-fill: white !important;
+}
+
+.mfx-checkbox.mfx-checkbox-seleccion .box {
+    -fx-border-color: linear-gradient(to right, #d946ef, #6366f1); /* color borde */
+    -fx-border-width: 1;
+    -fx-border-radius: 4;
+    -fx-background-color: transparent;
+}
+
+/*************************Botón: Opcion 1***********************************/
+.jfx-btn-principal {
+    -fx-background-color: linear-gradient(to right, #d946ef, #6366f1);
+    -fx-text-fill: white;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+
+    -fx-background-radius: 12;
+    -fx-padding: 7,7;
+
+    -fx-effect: dropshadow(gaussian, rgba(217,70,239,0.6), 10, 0.5, 0, 0);
+}
+
+.jfx-btn-principal:hover {
+    -fx-background-color: linear-gradient(to right, #c026d3, #4f46e5);
+}
+
+.jfx-btn-principal:pressed {
+    -fx-background-color: linear-gradient(to right, #a21caf, #4338ca);
+}
+
+/*************************Botón: Opcion 2***********************************/
+.jfx-btn-secundario{
+    -fx-background-color: linear-gradient(to right, #06b6d4 , #6366f1);
+    -fx-text-fill: white;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+
+    -fx-background-radius: 12;
+    -fx-padding: 3,3;
+
+    -fx-effect: dropshadow(gaussian, rgba(6, 182, 212, 0.6), 10, 0.5, 0, 0);
+}
+
+.jfx-btn-secundario:hover {
+    -fx-background-color: linear-gradient(to right, #06b6d4, #4f46e5);
+}
+/*************************Botón: Opcion 3***********************************/
+.jfx-btn-terciario{
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+
+    -fx-background-radius: 12;
+    -fx-padding: 3,3;
+
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(gaussian, rgba(6, 182, 212, 0.6), 10, 0.5, 0, 0);
+}
+
+.jfx-btn-terciario:hover {
+    -fx-background-color: linear-gradient(to right, #06b6d4, #4f46e5);
+}
+.jfx-btn-terciario:pressed {
+    -fx-background-color: linear-gradient(to right, #06b6d4, #4338ca);
+    
+}
+
+/********************************Botones Modulo Funcionario***********************/
+
+.jfx-btn-repetirficha, .jfx-btn-repetirficha:armed, .jfx-btn-repetirficha:focused{
+    -fx-background-color:#06b6d4;
+    -fx-effect: dropshadow(gaussian, #06b6d4, 15, 0.4, 0, 0); 
+    -fx-text-fill: -fx-base-color-textoboton;
+    
+}
+
+.jfx-btn-repetirficha > ImageView{
+    -fx-image: url("../resource/Repetir.png");
+}
+.jfx-btn-siguienteficha, .jfx-btn-siguienteficha:armed, .jfx-btn-siguienteficha:focused{
+    -fx-background-color:#06b6d4;
+    -fx-effect: dropshadow(gaussian, #06b6d4, 15, 0.4, 0, 0); 
+    -fx-text-fill: -fx-base-color-textoboton;
+}
+
+.jfx-btn-siguienteficha > ImageView{
+    -fx-image: url("../resource/Siguiente.png");
+}
+
+.jfx-btn-preferencialficha, .jfx-btn-preferencialficha:armed, .jfx-btn-preferencialficha:focused{
+    -fx-background-color:#06b6d4;
+    -fx-effect: dropshadow(gaussian, #06b6d4, 15, 0.4, 0, 0); 
+    -fx-text-fill: -fx-base-color-textoboton;
+}
+
+.jfx-btn-preferencialficha > ImageView{
+    -fx-image: url("../resource/Preferencial.png");
+}
+.jfx-btn-seleccionarficha, .jfx-btn-seleccionarficha:armed, .jfx-btn-seleccionarficha:focused{
+    -fx-background-color:#06b6d4;
+    -fx-effect: dropshadow(gaussian, #06b6d4, 15, 0.4, 0, 0); 
+    -fx-text-fill: -fx-base-color-textoboton;
+}
+
+.jfx-btn-seleccionarficha > ImageView{
+    -fx-image: url("../resource/Seleccionar.png");
+}
+
+/***********************Combo box***********************************/
+.mfx-combo-box-neon {
+    -fx-background-color: #0f172a;
+    -fx-border-color: #22d3ee;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+
+    -fx-effect: dropshadow(gaussian, #22d3ee, 10, 0.6, 0, 0);
+}
+
+/* Flecha */
+.mfx-combo-box-neon .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.mfx-combo-box-neon .arrow {
+    -fx-background-color: #22d3ee;
+}
+
+/* Texto seleccionado */
+.mfx-combo-box-neon .list-cell {
+    -fx-text-fill: white;
+}
+
+/* Lista desplegable */
+.mfx-combo-box-neon-popup .list-view {
+    -fx-background-color: #020617;
+    -fx-border-color: #7c3aed;
+}
+
+/* Opciones */
+.mfx-combo-box-neon-popup .list-cell {
+    -fx-text-fill: white;
+}
+
+.mfx-combo-box-neon-popup .list-cell:hover {
+    -fx-background-color: #7c3aed;
+}
+
+.mfx-combo-box-neon-popup .list-cell:filled:selected {
+    -fx-background-color: #06b6d4;
+    -fx-text-fill: black;
+}
+/***********************Table View**************************/
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: #ffffff;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+
+    /* glow exterior */
+    /*-fx-effect: dropshadow(gaussian, #ccffff, 15, 0.5, 0, 0);*/
+}
+
+/* fondo interno */
+.table-view .viewport {
+    -fx-background-color: transparent;
+}
+
+/* filas */
+.table-row-cell {
+    -fx-background-color: white;
+    -fx-border-color: transparent;
+}
+
+/* filas al pasar mouse */
+.table-row-cell:hover {
+    -fx-background-color: black;
+    -fx-background-color: rgba(255, 255, 255, 1);
+}
+
+/* fila seleccionada */
+.table-row-cell:selected {
+    -fx-background-color: rgba(204, 255, 255, 1);
+    -fx-effect: dropshadow(gaussian, #ccffff, 10, 0.7, 0, 0);
+}
+
+/* celdas */
+.table-cell {
+    -fx-text-fill: #000000;
+    -fx-alignment: CENTER;
+}
+
+/* encabezado */
+.column-header-background {
+    -fx-background-color: transparent;
+}
+
+.column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: #ffffff;
+}
+
+.column-header .label {
+    -fx-text-fill: #ffffff;
+    -fx-font-weight: bold;
+}
+
+/* líneas entre columnas */
+.table-view .column-header,
+.table-view .filler {
+    -fx-size: 40px;
+}
+
+/* scrollbar opcional neon */
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #00ffff;
+    -fx-background-radius: 5;
+}
+
+/**********************TextField*******************/
+.mfx-text-field-neon {
+    -mfx-float-mode: BORDER;
+    -fx-alignment:TOP_LEFT;
+    
+    -fx-background-color: white;
+    
+    -fx-prompt-text-fill: rgba(0, 204, 204, 1);
+    -fx-text-fill: #000000; /* color del texto */
+    -fx-prompt-text-fill: #000000; /* color del texto */
+
+    -fx-border-color: #6366f1;
+    -fx-border-width: 2;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+
+    -fx-padding: 5;
+
+    /* efecto neon */
+    -fx-effect: dropshadow(gaussian, #06b6d4, 10, 0.5, 0, 0);
+    -fx-font-fill: #000000;
+}
+
+/* cuando está enfocado */
+.mfx-text-field-neon:focused {
+    -fx-font-fill: #000000;
+    -fx-text-fill: #000000;
+    -fx-border-color: #06b6d4;
+    -fx-effect: dropshadow(gaussian, #6366f1, 20, 0.8, 0, 0);
+}
+
+.button.jfx-btn-agregar,
+.jfx-btn-agregar {
     
     -fx-background-color: #0099cc; 
     
@@ -31,50 +361,93 @@
     -fx-padding: 0;
 }
 
-.button.jfx-btn-preferencial:hover,
-.jfx-btn-preferencial:hover {
+.jfx-btn-agregar > ImageView {
+    -fx-image: url(../resource/Agregar.png);
+    -fx-fit-width: 50px; 
+    -fx-fit-height: 50px;
+}
+
+.button.jfx-btn-editar,
+.jfx-btn-editar {
     
-    -fx-background-color: #6600cc; 
-    -fx-effect: dropshadow(gaussian, #6600cc, 15, 0.4, 0, 0);
-}
+    -fx-background-color: #949292; 
+    
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    
+    /* Dimensiones fijas */
+    -fx-min-width: 50px; -fx-min-height: 50px;
+    -fx-pref-width: 50px; -fx-pref-height: 50px;
+    -fx-max-width: 50px; -fx-max-height: 50px;
 
-.button.jfx-btn-preferencial:pressed,
-.jfx-btn-preferencial:pressed {
-    -fx-background-color: #5a189a; /* Color más oscuro al presionar */
-    -fx-opacity: 0.9;
-}
-
-.jfx-btn-preferencial > ImageView {
-    -fx-image: url(../resource/Preferencial.png);
-    -fx-fit-width: 35px; 
-    -fx-fit-height: 35px;
-}
-
-.mfx-button{
+    /* Ocultar texto */
+    -fx-text-fill: transparent;
+    -fx-font-size: 0px;
+    
     -fx-cursor: hand;
+    -fx-padding: 0;
 }
 
-.mfx-button:hover{
-    -fx-font-weight:bold;
-    -fx-font-size: 14px;
-    -fx-text-fill:white;
-    -fx-background-color: #38E815; 
-    -fx-effect: dropshadow(gaussian, #38E815, 15, 0.4, 0, 0);
+.jfx-btn-editar > ImageView {
+    -fx-image: url(../resource/Editar.png);
+    -fx-fit-width: 45px; 
+    -fx-fit-height: 45px;
+}
+
+.button.jfx-btn-eliminar,
+.jfx-btn-eliminar {
+    
+    -fx-background-color: #ff0080; 
+    
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    
+    /* Dimensiones fijas */
+    -fx-min-width: 50px; -fx-min-height: 50px;
+    -fx-pref-width: 50px; -fx-pref-height: 50px;
+    -fx-max-width: 50px; -fx-max-height: 50px;
+
+    /* Ocultar texto */
+    -fx-text-fill: transparent;
+    -fx-font-size: 0px;
+    
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+
+.jfx-btn-eliminar > ImageView {
+    -fx-image: url(../resource/Eliminar.png);
+    -fx-fit-width: 50px; 
+    -fx-fit-height: 50px;
 }
 
 /* Inputs estándar JavaFX */
 .text-field,
 .password-field,
-
-/* Inputs MaterialFX */
 .mfx-text-field,
 .mfx-password-field {
     
     /* Tamaño fijo */
-    -fx-pref-height: 45px;
+    -fx-pref-height: 30px;
     -fx-pref-width: 250px;
 
     /* Opcional: consistencia */
-    -fx-font-size: 14px;
-    -fx-font-fill: -fx-base-color-texto;
+    -fx-font-fill: #000000;
+}
+
+/* El nodo de texto interno del BoundTextField */
+.mfx-text-field-neon .text {
+    -fx-background-color: transparent;
+    -fx-fill: #000000;
+}
+
+/* El prompt text específicamente */
+.mfx-text-field-neon .text:disabled {
+    -fx-background-color: transparent;
+    -fx-fill: rgba(0, 0, 0, 1);
+}
+
+.mfx-text-field-neon .mfx-label {
+    -fx-text-fill: #000000;
+    -fx-background-color: transparent;
 }

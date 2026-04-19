@@ -18,7 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.time.LocalDate;
 import java.util.ResourceBundle;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -38,7 +37,7 @@ import javafx.stage.FileChooser;
 
 public class RegistroClienteController extends Controller implements Initializable {
 
-    // ── FXML fields (sin cambios) ────────────────────────────────────────────
+    // ── FXML fields ──────────────────────────────────────────────────────────
     @FXML private MFXDatePicker dpFechaNacimiento;
     @FXML private MFXTextField  txtCedula;
     @FXML private MFXTextField  txtNombre;
@@ -52,6 +51,8 @@ public class RegistroClienteController extends Controller implements Initializab
     @FXML private MFXButton     btnTomarFoto;
     @FXML private MFXButton     btnRegresarAListaClientes;
     @FXML private MFXButton     btnGuardarCambiosClientes;
+    @FXML private MFXButton     btnDescartar;
+
     private static final String DEFAULT_FOTO_PATH;
     static {
         URL resource = RegistroClienteController.class.getResource(
@@ -59,33 +60,28 @@ public class RegistroClienteController extends Controller implements Initializab
         DEFAULT_FOTO_PATH = resource != null ? resource.toExternalForm() : "";
     }
 
-
     // ── Estado ───────────────────────────────────────────────────────────────
     private final ClienteService clienteService = ClienteService.getInstancia();
     private Cliente editingCliente = null;
-
-    /** Ruta de la foto seleccionada o capturada (puede ser "" si no hay ninguna). */
     private String fotoPathSeleccionado = "";
-
-    /** Carpeta donde se guardan las fotos de clientes. */
     private static final String FOTOS_DIR = "data/fotos/";
 
     // ── Cámara ───────────────────────────────────────────────────────────────
     private Webcam webcam;
     private ScheduledExecutorService camaraScheduler;
     private final AtomicBoolean camaraActiva = new AtomicBoolean(false);
-    @FXML
-    private MFXButton btnDescartar;
 
     // ─────────────────────────────────────────────────────────────────────────
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Deshabilitar "Tomar foto" hasta que la cámara esté abierta
         btnTomarFoto.setDisable(true);
         fotoPathSeleccionado = DEFAULT_FOTO_PATH;
         mostrarImagenLocal(DEFAULT_FOTO_PATH);
     }
+
+    @Override
+    public void initialize() {}
 
     // ── Cargar cliente (modo edición) ─────────────────────────────────────────
 
@@ -104,8 +100,6 @@ public class RegistroClienteController extends Controller implements Initializab
         dpFechaNacimiento.setValue(dto.getFechaNacimiento());
         txtCedula.setEditable(false);
 
-        // Antes: solo cargaba si fotoPath no era vacío
-        // Ahora: siempre carga, con fallback al default si está vacío
         String foto = (dto.getFotoPath() != null && !dto.getFotoPath().isEmpty())
                       ? dto.getFotoPath()
                       : DEFAULT_FOTO_PATH;
@@ -113,12 +107,34 @@ public class RegistroClienteController extends Controller implements Initializab
         mostrarImagenLocal(foto);
     }
 
-    // ── Eventos de navegación y guardado (sin cambios) ────────────────────────
+    // ── Detección de contexto ─────────────────────────────────────────────────
+    //
+    // Este controller llega desde dos caminos:
+    //   Admin      → goView() fija stage = mainStage
+    //   Funcionario → goViewInCallerStage() fija stage = Stage flotante
+    //
+    // Con esto, la vuelta a VerClienteView usa el método correcto en cada caso.
+    //
+    private boolean estaEnMainStage() {
+        return getStage() == null
+            || getStage() == FlowController.getInstance().getMainStage();
+    }
+
+    // ── Navegación de vuelta a VerCliente ─────────────────────────────────────
+
+    private void navegarALista() {
+        if (estaEnMainStage()) {
+            FlowController.getInstance().goView("VerClienteView");
+        } else {
+            FlowController.getInstance().goViewInCallerStage("VerClienteView", this);
+        }
+    }
+
+    // ── Eventos de navegación y guardado ─────────────────────────────────────
 
     @FXML
     private void OnActionRegresarRegistroCliente(ActionEvent event) {
-        detenerCamara();
-        FlowController.getInstance().goView("VerClienteView");
+        navegarALista();
     }
 
     @FXML
@@ -140,11 +156,11 @@ public class RegistroClienteController extends Controller implements Initializab
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Seleccionar foto del cliente");
         chooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Imágenes", "*.png", "*.jpg", "*.jpeg", "*.gif")
+            new FileChooser.ExtensionFilter("Imágenes", ".png", ".jpg", ".jpeg", ".gif")
         );
 
         File archivo = chooser.showOpenDialog(root.getScene().getWindow());
-        if (archivo == null) return; // usuario canceló
+        if (archivo == null) return;
 
         try {
             String destino = copiarFotoADataDir(archivo.toPath(),
@@ -187,7 +203,6 @@ public class RegistroClienteController extends Controller implements Initializab
             ImageIO.write(frame, "png", destino.toFile());
 
             fotoPathSeleccionado = destino.toString();
-            // Congelar el preview con el frame tomado
             Image fxImage = SwingFXUtils.toFXImage(frame, null);
             Platform.runLater(() -> fotoCliente.setImage(fxImage));
 
@@ -200,7 +215,29 @@ public class RegistroClienteController extends Controller implements Initializab
         }
     }
 
-    // ── Lógica de cámara (privado) ───────────────────────────────────────────
+    // ── Descartar foto ────────────────────────────────────────────────────────
+
+    @FXML
+    private void onBtnDescartar(ActionEvent event) {
+        if (fotoPathSeleccionado != null
+                && !fotoPathSeleccionado.isEmpty()
+                && !fotoPathSeleccionado.equals(DEFAULT_FOTO_PATH)) {
+            try {
+                Path fotoPath = Paths.get(fotoPathSeleccionado).toAbsolutePath();
+                Path fotoDir  = Paths.get(FOTOS_DIR).toAbsolutePath();
+                if (fotoPath.startsWith(fotoDir)) {
+                    Files.deleteIfExists(fotoPath);
+                }
+            } catch (IOException e) {
+                System.err.println("[RegistroCliente] No se pudo borrar la foto: " + e.getMessage());
+            }
+        }
+        fotoPathSeleccionado = DEFAULT_FOTO_PATH;
+        mostrarImagenLocal(DEFAULT_FOTO_PATH);
+        detenerCamara();
+    }
+
+    // ── Lógica de cámara ─────────────────────────────────────────────────────
 
     private void iniciarCamara() {
         webcam = Webcam.getDefault();
@@ -209,15 +246,12 @@ public class RegistroClienteController extends Controller implements Initializab
                           "No se detectó ninguna cámara en el sistema.");
             return;
         }
-
         webcam.setViewSize(WebcamResolution.VGA.getSize());
         webcam.open();
         camaraActiva.set(true);
-
         btnAbrirCamara.setText("Cerrar cámara");
         btnTomarFoto.setDisable(false);
 
-        // Actualizar el ImageView con cada frame (~15 fps)
         camaraScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "astroline-webcam");
             t.setDaemon(true);
@@ -229,12 +263,11 @@ public class RegistroClienteController extends Controller implements Initializab
             if (frame == null) return;
             Image fxImage = SwingFXUtils.toFXImage(frame, null);
             Platform.runLater(() -> fotoCliente.setImage(fxImage));
-        }, 0, 66, TimeUnit.MILLISECONDS); // ~15 fps
+        }, 0, 66, TimeUnit.MILLISECONDS);
     }
 
     private void detenerCamara() {
         camaraActiva.set(false);
-
         if (camaraScheduler != null) {
             camaraScheduler.shutdownNow();
             camaraScheduler = null;
@@ -242,7 +275,6 @@ public class RegistroClienteController extends Controller implements Initializab
         if (webcam != null && webcam.isOpen()) {
             webcam.close();
         }
-
         Platform.runLater(() -> {
             btnAbrirCamara.setText("Abrir cámara");
             btnTomarFoto.setDisable(true);
@@ -251,9 +283,6 @@ public class RegistroClienteController extends Controller implements Initializab
 
     // ── Utilidades de imagen ─────────────────────────────────────────────────
 
-    /**
-     * Copia una imagen al directorio data/fotos/ y retorna la ruta relativa.
-     */
     private String copiarFotoADataDir(Path origen, String nombreDestino) throws IOException {
         Path dirFotos = Paths.get(FOTOS_DIR);
         Files.createDirectories(dirFotos);
@@ -262,9 +291,6 @@ public class RegistroClienteController extends Controller implements Initializab
         return destino.toString();
     }
 
-    /**
-     * Genera un nombre único basado en timestamp + extensión original.
-     */
     private String generarNombreFoto(String nombreOriginal) {
         String extension = nombreOriginal.contains(".")
             ? nombreOriginal.substring(nombreOriginal.lastIndexOf('.'))
@@ -273,23 +299,16 @@ public class RegistroClienteController extends Controller implements Initializab
         return "Cliente_" + cedula + extension;
     }
 
-    /**
-     * Muestra una imagen desde una ruta local en el ImageView.
-     */
     private void mostrarImagenLocal(String path) {
         if (path == null || path.isEmpty()) return;
-
         try {
             if (path.startsWith("file:") || path.startsWith("jar:")) {
-                // Es una URL de recurso (logo predefinido) — JavaFX la carga directo
                 fotoCliente.setImage(new Image(path));
             } else {
-                // Es una ruta de archivo en disco (foto subida o capturada)
                 File archivo = Paths.get(path).toAbsolutePath().toFile();
                 if (archivo.exists()) {
                     fotoCliente.setImage(new Image(archivo.toURI().toString()));
                 } else {
-                    // Si el archivo ya no existe, mostrar logo por defecto
                     fotoCliente.setImage(new Image(DEFAULT_FOTO_PATH));
                 }
             }
@@ -298,7 +317,7 @@ public class RegistroClienteController extends Controller implements Initializab
         }
     }
 
-    // ── Lógica separada (sin cambios relevantes) ──────────────────────────────
+    // ── Lógica de negocio ─────────────────────────────────────────────────────
 
     private Cliente construirClienteDesdeFormulario() {
         ClienteDTO dto = new ClienteDTO();
@@ -334,12 +353,7 @@ public class RegistroClienteController extends Controller implements Initializab
         }
     }
 
-    private void navegarALista() {
-        detenerCamara();
-        FlowController.getInstance().goView("VerClienteView");
-    }
-
-    // ── Validaciones (sin cambios) ────────────────────────────────────────────
+    // ── Validaciones ─────────────────────────────────────────────────────────
 
     private boolean camposValidos() {
         if (txtCedula.getText().trim().isEmpty()) {
@@ -388,32 +402,5 @@ public class RegistroClienteController extends Controller implements Initializab
         alerta.setHeaderText(null);
         alerta.setContentText(mensaje);
         alerta.showAndWait();
-    }
-
-    @Override
-    public void initialize() {}
-
-
-
-    @FXML
-    private void onBtnDescartar(ActionEvent event) {
-        if (fotoPathSeleccionado != null
-                && !fotoPathSeleccionado.isEmpty()
-                && !fotoPathSeleccionado.equals(DEFAULT_FOTO_PATH)) {
-            try {
-                Path fotoPath = Paths.get(fotoPathSeleccionado).toAbsolutePath();
-                Path fotoDir  = Paths.get(FOTOS_DIR).toAbsolutePath();
-                if (fotoPath.startsWith(fotoDir)) {
-                    Files.deleteIfExists(fotoPath);
-                }
-            } catch (IOException e) {
-                System.err.println("[RegistroCliente] No se pudo borrar la foto: " + e.getMessage());
-            }
-        }
-
-        // Volver al logo por defecto, no a imagen vacía
-        fotoPathSeleccionado = DEFAULT_FOTO_PATH;
-        mostrarImagenLocal(DEFAULT_FOTO_PATH);
-        detenerCamara();
     }
 }

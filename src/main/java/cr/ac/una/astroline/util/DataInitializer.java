@@ -46,7 +46,7 @@ public class DataInitializer {
         sucursal.setTextoAviso("Bienvenido a AstroLine. Por favor espere su turno.");
 
         // Estación inicial que atiende todos los trámites
-        Estacion estacion = new Estacion("estacion-1", "Estación 1", "sucursal-1", false, true);
+        Estacion estacion = new Estacion("E-1-1", "Estación 1", "sucursal-1", false, true);
         estacion.agregarTramite("A");
         estacion.agregarTramite("B");
         estacion.agregarTramite("C");
@@ -74,6 +74,7 @@ public class DataInitializer {
         funcionario.setUsername("admin");
         funcionario.setPassword("1234");
         funcionario.setAdmin(true);
+        funcionario.setCedula("000000001");
         funcionario.setLastModified(System.currentTimeMillis());
 
         List<Funcionario> lista = new ArrayList<>();

@@ -35,11 +35,13 @@ public class PdfService {
         if (instancia == null) instancia = new PdfService();
         return instancia;
     }
+    
+    Empresa empresa = EmpresaService.getInstancia().getEmpresa();
 
     private PdfService() {}
 
     // ── Tamaño de página: 3.5" × 5.3" ──────────────────────────────────────
-    private static final PDRectangle PAGE_SIZE = new PDRectangle(240f, 420f);
+    private static final PDRectangle PAGE_SIZE = new PDRectangle(250f, 410f);
 
     // Layout
     private static final float MARGIN    = 20f;
@@ -73,7 +75,7 @@ public class PdfService {
     // API PUBLICA
     // ═══════════════════════════════════════════════════════════════════════════
 
-    public Respuesta generarFichaPDF(Ficha ficha, Cliente cliente, Empresa empresa) {
+    public Respuesta generarFichaPDF(Ficha ficha, Cliente cliente) {
         Respuesta r = new Respuesta();
         try {
             asegurarDir();
@@ -153,20 +155,36 @@ public class PdfService {
 
         // ── Logo ─────────────────────────────────────────────────────────────
         float xText  = MARGIN;
+        
         boolean hasLogo = false;
-        if (emp != null && emp.getLogoPath() != null && !emp.getLogoPath().isBlank()) {
-            try {
-                String ruta = "/cr/ac/una/astroline/resource/"
-                        + emp.getLogoPath().replace("assets/", "");
-                InputStream stream = getClass().getResourceAsStream(ruta);
-                if (stream != null) {
-                    PDImageXObject img = PDImageXObject.createFromByteArray(
-                            doc, stream.readAllBytes(), "logo");
-                    cs.drawImage(img, logoX, logoY, LOGO_SZ, LOGO_SZ);
-                    xText   = logoX + LOGO_SZ + 12f;
-                    hasLogo = true;
-                }
-            } catch (Exception ignored) {}
+
+        try {
+            InputStream logoStream = null;
+
+            // 1. Intentar logo externo subido por el usuario
+            File logoExterno = new File("data/logoEmpresa/logo_empresa.png");
+            if (logoExterno.exists() && logoExterno.isFile()) {
+                logoStream = new java.io.FileInputStream(logoExterno);
+            }
+
+            // 2. Fallback al logo empaquetado en el JAR
+            if (logoStream == null) {
+                logoStream = getClass().getResourceAsStream(
+                        "/cr/ac/una/astroline/resource/LogoEmpresa.png");
+            }
+
+            if (logoStream != null) {
+                PDImageXObject img = PDImageXObject.createFromByteArray(
+                        doc, logoStream.readAllBytes(), "logo");
+                logoStream.close();
+                cs.drawImage(img, logoX, logoY, LOGO_SZ, LOGO_SZ);
+                xText   = logoX + LOGO_SZ + 12f;
+                hasLogo = true;
+            }
+
+        } catch (Exception e) {
+            // Logo no cargó, el texto del header arranca desde MARGIN normalmente
+            System.err.println("PdfService: no se pudo cargar el logo: " + e.getMessage());
         }
 
         // ── Bloque de texto: centrado verticalmente en el header ──────────────

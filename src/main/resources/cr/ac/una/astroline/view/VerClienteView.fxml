@@ -9,12 +9,13 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane id="AnchorPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="411.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.VerClienteController">
+
+<AnchorPane id="AnchorPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="411.0" prefWidth="640.0" styleClass="jfx-root" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.VerClienteController">
    <children>
-      <VBox layoutX="140.0" layoutY="55.0" prefHeight="200.0" prefWidth="100.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <VBox layoutX="140.0" layoutY="55.0" prefHeight="200.0" prefWidth="100.0" spacing="10.0" stylesheets="@Styles.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <Label text="Registro de Clientes" />
-            <TableView fx:id="TbMostrarClientes" prefHeight="327.0" prefWidth="437.0">
+            <Label styleClass="jfx-label-titulo" stylesheets="@Styles.css" text="Registro de Clientes" />
+            <TableView fx:id="TbMostrarClientes" prefHeight="327.0" prefWidth="437.0" stylesheets="@Styles.css">
               <columns>
                 <TableColumn fx:id="idColumn" prefWidth="75.0" text="ID (Cedula)" />
                 <TableColumn fx:id="nombreColumn" prefWidth="75.0" text="Nombre" />
@@ -25,11 +26,11 @@
                   <TableColumn fx:id="fotoColumn" prefWidth="116.00006103515625" text="Foto" />
               </columns>
             </TableView>
-            <HBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="31.0" prefWidth="437.0" spacing="10.0" VBox.vgrow="ALWAYS">
+            <HBox alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="31.0" prefWidth="437.0" spacing="10.0" stylesheets="@Styles.css" VBox.vgrow="ALWAYS">
                <children>
-                  <MFXButton fx:id="btnAgregarClientes" onAction="#OnAgregarClientes" text="Agregar Clientes" />
-                  <MFXButton fx:id="btnEliminarCliente" onAction="#OnEliminarCliente" text="Eliminar Cliente" />
-                  <MFXButton fx:id="btnEditarCliente" onAction="#OnEditarCliente" text="Editar Cliente" />
+                  <MFXButton fx:id="btnAgregarClientes" onAction="#OnAgregarClientes" styleClass="jfx-btn-principal" text="Agregar Clientes" />
+                  <MFXButton fx:id="btnEliminarCliente" onAction="#OnEliminarCliente" styleClass="jfx-btn-principal" text="Eliminar Cliente" />
+                  <MFXButton fx:id="btnEditarCliente" onAction="#OnEditarCliente" styleClass="jfx-btn-principal" text="Editar Cliente" />
                </children>
             </HBox>
          </children>

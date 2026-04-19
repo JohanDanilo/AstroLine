@@ -39,7 +39,7 @@ public class Estacion {
      * @return true si la estación atiende ese trámite
      */
     public boolean atiendeTramite(String tramiteId) {
-        return tramiteIds.contains(tramiteId);
+        return tramiteIds != null && tramiteIds.contains(tramiteId);
     }
 
     public String getId() { return id; }
@@ -58,7 +58,9 @@ public class Estacion {
     public void setEstaActiva(boolean estaActiva) { this.estaActiva = estaActiva; }
     
     public List<String> getTramiteIds() { return tramiteIds; }
-    public void setTramiteIds(List<String> tramiteIds) { this.tramiteIds = tramiteIds; }
+    public void setTramiteIds(List<String> tramiteIds) {
+        this.tramiteIds = tramiteIds != null ? tramiteIds : new ArrayList<>();
+    }
 
     /**
      * Agrega un trámite a los que atiende esta estación.
@@ -69,6 +71,9 @@ public class Estacion {
      * @return true si se agregó, false si ya existía
      */
     public boolean agregarTramite(String tramiteId) {
+        if (tramiteIds == null) {
+            tramiteIds = new ArrayList<>();
+        }
         if (tramiteId == null || atiendeTramite(tramiteId)) return false;
         tramiteIds.add(tramiteId);
         return true;
@@ -82,7 +87,22 @@ public class Estacion {
      * @return true si se quitó, false si no existía
      */
     public boolean quitarTramite(String tramiteId) {
-        return tramiteIds.remove(tramiteId);
+        return tramiteIds != null && tramiteIds.remove(tramiteId);
+    }
+    
+    public Estacion clonarEstacion(Estacion original) {
+        if (original == null) return null;
+
+        Estacion copia = new Estacion(
+                original.getId(),
+                original.getNombre(),
+                original.getSucursalId(),
+                original.isPreferencial(),
+                original.isEstaActiva()
+        );
+
+        copia.setTramiteIds(new ArrayList<>(original.getTramiteIds()));
+        return copia;
     }
 
     @Override

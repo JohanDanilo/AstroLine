@@ -1,5 +1,8 @@
 package cr.ac.una.astroline.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Configuración local de la máquina donde corre el sistema.
  * Define en qué sucursal y estación opera este equipo.
@@ -12,13 +15,18 @@ public class ConfiguracionLocal {
 
     private String sucursalId;
     private String estacionId; // null si esta máquina es un Kiosko o la pantalla de proyeccion
+    private List<String> tramiteIds;
+    private boolean preferencial;
 
     public ConfiguracionLocal() {
+        this.tramiteIds = new ArrayList<>();
     }
 
-    public ConfiguracionLocal(String sucursalId, String estacionId) {
-        this.sucursalId = sucursalId;
-        this.estacionId = estacionId;
+    public ConfiguracionLocal(String sucursalId, String estacionId, List<String> tramiteIds, boolean preferencial) {
+        this.sucursalId  = sucursalId;
+        this.estacionId  = estacionId;
+        this.tramiteIds  = tramiteIds != null ? tramiteIds : new ArrayList<>();
+        this.preferencial = preferencial;
     }
 
     /**
@@ -34,6 +42,17 @@ public class ConfiguracionLocal {
 
     public String getEstacionId() { return estacionId; }
     public void setEstacionId(String estacionId) { this.estacionId = estacionId; }
+    
+    public List<String> getTramiteIds() {
+        return tramiteIds;
+    }
+
+    public void setTramiteIds(List<String> tramiteIds) {
+        this.tramiteIds = tramiteIds != null ? tramiteIds : new ArrayList<>();
+    }
+
+    public boolean isPreferencial() { return preferencial; }
+    public void setPreferencial(boolean preferencial) { this.preferencial = preferencial; }
 
     @Override
     public String toString() {

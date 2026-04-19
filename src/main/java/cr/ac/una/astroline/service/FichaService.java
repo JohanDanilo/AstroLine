@@ -1,19 +1,17 @@
 package cr.ac.una.astroline.service;
 
 import cr.ac.una.astroline.model.Ficha;
-import cr.ac.una.astroline.util.DataNotifier;
+import cr.ac.una.astroline.model.Tramite;
 import cr.ac.una.astroline.util.GsonUtil;
 import cr.ac.una.astroline.util.Respuesta;
+import cr.ac.una.astroline.util.DataNotifier;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import javafx.application.Platform;
 
 /**
  * Lógica de negocio para la gestión de fichas.
@@ -162,7 +160,7 @@ public class FichaService implements DataNotifier.Listener{
      * @param fichaId id de la ficha a actualizar
      * @param estado  nuevo estado
      */
-    public Respuesta actualizarEstado(String fichaId, Ficha.Estado estado, String estacionId) {
+    public Respuesta actualizarEstado(String fichaId, Ficha.Estado estado) {
         try {
             List<Ficha> fichas = GsonUtil.leerLista(ARCHIVO_FICHAS, Ficha.class);
 
@@ -173,9 +171,6 @@ public class FichaService implements DataNotifier.Listener{
 
             if (encontrada == null) 
                 return new Respuesta(false, "Ficha no encontrada.", "");
-            
-            if(estado == Ficha.Estado.LLAMADA && estacionId != null)
-                encontrada.registrarLlamado(estacionId);
             
             encontrada.setEstado(estado);
             GsonUtil.guardarYPropagar(fichas, ARCHIVO_FICHAS);
@@ -243,8 +238,6 @@ public class FichaService implements DataNotifier.Listener{
         }
     }
     
-    
-    //METODO PARA PROYECCION 
 
     public List<Ficha> obtenerFichasParaProyeccion(String sucursalId, boolean esOrdenDesendente ,int nFichas){
         
@@ -290,4 +283,23 @@ public class FichaService implements DataNotifier.Listener{
         
         System.out.println("[FichaService] Detectado cambio externo, sincronizando...");
     }
+    /**
+    * Retorna el nombre del trámite asociado a una ficha.
+    * Delega la búsqueda al TramiteService (fuente de verdad del catálogo).
+    *
+    * @param ficha la ficha de la que se quiere conocer el trámite
+    * @return nombre del trámite, o "Trámite no encontrado" si el id no existe
+    */
+    public String getNombreTramite(Ficha ficha) {
+       if (ficha == null || ficha.getTramiteId() == null) return "Sin trámite";
+
+       Tramite tramite = TramiteService.getInstancia().buscarPorId(ficha.getTramiteId());
+       return tramite != null ? tramite.getNombre() : "Trámite no encontrado";
+   }
+    
+    public String getCodigoLetra(Ficha ficha) {
+        if (ficha == null || ficha.getCodigoLetra() == null) return "-";
+        return ficha.getCodigoLetra();
+    }
+              
 }

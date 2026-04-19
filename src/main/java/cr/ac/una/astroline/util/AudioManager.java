@@ -62,7 +62,7 @@ public class AudioManager {
     private Clip cargarClip(String nombreArchivo) throws IOException, UnsupportedAudioFileException, LineUnavailableException{
         
         AudioInputStream audio  = AudioSystem.getAudioInputStream(getClass()
-                .getResource("/cr/ac/una/astroline/audio/"+ nombreArchivo +".wav"));
+                .getResource("/cr/ac/una/astroline/resource/audio/"+ nombreArchivo +".wav"));
         
         Clip clip = AudioSystem.getClip();
         clip.open(audio);

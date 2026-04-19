@@ -73,7 +73,7 @@ public class LoginFuncionarioController extends Controller implements Initializa
                 FlowController.getInstance().goMain("Admin");
             } else {
                 // Modo funcionario — tanto admins como funcionarios normales pueden entrar
-                FlowController.getInstance().goMain("Funcionario");
+                FlowController.getInstance().goMain("VentanaFuncionario");
             }
 
             getStage().close();

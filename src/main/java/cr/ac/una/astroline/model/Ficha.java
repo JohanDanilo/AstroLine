@@ -135,7 +135,7 @@ public class Ficha {
 
     public String getFechaHoraLlamado() { return fechaHoraLlamado; }
     public void setFechaHoraLlamado(String fechaHoraLlamado) { this.fechaHoraLlamado = fechaHoraLlamado; }
-
+    
     @Override
     public String toString() {
         return "Ficha{codigo=" + getCodigo() +
