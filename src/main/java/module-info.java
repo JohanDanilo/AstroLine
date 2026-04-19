@@ -37,6 +37,5 @@ module cr.ac.una.astroline {
     exports cr.ac.una.astroline.model;
     //exports cr.ac.una.astroline.service;
     exports cr.ac.una.astroline.util;
-    requires javafx.graphicsEmpty;
     requires java.base;
 }

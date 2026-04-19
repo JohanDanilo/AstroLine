@@ -1,4 +1,3 @@
-
 package cr.ac.una.astroline.controller;
 
 import cr.ac.una.astroline.App;
@@ -258,7 +257,7 @@ public class VentanaFuncionarioController extends Controller implements Initiali
     
          limpiarFotoCliente();
     }
-
+    
     @FXML
     private void onSeleccionarFicha(ActionEvent event) {
          try {
@@ -319,3 +318,4 @@ public class VentanaFuncionarioController extends Controller implements Initiali
         getStage().close();
     }
 }
+

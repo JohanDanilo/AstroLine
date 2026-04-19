@@ -86,7 +86,7 @@ public class FuncionarioService implements DataNotifier.Listener {
         
         f.setUsername(dto.getUsername());
         f.setPassword(dto.getPassword());
-        f.setAdmin(dto.isEsAdmin());
+        f.setAdmin(dto.esAdmin());
 
         return f;
     }
