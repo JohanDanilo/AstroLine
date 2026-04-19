@@ -1,10 +1,14 @@
 package cr.ac.una.astroline.controller;
 
+import cr.ac.una.astroline.model.Empresa;
 import cr.ac.una.astroline.model.Sucursal;
 import cr.ac.una.astroline.service.ConfiguracionService;
+import cr.ac.una.astroline.service.EmpresaService;
 import cr.ac.una.astroline.service.SucursalService;
 import java.net.URL;
-import java.time.Duration;
+import javafx.util.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
@@ -12,6 +16,8 @@ import javafx.animation.Timeline;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 
 /**
  * Controller placeholder del módulo Kiosko. Será implementado por todos.
@@ -26,6 +32,8 @@ public class ProyeccionController extends Controller implements Initializable {
     private Label lblHoraActual;
     @FXML
     private Label lblNombreEmpresa;
+    @FXML
+    private ImageView logoEmpresa;
     @FXML
     private Label lblLetraFichaLlamando;
     @FXML
@@ -58,29 +66,58 @@ public class ProyeccionController extends Controller implements Initializable {
     private Label lblEstacionFichaAnterior4;
     @FXML
     private Label lblMensajeDeProyeccion;
-
+    
+    private Empresa empresa = EmpresaService.getInstancia().getEmpresa();;
+    
     @Override
     public void initialize() {
         setNombreVista("Proyeccion");
-
-        lblFechaActual.setText(java.time.LocalDate.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-        lblHoraActual.setText(java.time.LocalTime.now().format(java.time.format.DateTimeFormatter.ofPattern("hh:mm a")));
-
-        // Cargar texto de aviso de la sucursal configurada
-//    String sucursalId = ConfiguracionService.getInstancia().getSucursalId();
-//    Sucursal sucursal = SucursalService.getInstancia().buscarPorId(sucursalId);
-//
-//    String texto = (sucursal != null && !sucursal.getTextoAviso().isBlank())
-//            ? sucursal.getTextoAviso()
-//            : "Sin avisos disponibles.";
-//
-//    lblMensajeDeProyeccion.setText(texto);
-//    iniciarTextoCorrente();
+        actualizarReloj();
+        cargarEmpresa();
+       
     }
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         // TODO
+    }
+
+    private void cargarEmpresa() {
+
+        if (empresa == null) return;
+
+        lblNombreEmpresa.setText(empresa.getNombre());
+
+        if (empresa.getLogoPath() != null && !empresa.getLogoPath().isBlank()) {
+            try {
+                String nombreSolo = new java.io.File(empresa.getLogoPath()).getName();
+                java.io.File archivoLogo = new java.io.File("data/logoEmpresa/" + nombreSolo);
+
+                if (archivoLogo.exists()) {
+                    logoEmpresa.setImage(new Image(archivoLogo.toURI().toString()));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        
+        }
+    }
+
+    private void actualizarReloj() {
+        DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter formatoHora = DateTimeFormatter.ofPattern("hh:mm:ss a");
+
+        Timeline reloj = new Timeline(
+                new KeyFrame(Duration.seconds(0), e -> {
+                    LocalDateTime ahora = LocalDateTime.now();
+                    lblFechaActual.setText(ahora.format(formatoFecha));
+                    lblHoraActual.setText(ahora.format(formatoHora));
+                }),
+                new KeyFrame(Duration.seconds(1)) // se repite cada segundo
+        );
+
+        reloj.setCycleCount(Timeline.INDEFINITE);
+        reloj.play();
     }
 }
 

@@ -11,15 +11,15 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane fx:id="root" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.MantenimientoTramitesController">
+<AnchorPane fx:id="root" prefHeight="400.0" prefWidth="600.0" styleClass="jfx-root" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.MantenimientoTramitesController">
    <children>
       <VBox spacing="16.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <Label text="Mantenimiento de Tramites" />
-            <HBox alignment="CENTER_LEFT" spacing="10.0">
+            <Label styleClass="jfx-label-titulo" text="Mantenimiento de Tramites" />
+            <HBox alignment="CENTER_LEFT" spacing="10.0" VBox.vgrow="ALWAYS">
                <children>
-                  <MFXTextField fx:id="txtBusqueda" floatingText="Buscar tramite" HBox.hgrow="ALWAYS" />
-                  <MFXButton fx:id="btnNuevo" onAction="#onActionBtnNuevo" prefHeight="53.0" prefWidth="53.0" text="Nuevo" />
+                  <MFXTextField fx:id="txtBusqueda" floatingText="Buscar tramite" maxWidth="1.7976931348623157E308" styleClass="mfx-text-field-neon" HBox.hgrow="ALWAYS" />
+                  <MFXButton fx:id="btnNuevo" onAction="#onActionBtnNuevo" prefHeight="53.0" prefWidth="79.0" styleClass="jfx-btn-secundario" text="Nuevo" />
                </children>
                <padding>
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -29,7 +29,7 @@
                <children>
                   <VBox spacing="10.0" HBox.hgrow="ALWAYS">
                      <children>
-                        <Label text="Catalogo" />
+                        <Label styleClass="jfx-label-titulo" text="Catalogo" />
                         <TableView fx:id="tblTramites" prefHeight="420.0" prefWidth="520.0" VBox.vgrow="ALWAYS">
                            <columns>
                               <TableColumn fx:id="colId" prefWidth="90.0" text="ID" />
@@ -45,15 +45,15 @@
                   </VBox>
                   <VBox prefWidth="280.0" spacing="12.0">
                      <children>
-                        <Label text="Detalle" />
-                        <MFXTextField fx:id="txtId" floatingText="ID" />
-                        <MFXTextField fx:id="txtNombre" floatingText="Nombre" />
-                        <MFXTextField fx:id="txtDescripcion" floatingText="Descripcion" />
-                        <MFXCheckbox fx:id="chkActivo" text="Activo" />
+                        <Label styleClass="jfx-label-titulo" text="Detalle" />
+                        <MFXTextField fx:id="txtId" floatingText="ID" styleClass="mfx-text-field-neon" />
+                        <MFXTextField fx:id="txtNombre" floatingText="Nombre" styleClass="mfx-text-field-neon" />
+                        <MFXTextField fx:id="txtDescripcion" floatingText="Descripcion" styleClass="mfx-text-field-neon" />
+                        <MFXCheckbox fx:id="chkActivo" styleClass="mfx-checkbox-seleccion" text="Activo" />
                         <HBox spacing="10.0">
                            <children>
-                              <MFXButton fx:id="btnGuardar" maxWidth="1.7976931348623157E308" onAction="#onActionBtnGuardar" text="Guardar" HBox.hgrow="ALWAYS" />
-                              <MFXButton fx:id="btnEliminar" maxWidth="1.7976931348623157E308" onAction="#onActionBtnEliminar" text="Eliminar" HBox.hgrow="ALWAYS" />
+                              <MFXButton fx:id="btnGuardar" maxWidth="1.7976931348623157E308" onAction="#onActionBtnGuardar" styleClass="jfx-btn-principal" text="Guardar" HBox.hgrow="ALWAYS" />
+                              <MFXButton fx:id="btnEliminar" maxWidth="1.7976931348623157E308" onAction="#onActionBtnEliminar" styleClass="jfx-btn-principal" text="Eliminar" HBox.hgrow="ALWAYS" />
                            </children>
                         </HBox>
                      </children>

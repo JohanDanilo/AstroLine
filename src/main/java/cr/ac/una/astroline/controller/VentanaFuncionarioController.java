@@ -2,12 +2,14 @@ package cr.ac.una.astroline.controller;
 
 import cr.ac.una.astroline.App;
 import cr.ac.una.astroline.model.Cliente;
+import cr.ac.una.astroline.model.Empresa;
 import cr.ac.una.astroline.model.Ficha;
 import cr.ac.una.astroline.service.ClienteService;
 import cr.ac.una.astroline.service.FichaService;
 import cr.ac.una.astroline.util.FlowController;
 import cr.ac.una.astroline.util.Respuesta;
 import cr.ac.una.astroline.service.ConfiguracionService;
+import cr.ac.una.astroline.service.EmpresaService;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.css.themes.MFXThemeManager;
 import io.github.palexdev.materialfx.css.themes.Themes;
@@ -51,6 +53,8 @@ public class VentanaFuncionarioController extends Controller implements Initiali
     @FXML
     private MFXButton btnAusente;
     @FXML
+    private MFXButton btnSeleccionarFicha;
+    @FXML
     private Label nombreEmpresa;
     @FXML
     private Label fichasEnEspera;
@@ -75,12 +79,20 @@ public class VentanaFuncionarioController extends Controller implements Initiali
 
     private Ficha fichaActual;
     private final FichaService fichaService = new FichaService();
+    private Empresa empresa = EmpresaService.getInstancia().getEmpresa();;
+    private javafx.animation.Timeline actualizarContadorDeFichasEsperando;
 
     @Override
     public void initialize() {
         setNombreVista("Funcionario");
         actualizarContadorDeFichasEnEspera();
-        ConfiguracionService cfg = ConfiguracionService.getInstancia();
+        cargarEmpresa();
+        
+    actualizarContadorDeFichasEsperando = new javafx.animation.Timeline(new javafx.animation.KeyFrame(javafx.util.Duration.seconds(1), e -> actualizarContadorDeFichasEnEspera()));
+    actualizarContadorDeFichasEsperando.setCycleCount(javafx.animation.Timeline.INDEFINITE);
+    actualizarContadorDeFichasEsperando.play();
+          
+    ConfiguracionService cfg = ConfiguracionService.getInstancia();
     lblSucursal.setText(cfg.getSucursalId() != null ? cfg.getSucursalId() : "-");
     lblEstacion.setText(cfg.getEstacionId() != null ? cfg.getEstacionId() : "-");
     }
@@ -100,7 +112,28 @@ public class VentanaFuncionarioController extends Controller implements Initiali
  
         fichasEnEspera.setText(String.valueOf(cantidad));
     }
+      
+    private void cargarEmpresa() {
 
+        if (empresa == null) return;
+
+        nombreEmpresa.setText(empresa.getNombre());
+
+        if (empresa.getLogoPath() != null && !empresa.getLogoPath().isBlank()) {
+            try {
+                String nombreSolo = new java.io.File(empresa.getLogoPath()).getName();
+                java.io.File archivoLogo = new java.io.File("data/logoEmpresa/" + nombreSolo);
+
+                if (archivoLogo.exists()) {
+                    logoEmpresa.setImage(new Image(archivoLogo.toURI().toString()));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        
+        }
+    }
+    
     @FXML
     private void onRepetirFicha(ActionEvent event) {
         if (fichaActual == null) return;

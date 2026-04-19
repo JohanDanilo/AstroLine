@@ -1,5 +1,4 @@
 package cr.ac.una.astroline.service;
-
 import cr.ac.una.astroline.model.ConfiguracionLocal;
 import cr.ac.una.astroline.util.GsonUtil;
 import cr.ac.una.astroline.util.Respuesta;

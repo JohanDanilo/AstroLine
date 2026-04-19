@@ -11,9 +11,9 @@
    <top>
       <HBox alignment="CENTER_LEFT" prefHeight="37.0" prefWidth="600.0" spacing="10.0" BorderPane.alignment="CENTER">
          <children>
-            <ImageView fitHeight="50.0" fitWidth="50.0" pickOnBounds="true" preserveRatio="true" />
-            <Label fx:id="lblNombreEmpresa" styleClass="jfx-label-titulo" text="Nombre Empresa" />
-            <HBox alignment="CENTER" prefHeight="50.0" prefWidth="431.0" spacing="30.0">
+            <ImageView fx:id="logoEmpresa" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true" preserveRatio="true" />
+            <Label fx:id="lblNombreEmpresa" prefHeight="15.0" prefWidth="319.0" styleClass="jfx-label-titulo" text="Nombre Empresa" HBox.hgrow="ALWAYS" />
+            <HBox alignment="CENTER" prefHeight="50.0" prefWidth="431.0" spacing="30.0" HBox.hgrow="ALWAYS">
                <children>
                   <Label fx:id="lblFechaActual" styleClass="jfx-label-texto" text="Fecha" />
                   <Label fx:id="lblHoraActual" alignment="TOP_CENTER" styleClass="jfx-label-texto" text="Hora" />
@@ -28,10 +28,10 @@
    <right>
       <VBox alignment="TOP_CENTER" prefHeight="350.0" prefWidth="150.0" spacing="20.0" BorderPane.alignment="CENTER">
          <children>
-            <Label styleClass="jfx-label-subtitulo" text="Fichas Anteriores" />
-            <VBox prefHeight="47.0" prefWidth="150.0" styleClass="jfx-panelcontenedor">
+            <Label styleClass="jfx-label-subtitulo" text="Fichas Anteriores" VBox.vgrow="ALWAYS" />
+            <VBox prefHeight="47.0" prefWidth="150.0" styleClass="jfx-panelcontenedor" VBox.vgrow="ALWAYS">
                <children>
-                  <HBox alignment="TOP_CENTER" prefHeight="21.0" prefWidth="150.0">
+                  <HBox alignment="TOP_CENTER" prefHeight="21.0" prefWidth="150.0" VBox.vgrow="ALWAYS">
                      <children>
                         <Label styleClass="jfx-label-texto" text="Ficha:" />
                         <Label fx:id="lblLetraFichaAnterior4" styleClass="jfx-label-texto" text="Letra" />
@@ -40,13 +40,13 @@
                   </HBox>
                   <HBox alignment="TOP_CENTER" prefHeight="21.0" prefWidth="150.0">
                      <children>
-                        <Label styleClass="jfx-label-texto" text="Estación:" />
+                        <Label styleClass="jfx-label-texto" text="Estación:" HBox.hgrow="ALWAYS" />
                         <Label fx:id="lblEstacionFichaAnterior4" styleClass="jfx-label-texto" text="Estación" />
                      </children>
                   </HBox>
                </children>
             </VBox>
-            <VBox prefHeight="47.0" prefWidth="150.0" styleClass="jfx-panelcontenedor">
+            <VBox prefHeight="47.0" prefWidth="150.0" styleClass="jfx-panelcontenedor" VBox.vgrow="ALWAYS">
                <children>
                   <HBox alignment="TOP_CENTER" prefHeight="21.0" prefWidth="150.0">
                      <children>
@@ -63,7 +63,7 @@
                   </HBox>
                </children>
             </VBox>
-            <VBox prefHeight="47.0" prefWidth="150.0" styleClass="jfx-panelcontenedor">
+            <VBox prefHeight="47.0" prefWidth="150.0" styleClass="jfx-panelcontenedor" VBox.vgrow="ALWAYS">
                <children>
                   <HBox alignment="TOP_CENTER" prefHeight="21.0" prefWidth="150.0">
                      <children>
@@ -80,7 +80,7 @@
                   </HBox>
                </children>
             </VBox>
-            <VBox prefHeight="47.0" prefWidth="150.0" styleClass="jfx-panelcontenedor">
+            <VBox prefHeight="47.0" prefWidth="150.0" styleClass="jfx-panelcontenedor" VBox.vgrow="ALWAYS">
                <children>
                   <HBox alignment="TOP_CENTER" prefHeight="21.0" prefWidth="150.0">
                      <children>
@@ -106,17 +106,17 @@
    <center>
       <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" spacing="15.0" styleClass="arrow" BorderPane.alignment="TOP_CENTER">
          <children>
-            <Label styleClass="jfx-label-subtitulo" text="Llamando Ficha" />
-            <HBox alignment="CENTER" prefHeight="167.0" prefWidth="390.0" spacing="5.0" styleClass="jfx-panelcontenedor-proyeccion">
+            <Label styleClass="jfx-label-subtitulo" text="Llamando Ficha" VBox.vgrow="ALWAYS" />
+            <HBox alignment="CENTER" prefHeight="167.0" prefWidth="390.0" spacing="5.0" styleClass="jfx-panelcontenedor-proyeccion" VBox.vgrow="ALWAYS">
                <children>
-                  <Label fx:id="lblLetraFichaLlamando" styleClass="jfx-label-ficha-proyeccion" text="Letra" />
-                  <Label fx:id="lblNumeroFichaLlamando" styleClass="jfx-label-ficha-proyeccion" text="Numero" />
+                  <Label fx:id="lblLetraFichaLlamando" styleClass="jfx-label-ficha-proyeccion" text="Letra" HBox.hgrow="ALWAYS" />
+                  <Label fx:id="lblNumeroFichaLlamando" styleClass="jfx-label-ficha-proyeccion" text="Numero" HBox.hgrow="ALWAYS" />
                </children>
             </HBox>
             <HBox alignment="TOP_CENTER" prefHeight="26.0" prefWidth="430.0">
                <children>
-                  <Label styleClass="jfx-label-subtitulo" text="Estació:" />
-                  <Label fx:id="lblEstacionLlamando" styleClass="jfx-label-subtitulo" text="Estacion" />
+                  <Label styleClass="jfx-label-subtitulo" text="Estació:" HBox.hgrow="ALWAYS" />
+                  <Label fx:id="lblEstacionLlamando" styleClass="jfx-label-subtitulo" text="Estacion" HBox.hgrow="ALWAYS" />
                </children>
             </HBox>
          </children>
@@ -134,7 +134,7 @@
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
          </padding>
          <children>
-            <Label fx:id="lblMensajeDeProyeccion" prefHeight="35.0" prefWidth="576.0" styleClass="jfx-label-subtitulo" text="Mensaje" />
+            <Label fx:id="lblMensajeDeProyeccion" prefHeight="35.0" prefWidth="576.0" styleClass="jfx-label-subtitulo" text="Mensaje" HBox.hgrow="ALWAYS" />
          </children>
       </HBox>
    </bottom>

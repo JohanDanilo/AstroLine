@@ -8,7 +8,6 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-
 <BorderPane fx:id="root" prefHeight="600.0" prefWidth="800.0" styleClass="jfx-root" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.AdminController">
    <left>
       <VBox alignment="CENTER" prefHeight="800.0" prefWidth="156.0" spacing="10.0" BorderPane.alignment="CENTER">
