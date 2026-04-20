@@ -10,6 +10,7 @@ import cr.ac.una.astroline.service.FichaService;
 import cr.ac.una.astroline.service.SucursalService;
 import cr.ac.una.astroline.util.Respuesta;
 import java.net.URL;
+import javafx.util.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Comparator;
@@ -56,6 +57,9 @@ public class ProyeccionController extends Controller implements Initializable {
     // ── Servicios ────────────────────────────────────────────────────────────
     private final Empresa empresa = EmpresaService.getInstancia().getEmpresa();
     private final FichaService fichaService = FichaService.getInstancia(); // ← singleton
+    private javafx.animation.Timeline pollerFichas;
+    private static final DateTimeFormatter FORMATO_LLAMADO
+            = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     // ── Marquee ──────────────────────────────────────────────────────────────
     /**
@@ -72,11 +76,8 @@ public class ProyeccionController extends Controller implements Initializable {
     private double velocidadPixelesPorSegundo = 80.0; // ajustable
     private Timeline timelineMarquee;
 
-    // ── Formato fechaHoraLlamado ─────────────────────────────────────────────
-    private static final DateTimeFormatter FORMATO_LLAMADO =
-            DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-
     // ── Inicialización ───────────────────────────────────────────────────────
+
 
     @Override
     public void initialize() {
@@ -90,7 +91,6 @@ public class ProyeccionController extends Controller implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Gestionado por el método initialize() sin parámetros (patrón AstroLine)
     }
 
     // ── Empresa ──────────────────────────────────────────────────────────────
@@ -110,14 +110,13 @@ public class ProyeccionController extends Controller implements Initializable {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
         }
     }
 
-    // ── Reloj ────────────────────────────────────────────────────────────────
-
     private void actualizarReloj() {
         DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        DateTimeFormatter formatoHora  = DateTimeFormatter.ofPattern("hh:mm:ss a");
+        DateTimeFormatter formatoHora = DateTimeFormatter.ofPattern("hh:mm:ss a");
 
         Timeline reloj = new Timeline(
                 new KeyFrame(Duration.seconds(0), e -> {
@@ -131,8 +130,6 @@ public class ProyeccionController extends Controller implements Initializable {
         reloj.play();
     }
 
-    // ── Fichas ───────────────────────────────────────────────────────────────
-
     private void iniciarPollerFichas() {
         Timeline pollerFichas = new Timeline(
                 new KeyFrame(Duration.seconds(1), e -> actualizarFichasEnPantalla())
@@ -143,16 +140,19 @@ public class ProyeccionController extends Controller implements Initializable {
 
     private void actualizarFichasEnPantalla() {
         Respuesta respuesta = fichaService.obtenerFichasActivas();
-        if (!respuesta.getEstado()) return;
+        if (!respuesta.getEstado()) {
+            return;
+        }
 
         List<Ficha> activas = (List<Ficha>) respuesta.getResultado("lista");
 
         List<Ficha> llamadas = activas.stream()
                 .filter(f -> f.getEstado() == Ficha.Estado.LLAMADA
-                          && f.getFechaHoraLlamado() != null)
+                && f.getFechaHoraLlamado() != null)
                 .sorted(Comparator.comparing(
                         f -> LocalDateTime.parse(f.getFechaHoraLlamado(), FORMATO_LLAMADO),
-                        Comparator.reverseOrder()))
+                        Comparator.reverseOrder()
+                ))
                 .collect(Collectors.toList());
 
         mostrarFichaActual(llamadas.size() > 0 ? llamadas.get(0) : null);

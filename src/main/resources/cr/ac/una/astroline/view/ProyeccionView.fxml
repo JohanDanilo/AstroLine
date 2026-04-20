@@ -116,7 +116,7 @@
             </HBox>
             <HBox alignment="TOP_CENTER" prefHeight="26.0" prefWidth="430.0">
                <children>
-                  <Label styleClass="jfx-label-subtitulo" text="Estació:" HBox.hgrow="ALWAYS" />
+                  <Label styleClass="jfx-label-subtitulo" text="Estación: " HBox.hgrow="ALWAYS" />
                   <Label fx:id="lblEstacionLlamando" styleClass="jfx-label-subtitulo" text="Estacion" HBox.hgrow="ALWAYS" />
                </children>
             </HBox>

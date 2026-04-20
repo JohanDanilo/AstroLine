@@ -14,21 +14,6 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<!--
-    EstadisticasView.fxml — Responsive / resizable layout
-    ────────────────────────────────────────────────────────
-    Estrategia de responsividad:
-      · BorderPane ocupa todo el espacio de la escena automáticamente.
-      · ScrollPane (fitToWidth + fitToHeight) llena <center> y sólo
-        muestra scrollbar cuando la ventana es más pequeña que el
-        contenido mínimo.
-      · Cada fila de KPI cards usa HBox.hgrow="ALWAYS" + maxWidth="Infinity"
-        para que los tres cards se repartan el ancho por igual.
-      · Las filas de gráficas y listas usan VBox.vgrow="ALWAYS" en el HBox
-        y en los charts/listviews para crecer/encoger con la ventana.
-      · Los charts y listviews también llevan maxWidth/maxHeight="Infinity"
-        para no quedar limitados a su prefWidth/prefHeight.
--->
 
 <BorderPane fx:id="root" prefHeight="500.0" prefWidth="700.0" styleClass="root-estadisticas" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.EstadisticasController">
 

@@ -453,4 +453,5 @@ public class RegistroClienteController extends Controller implements Initializab
         alerta.setContentText(mensaje);
         alerta.showAndWait();
     }
+
 }
