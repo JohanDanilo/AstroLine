@@ -4,13 +4,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 import javafx.fxml.Initializable;
 
-/*
-*
-*
-*       encargada de la vista individual del cliente
-*
-*
-*/
+
 public class ClienteController extends Controller implements Initializable {
 
     @Override

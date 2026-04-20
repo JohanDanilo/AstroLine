@@ -204,35 +204,26 @@ public class VentanaFuncionarioController extends Controller implements Initiali
         }
     }
 
-    /**
-     * ***********************************************************
-     */
     private void cargarFotoCliente(String fotoPath) {
         if (fotoPath == null || fotoPath.isBlank()) {
             limpiarFotoCliente();
             return;
         }
 
-        File archivo = new File(fotoPath);
+        String nombreSolo = new java.io.File(fotoPath).getName();
+        java.io.File archivo = new java.io.File("data/fotos/" + nombreSolo);
+
         if (archivo.exists()) {
             try {
                 Image imagen = new Image(archivo.toURI().toString(), true);
                 imagenCliente.setImage(imagen);
                 return;
             } catch (Exception ex) {
-                java.util.logging.Logger.getLogger(VentanaFuncionarioController.class.getName()).log(Level.WARNING, "No se pudo cargar la foto" + fotoPath, ex);
+                java.util.logging.Logger.getLogger(VentanaFuncionarioController.class.getName())
+                    .log(Level.WARNING, "No se pudo cargar la foto: " + archivo.getAbsolutePath(), ex);
             }
         }
-        URL recurso = App.class.getResource(fotoPath);
-        if (recurso != null) {
-            try {
-                Image imagen = new Image(recurso.toExternalForm(), true);
-                imagenCliente.setImage(imagen);
-                return;
-            } catch (Exception ex) {
-                java.util.logging.Logger.getLogger(VentanaFuncionarioController.class.getName()).log(Level.WARNING, "No se pudo cargar la foto " + fotoPath, ex);
-            }
-        }
+
         limpiarFotoCliente();
     }
 

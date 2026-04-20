@@ -38,74 +38,73 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.StringConverter;
 
-/**
- * Controlador del mantenimiento de sucursales y sus estaciones.
- *
- * Flujo de edición via modal:
- *   Sucursal  → RegistroSucursalView  (AppContext key: "sucursalParaEditar")
- *   Estación  → RegistroEstacionView  (AppContext keys: "sucursalParaEstacion", "estacionParaEditar")
- *
- * En ambos casos el modal deja "ultimaSucursalId" / "ultimaEstacionAgregadaId"
- * en AppContext para que este controlador restaure la selección al cerrarse.
- *
- * @author JohanDanilo
- */
 public class MantenimientoSucursalController extends Controller implements Initializable {
 
     // ── FXML ─────────────────────────────────────────────────────────────────
+    @FXML
+    private AnchorPane root;
+    @FXML
+    private Label lblSucursal;
+    @FXML
+    private Label lblSucursal1;
 
-    @FXML private AnchorPane root;
-    @FXML private Label      lblSucursal;
-    @FXML private Label      lblSucursal1;   // encabezado "Estaciones"
+    @FXML
+    private MFXComboBox<Sucursal> cmbSucursal;
+    @FXML
+    private MFXTextField txtBarraBusquedaEstaciones;
 
-    @FXML private MFXComboBox<Sucursal> cmbSucursal;
-    @FXML private MFXTextField          txtBarraBusquedaEstaciones;
+    @FXML
+    private Button btnEliminarSucursal;
+    @FXML
+    private Button btnAgregarEstacion;
+    @FXML
+    private Button btnEditarEstacion;
+    @FXML
+    private Button btnEliminarEstacion;
 
-    // Botones con fx:id (necesarios para disable/enable)
-    @FXML private Button btnEliminarSucursal;
-    @FXML private Button btnAgregarEstacion;
-    @FXML private Button btnEditarEstacion;
-    @FXML private Button btnEliminarEstacion;
+    @FXML
+    private TableView<Estacion> tableEstaciones;
+    @FXML
+    private TableColumn<Estacion, String> colNombre;
+    @FXML
+    private TableColumn<Estacion, String> colId;
+    @FXML
+    private TableColumn<Estacion, String> colPreferencial;
 
-    @FXML private TableView<Estacion>           tableEstaciones;
-    @FXML private TableColumn<Estacion, String> colNombre;
-    @FXML private TableColumn<Estacion, String> colId;
-    @FXML private TableColumn<Estacion, String> colPreferencial;
+    @FXML
+    private TableView<Tramite> tableTramitesAsignados;
+    @FXML
+    private TableColumn<Tramite, String> colTramiteAsignado;
+    @FXML
+    private TableColumn<Tramite, String> colEstadoAsignado;
 
-    @FXML private TableView<Tramite>           tableTramitesAsignados;
-    @FXML private TableColumn<Tramite, String> colTramiteAsignado;
-    @FXML private TableColumn<Tramite, String> colEstadoAsignado;
+    @FXML
+    private TableView<Tramite> tableTramitesDiponibles;
+    @FXML
+    private TableColumn<Tramite, String> colTramiteDisponible;
+    @FXML
+    private TableColumn<Tramite, String> colEstadoDisponible;
 
-    @FXML private TableView<Tramite>           tableTramitesDiponibles;
-    @FXML private TableColumn<Tramite, String> colTramiteDisponible;
-    @FXML private TableColumn<Tramite, String> colEstadoDisponible;
-
-    // ── Servicios ─────────────────────────────────────────────────────────────
-
-    private final SucursalService      sucursalService      = SucursalService.getInstancia();
-    private final TramiteService       tramiteService       = TramiteService.getInstancia();
+    private final SucursalService sucursalService = SucursalService.getInstancia();
+    private final TramiteService tramiteService = TramiteService.getInstancia();
     private final ConfiguracionService configuracionService = ConfiguracionService.getInstancia();
 
-    // ── Estado ────────────────────────────────────────────────────────────────
-
     private Sucursal sucursalActual;
-    private String   sucursalActualId;
+    private String sucursalActualId;
     private Estacion estacionSeleccionada;
 
-    private final ObservableList<Estacion> estaciones          = FXCollections.observableArrayList();
-    private       FilteredList<Estacion>   estacionesFiltradas;
+    private final ObservableList<Estacion> estaciones = FXCollections.observableArrayList();
+    private FilteredList<Estacion> estacionesFiltradas;
 
-    private final ObservableList<Tramite>  tramitesAsignados   = FXCollections.observableArrayList();
-    private final ObservableList<Tramite>  tramitesDisponibles = FXCollections.observableArrayList();
+    private final ObservableList<Tramite> tramitesAsignados = FXCollections.observableArrayList();
+    private final ObservableList<Tramite> tramitesDisponibles = FXCollections.observableArrayList();
 
     private static final DataFormat TRAMITE_FORMAT;
+
     static {
         DataFormat existing = DataFormat.lookupMimeType("application/astroline-tramite");
-        TRAMITE_FORMAT = existing != null ? existing
-                                          : new DataFormat("application/astroline-tramite");
+        TRAMITE_FORMAT = existing != null ? existing : new DataFormat("application/astroline-tramite");
     }
-
-    // ── Inicialización ────────────────────────────────────────────────────────
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -131,26 +130,16 @@ public class MantenimientoSucursalController extends Controller implements Initi
         }
     }
 
-    // ── Handlers ComboBox ─────────────────────────────────────────────────────
-
     @FXML
     private void onActionCmbSucursal(ActionEvent event) {
         seleccionarSucursal(cmbSucursal.getValue());
     }
-
-    // ── Handlers botones Sucursal ─────────────────────────────────────────────
 
     @FXML
     private void onBtnAgregarSucursal(ActionEvent event) {
         agregarSucursal();
     }
 
-    /**
-     * Edita la sucursal actualmente seleccionada.
-     *
-     * Pasa la sucursal via AppContext → RegistroSucursalView la precarga.
-     * Cuando el modal cierra, recupera el ID desde AppContext y refresca.
-     */
     @FXML
     private void onBtnEditarSucursal(ActionEvent event) {
         if (sucursalActual == null) {
@@ -158,41 +147,30 @@ public class MantenimientoSucursalController extends Controller implements Initi
             return;
         }
 
-        // Pasar la sucursal al formulario de edición
         AppContext.getInstance().set("sucursalParaEditar", sucursalActual);
 
-        FlowController.getInstance().goViewInWindowModal(
-                "RegistroSucursalView", getStage(), true);
+        FlowController.getInstance().goViewInWindowModal("RegistroSucursalView", getStage(), true);
 
-        // Recuperar el ID que el formulario depositó en AppContext al guardar
         String idEditada = (String) AppContext.getInstance().get("ultimaSucursalId");
         AppContext.getInstance().delete("ultimaSucursalId");
 
-        // Conservar la sucursal seleccionada después del refresco
-        if (idEditada != null) sucursalActualId = idEditada;
+        if (idEditada != null) {
+            sucursalActualId = idEditada;
+        }
 
         refrescarSucursales();
     }
 
     @FXML
-    private void onBtnEiminarSucursal(ActionEvent event) {   // nombre del FXML respetado (typo)
+    private void onBtnEiminarSucursal(ActionEvent event) {
         eliminarSucursal();
     }
-
-    // ── Handlers botones Estación ─────────────────────────────────────────────
 
     @FXML
     private void onBtnAgregarEstacion(ActionEvent event) {
         agregarEstacion();
     }
 
-    /**
-     * Edita la estación seleccionada en la lista lateral.
-     *
-     * Pasa el id de la sucursal y la estación via AppContext.
-     * El mismo formulario RegistroEstacionView sirve para crear y editar
-     * (detecta el modo por presencia/ausencia de "estacionParaEditar").
-     */
     @FXML
     private void onBtnEditarEstacion(ActionEvent event) {
         Estacion seleccionada = tableEstaciones.getSelectionModel().getSelectedItem();
@@ -202,31 +180,29 @@ public class MantenimientoSucursalController extends Controller implements Initi
             return;
         }
 
-        if (sucursalActual == null) return;   // no debería ocurrir, pero por seguridad
+        if (sucursalActual == null) {
+            return;
+        }
 
-        // Pasar contexto al formulario
         AppContext.getInstance().set("sucursalParaEstacion", sucursalActual.getId());
-        AppContext.getInstance().set("estacionParaEditar",  seleccionada);
+        AppContext.getInstance().set("estacionParaEditar", seleccionada);
 
-        FlowController.getInstance().goViewInWindowModal(
-                "RegistroEstacionView", getStage(), true);
+        FlowController.getInstance().goViewInWindowModal("RegistroEstacionView", getStage(), true);
 
-        // Recuperar el ID que el formulario depositó al guardar
         String idEditada = (String) AppContext.getInstance().get("ultimaEstacionAgregadaId");
         AppContext.getInstance().delete("ultimaEstacionAgregadaId");
 
         refrescarSucursales();
 
-        // Restaurar la selección sobre la estación editada
-        if (idEditada != null) seleccionarEstacionPorId(idEditada);
+        if (idEditada != null) {
+            seleccionarEstacionPorId(idEditada);
+        }
     }
 
     @FXML
     private void onBtnEliminarEstacion(ActionEvent event) {
         eliminarEstacion();
     }
-
-    // ── Handlers TableView Estaciones ─────────────────────────────────────────
 
     private void onMousePressedEstaciones(MouseEvent event) {
         if (tableEstaciones.getSelectionModel().getSelectedItem() == null) {
@@ -237,16 +213,20 @@ public class MantenimientoSucursalController extends Controller implements Initi
     }
 
     private void onKeyPressedEstaciones(KeyEvent event) {
-        if (event.getCode() == KeyCode.DELETE) eliminarEstacion();
+        if (event.getCode() == KeyCode.DELETE) {
+            eliminarEstacion();
+        }
     }
-
-    // ── Drag & Drop — tabla Asignados ─────────────────────────────────────────
 
     @FXML
     private void onDragDetectedAsignados(MouseEvent event) {
-        if (estacionSeleccionada == null) return;
+        if (estacionSeleccionada == null) {
+            return;
+        }
         Tramite seleccionado = tableTramitesAsignados.getSelectionModel().getSelectedItem();
-        if (seleccionado == null) return;
+        if (seleccionado == null) {
+            return;
+        }
 
         Dragboard db = tableTramitesAsignados.startDragAndDrop(TransferMode.MOVE);
         ClipboardContent content = new ClipboardContent();
@@ -265,8 +245,6 @@ public class MantenimientoSucursalController extends Controller implements Initi
             Tramite tramite = tramiteService.buscarPorId(tramiteId);
 
             if (tramite != null && !estacionSeleccionada.atiendeTramite(tramiteId)) {
-
-                // UI
                 tramitesDisponibles.remove(tramite);
                 tramitesAsignados.add(tramite);
 
@@ -275,10 +253,8 @@ public class MantenimientoSucursalController extends Controller implements Initi
 
                 sucursalService.actualizarEstacion(sucursalActual.getId(), copia);
 
-                // actualizar referencia local
                 estacionSeleccionada = copia;
 
-                // Si esta estación es la configurada en este equipo, sincronizar configuracion.json
                 sincronizarConfiguracionSiCorresponde(copia);
 
                 tableTramitesAsignados.refresh();
@@ -286,7 +262,6 @@ public class MantenimientoSucursalController extends Controller implements Initi
                 exito = true;
             }
         }
-
         event.setDropCompleted(exito);
         event.consume();
     }
@@ -307,13 +282,15 @@ public class MantenimientoSucursalController extends Controller implements Initi
         event.consume();
     }
 
-    // ── Drag & Drop — tabla Disponibles ──────────────────────────────────────
-
     @FXML
     private void onDragDetectedDisponibles(MouseEvent event) {
-        if (estacionSeleccionada == null) return;
+        if (estacionSeleccionada == null) {
+            return;
+        }
         Tramite seleccionado = tableTramitesDiponibles.getSelectionModel().getSelectedItem();
-        if (seleccionado == null) return;
+        if (seleccionado == null) {
+            return;
+        }
 
         Dragboard db = tableTramitesDiponibles.startDragAndDrop(TransferMode.MOVE);
         ClipboardContent content = new ClipboardContent();
@@ -329,11 +306,10 @@ public class MantenimientoSucursalController extends Controller implements Initi
 
         if (db.hasContent(TRAMITE_FORMAT) && estacionSeleccionada != null) {
             String tramiteId = (String) db.getContent(TRAMITE_FORMAT);
-            Tramite tramite  = tramiteService.buscarPorId(tramiteId);
+            Tramite tramite = tramiteService.buscarPorId(tramiteId);
 
             if (tramite != null && estacionSeleccionada.atiendeTramite(tramiteId)) {
 
-                // UI
                 tramitesAsignados.remove(tramite);
                 tramitesDisponibles.add(tramite);
 
@@ -342,10 +318,8 @@ public class MantenimientoSucursalController extends Controller implements Initi
 
                 sucursalService.actualizarEstacion(sucursalActual.getId(), copia);
 
-                // actualizar referencia local
                 estacionSeleccionada = copia;
 
-                // Si esta estación es la configurada en este equipo, sincronizar configuracion.json
                 sincronizarConfiguracionSiCorresponde(copia);
 
                 tableTramitesAsignados.refresh();
@@ -353,7 +327,6 @@ public class MantenimientoSucursalController extends Controller implements Initi
                 exito = true;
             }
         }
-
         event.setDropCompleted(exito);
         event.consume();
     }
@@ -364,10 +337,6 @@ public class MantenimientoSucursalController extends Controller implements Initi
         event.consume();
     }
 
-    /**
-     * onDragEntered de tableTramitesDiponibles.
-     * Nombre sin sufijo porque el FXML lo declaró así (takka_sama, typo original).
-     */
     @FXML
     private void onDragEntered(DragEvent event) {
         if (event.getDragboard().hasContent(TRAMITE_FORMAT) && estacionSeleccionada != null) {
@@ -378,20 +347,18 @@ public class MantenimientoSucursalController extends Controller implements Initi
         event.consume();
     }
 
-    // ── Lógica de sucursal ────────────────────────────────────────────────────
-
     private void agregarSucursal() {
-        // La creación simple vía TextInputDialog se mantiene.
-        // Para edición completa (nombre + textoAviso) se usa RegistroSucursalView.
+
         AppContext.getInstance().set("sucursalParaEditar", null);
 
-        FlowController.getInstance().goViewInWindowModal(
-                "RegistroSucursalView", getStage(), true);
+        FlowController.getInstance().goViewInWindowModal("RegistroSucursalView", getStage(), true);
 
         String nuevaId = (String) AppContext.getInstance().get("ultimaSucursalId");
         AppContext.getInstance().delete("ultimaSucursalId");
 
-        if (nuevaId != null) sucursalActualId = nuevaId;
+        if (nuevaId != null) {
+            sucursalActualId = nuevaId;
+        }
         txtBarraBusquedaEstaciones.clear();
         refrescarSucursales();
     }
@@ -411,7 +378,9 @@ public class MantenimientoSucursalController extends Controller implements Initi
         confirmacion.setHeaderText(null);
 
         confirmacion.showAndWait().ifPresent(tipo -> {
-            if (tipo != ButtonType.YES) return;
+            if (tipo != ButtonType.YES) {
+                return;
+            }
 
             String idEliminada = sucursalActual.getId();
             Respuesta respuesta = sucursalService.eliminarSucursal(idEliminada);
@@ -420,18 +389,17 @@ public class MantenimientoSucursalController extends Controller implements Initi
                 return;
             }
 
-            // Si la sucursal eliminada era la configurada en este equipo, limpiar configuracion.json
             if (idEliminada.equals(configuracionService.getSucursalId())) {
                 configuracionService.resetearConfiguracion();
             }
 
-            if (idEliminada.equals(sucursalActualId)) sucursalActualId = null;
+            if (idEliminada.equals(sucursalActualId)) {
+                sucursalActualId = null;
+            }
             txtBarraBusquedaEstaciones.clear();
             refrescarSucursales();
         });
     }
-
-    // ── Lógica de estación ────────────────────────────────────────────────────
 
     private void agregarEstacion() {
         if (sucursalActual == null) {
@@ -449,12 +417,16 @@ public class MantenimientoSucursalController extends Controller implements Initi
         AppContext.getInstance().delete("ultimaEstacionAgregadaId");
 
         refrescarSucursales();
-        if (nuevaId != null) seleccionarEstacionPorId(nuevaId);
+        if (nuevaId != null) {
+            seleccionarEstacionPorId(nuevaId);
+        }
     }
 
     private void eliminarEstacion() {
         Estacion seleccionada = tableEstaciones.getSelectionModel().getSelectedItem();
-        if (seleccionada == null || sucursalActual == null) return;
+        if (seleccionada == null || sucursalActual == null) {
+            return;
+        }
 
         Alert confirmacion = new Alert(
                 Alert.AlertType.CONFIRMATION,
@@ -465,17 +437,17 @@ public class MantenimientoSucursalController extends Controller implements Initi
         confirmacion.setHeaderText(null);
 
         confirmacion.showAndWait().ifPresent(tipo -> {
-            if (tipo != ButtonType.YES) return;
+            if (tipo != ButtonType.YES) {
+                return;
+            }
 
-            Respuesta respuesta = sucursalService.eliminarEstacion(
-                    sucursalActual.getId(), seleccionada.getId());
+            Respuesta respuesta = sucursalService.eliminarEstacion(sucursalActual.getId(), seleccionada.getId());
 
             if (!respuesta.getEstado()) {
                 mostrarAlerta(Alert.AlertType.ERROR, respuesta.getMensaje());
                 return;
             }
 
-            // Si la estación eliminada era la configurada en este equipo, limpiar configuracion.json
             if (seleccionada.getId().equals(configuracionService.getEstacionId())) {
                 configuracionService.resetearConfiguracion();
             }
@@ -484,12 +456,17 @@ public class MantenimientoSucursalController extends Controller implements Initi
         });
     }
 
-    // ── Configuración interna ─────────────────────────────────────────────────
-
     private void configurarComboSucursales() {
         cmbSucursal.setConverter(new StringConverter<>() {
-            @Override public String toString(Sucursal s)    { return s == null ? "" : s.getNombre(); }
-            @Override public Sucursal fromString(String s)  { return null; }
+            @Override
+            public String toString(Sucursal s) {
+                return s == null ? "" : s.getNombre();
+            }
+
+            @Override
+            public Sucursal fromString(String s) {
+                return null;
+            }
         });
     }
 
@@ -532,9 +509,9 @@ public class MantenimientoSucursalController extends Controller implements Initi
     private void configurarFiltro() {
         txtBarraBusquedaEstaciones.textProperty().addListener((obs, ant, nuevo) -> {
             String criterio = nuevo == null ? "" : nuevo.trim().toLowerCase();
-            estacionesFiltradas.setPredicate(e ->
-                criterio.isBlank() || (e.getNombre() != null
-                        && e.getNombre().toLowerCase().contains(criterio)));
+            estacionesFiltradas.setPredicate(e
+                    -> criterio.isBlank() || (e.getNombre() != null
+                    && e.getNombre().toLowerCase().contains(criterio)));
         });
     }
 
@@ -553,8 +530,6 @@ public class MantenimientoSucursalController extends Controller implements Initi
         });
     }
 
-    // ── Refresco y navegación de datos ───────────────────────────────────────
-
     private void refrescarSucursales() {
         Sucursal seleccionada = buscarSucursalPorId(sucursalActualId);
 
@@ -569,23 +544,33 @@ public class MantenimientoSucursalController extends Controller implements Initi
     }
 
     private void seleccionarSucursal(Sucursal sucursal) {
-        if (cmbSucursal.getValue() != sucursal) cmbSucursal.setValue(sucursal);
+        if (cmbSucursal.getValue() != sucursal) {
+            cmbSucursal.setValue(sucursal);
+        }
         aplicarSucursalSeleccionada(sucursal);
     }
 
     private void aplicarSucursalSeleccionada(Sucursal sucursal) {
-        sucursalActual    = sucursal;
-        sucursalActualId  = sucursal != null ? sucursal.getId() : null;
+        sucursalActual = sucursal;
+        sucursalActualId = sucursal != null ? sucursal.getId() : null;
 
-        if (sucursalActual == null) { limpiarVistaSinSucursal(); return; }
+        if (sucursalActual == null) {
+            limpiarVistaSinSucursal();
+            return;
+        }
 
         recargarEstaciones();
         actualizarEncabezadoSucursal();
     }
 
     private void recargarEstaciones() {
-        if (sucursalActualId != null) sucursalActual = buscarSucursalPorId(sucursalActualId);
-        if (sucursalActual == null) { limpiarVistaSinSucursal(); return; }
+        if (sucursalActualId != null) {
+            sucursalActual = buscarSucursalPorId(sucursalActualId);
+        }
+        if (sucursalActual == null) {
+            limpiarVistaSinSucursal();
+            return;
+        }
 
         String estacionIdSeleccionada = estacionSeleccionada != null
                 ? estacionSeleccionada.getId() : null;
@@ -613,18 +598,26 @@ public class MantenimientoSucursalController extends Controller implements Initi
         estacionSeleccionada = estacion;
         limpiarTramites();
 
-        if (estacion == null) { actualizarEstadoControles(); return; }
+        if (estacion == null) {
+            actualizarEstadoControles();
+            return;
+        }
 
         for (Tramite t : tramiteService.getListaDeTramites()) {
-            if (estacion.atiendeTramite(t.getId())) tramitesAsignados.add(t);
-            else                                     tramitesDisponibles.add(t);
+            if (estacion.atiendeTramite(t.getId())) {
+                tramitesAsignados.add(t);
+            } else {
+                tramitesDisponibles.add(t);
+            }
         }
 
         actualizarEstadoControles();
     }
 
     private void limpiarVistaSinSucursal() {
-        if (cmbSucursal.getValue() != null) cmbSucursal.setValue(null);
+        if (cmbSucursal.getValue() != null) {
+            cmbSucursal.setValue(null);
+        }
         lblSucursal.setText("No hay sucursales registradas.");
         tableEstaciones.getSelectionModel().clearSelection();
         estaciones.clear();
@@ -639,7 +632,7 @@ public class MantenimientoSucursalController extends Controller implements Initi
     }
 
     private void actualizarEstadoControles() {
-        boolean haySucursal = sucursalActual    != null;
+        boolean haySucursal = sucursalActual != null;
         boolean hayEstacion = estacionSeleccionada != null;
 
         txtBarraBusquedaEstaciones.setDisable(!haySucursal);
@@ -653,20 +646,23 @@ public class MantenimientoSucursalController extends Controller implements Initi
     }
 
     private void actualizarEncabezadoSucursal() {
-        if (sucursalActual == null) { lblSucursal.setText("No hay sucursales registradas."); return; }
+        if (sucursalActual == null) {
+            lblSucursal.setText("No hay sucursales registradas.");
+            return;
+        }
         int n = sucursalActual.getEstaciones().size();
         lblSucursal.setText("Sucursal: " + sucursalActual.getNombre()
                 + "  |  " + n + (n == 1 ? " estación" : " estaciones"));
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private Sucursal buscarSucursalPorId(String id) {
         return id == null ? null : sucursalService.buscarSucursal(id);
     }
 
     private boolean seleccionarEstacionPorId(String estacionId) {
-        if (estacionId == null) return false;
+        if (estacionId == null) {
+            return false;
+        }
         for (Estacion e : estaciones) {
             if (estacionId.equals(e.getId())) {
                 tableEstaciones.getSelectionModel().select(e);
@@ -677,20 +673,14 @@ public class MantenimientoSucursalController extends Controller implements Initi
         return false;
     }
 
-    /**
-     * Si la estación modificada por drag-and-drop coincide con la que tiene
-     * configurada este equipo en configuracion.json, actualiza ese archivo
-     * para mantener sus tramiteIds sincronizados con sucursales.json.
-     *
-     * Esto resuelve el caso en que el admin reasigna trámites desde esta vista
-     * y el kiosko/estación local quedaba con una copia obsoleta de los trámites.
-     *
-     * @param estacionModificada copia actualizada de la estación tras el drag-and-drop
-     */
     private void sincronizarConfiguracionSiCorresponde(Estacion estacionModificada) {
         String estacionConfigurada = configuracionService.getEstacionId();
-        if (estacionModificada == null || estacionConfigurada == null) return;
-        if (!estacionModificada.getId().equals(estacionConfigurada)) return;
+        if (estacionModificada == null || estacionConfigurada == null) {
+            return;
+        }
+        if (!estacionModificada.getId().equals(estacionConfigurada)) {
+            return;
+        }
 
         Respuesta respuesta = configuracionService.guardarConfiguracion(
                 configuracionService.getSucursalId(),

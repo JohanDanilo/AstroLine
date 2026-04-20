@@ -6,11 +6,6 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-/**
- * DTO de Funcionario para binding con formularios JavaFX.
- *
- * @author JohanDanilo
- */
 public class FuncionarioDTO {
 
     private StringProperty cedula;
@@ -36,50 +31,115 @@ public class FuncionarioDTO {
 
     }
 
-    public String getCedula() { return cedula.get(); }
-    public void setCedula(String cedula) { this.cedula.set(cedula); }
+    public String getCedula() {
+        return cedula.get();
+    }
 
-    public String getNombre() { return nombre.get(); }
-    public void setNombre(String nombre) { this.nombre.set(nombre); }
+    public void setCedula(String cedula) {
+        this.cedula.set(cedula);
+    }
 
-    public String getApellidos() { return apellidos.get(); }
-    public void setApellidos(String apellidos) { this.apellidos.set(apellidos); }
+    public String getNombre() {
+        return nombre.get();
+    }
 
-    public String getTelefono() { return telefono.get(); }
-    public void setTelefono(String telefono) { this.telefono.set(telefono); }
+    public void setNombre(String nombre) {
+        this.nombre.set(nombre);
+    }
 
-    public String getCorreo() { return correo.get(); }
-    public void setCorreo(String correo) { this.correo.set(correo); }
+    public String getApellidos() {
+        return apellidos.get();
+    }
 
-    public String getFotoPath() { return fotoPath; }
-    public void setFotoPath(String fotoPath) { this.fotoPath = fotoPath; }
+    public void setApellidos(String apellidos) {
+        this.apellidos.set(apellidos);
+    }
 
-    public LocalDate getFechaNacimiento() { return fechaNacimiento.get(); }
+    public String getTelefono() {
+        return telefono.get();
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono.set(telefono);
+    }
+
+    public String getCorreo() {
+        return correo.get();
+    }
+
+    public void setCorreo(String correo) {
+        this.correo.set(correo);
+    }
+
+    public String getFotoPath() {
+        return fotoPath;
+    }
+
+    public void setFotoPath(String fotoPath) {
+        this.fotoPath = fotoPath;
+    }
+
+    public LocalDate getFechaNacimiento() {
+        return fechaNacimiento.get();
+    }
+
     public void setFechaNacimiento(LocalDate fechaNacimiento) {
         this.fechaNacimiento.set(fechaNacimiento);
     }
 
-    public StringProperty getCedulaProperty() { return cedula; }
-    public StringProperty getNombreProperty() { return nombre; }
-    public StringProperty getApellidosProperty() { return apellidos; }
-    public StringProperty getTelefonoProperty() { return telefono; }
-    public StringProperty getCorreoProperty() { return correo; }
+    public StringProperty getCedulaProperty() {
+        return cedula;
+    }
+
+    public StringProperty getNombreProperty() {
+        return nombre;
+    }
+
+    public StringProperty getApellidosProperty() {
+        return apellidos;
+    }
+
+    public StringProperty getTelefonoProperty() {
+        return telefono;
+    }
+
+    public StringProperty getCorreoProperty() {
+        return correo;
+    }
 
     public ObjectProperty<LocalDate> getFechaNacimientoProperty() {
         return fechaNacimiento;
     }
-    
-        // Username
-    public String getUsername() { return username.get(); }
-    public void setUsername(String username) { this.username.set(username); }
-    public StringProperty getUsernameProperty() { return username; }
 
-    // Password
-    public String getPassword() { return password.get(); }
-    public void setPassword(String password) { this.password.set(password); }
-    public StringProperty getPasswordProperty() { return password; }
+    public String getUsername() {
+        return username.get();
+    }
 
-    // esAdmin  (no necesita Property si no lo bindeas a un control)
-    public boolean esAdmin() { return esAdmin; }
-    public void setEsAdmin(boolean esAdmin) { this.esAdmin = esAdmin; }
+    public void setUsername(String username) {
+        this.username.set(username);
+    }
+
+    public StringProperty getUsernameProperty() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password.get();
+    }
+
+    public void setPassword(String password) {
+        this.password.set(password);
+    }
+
+    public StringProperty getPasswordProperty() {
+        return password;
+    }
+
+    public boolean esAdmin() {
+        return esAdmin;
+    }
+
+    public void setEsAdmin(boolean esAdmin) {
+        this.esAdmin = esAdmin;
+    }
 }

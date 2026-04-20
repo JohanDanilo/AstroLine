@@ -18,10 +18,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
 
-/**
- * Mantenimiento completo del catalogo de tramites.
- * CRUD con búsqueda en tiempo real y propagación LAN.
- */
 public class MantenimientoTramitesController extends Controller implements Initializable {
 
     @FXML
@@ -56,13 +52,6 @@ public class MantenimientoTramitesController extends Controller implements Initi
     private final TramiteService tramiteService = TramiteService.getInstancia();
     private FilteredList<Tramite> tramitesFiltrados;
 
-    // ── Inicialización ────────────────────────────────────────────────────────
-
-    /**
-     * Llamado por JavaFX al cargar el FXML.
-     * Configura tabla, búsqueda y selección. El txtId queda no editable
-     * porque el ID siempre es asignado automáticamente por el sistema.
-     */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         configurarTabla();
@@ -71,17 +60,11 @@ public class MantenimientoTramitesController extends Controller implements Initi
         txtId.setEditable(false);
     }
 
-    /**
-     * Llamado por FlowController cada vez que se navega a esta vista.
-     * Refresca la tabla para mostrar datos actualizados.
-     */
     @Override
     public void initialize() {
         refrescarTabla();
         prepararNuevoTramite();
     }
-
-    // ── Eventos de botones ────────────────────────────────────────────────────
 
     @FXML
     private void onActionBtnNuevo(ActionEvent event) {
@@ -90,19 +73,15 @@ public class MantenimientoTramitesController extends Controller implements Initi
 
     @FXML
     private void onActionBtnGuardar(ActionEvent event) {
-        if (!camposValidos()) return;
+        if (!camposValidos()) {
+            return;
+        }
 
-        Tramite tramite = new Tramite(
-                txtId.getText().trim(),
-                txtNombre.getText().trim(),
-                txtDescripcion.getText().trim(),
-                chkActivo.isSelected()
+        Tramite tramite = new Tramite(txtId.getText().trim(), txtNombre.getText().trim(), txtDescripcion.getText().trim(), chkActivo.isSelected()
         );
 
         boolean existe = tramiteService.buscarPorId(tramite.getId()) != null;
-        Respuesta respuesta = existe
-                ? tramiteService.actualizar(tramite)
-                : tramiteService.agregar(tramite);
+        Respuesta respuesta = existe ? tramiteService.actualizar(tramite) : tramiteService.agregar(tramite);
 
         mostrarAviso(respuesta.getMensaje());
         if (respuesta.getEstado()) {
@@ -127,17 +106,11 @@ public class MantenimientoTramitesController extends Controller implements Initi
         }
     }
 
-    // ── Configuración de tabla ────────────────────────────────────────────────
-
     private void configurarTabla() {
-        colId.setCellValueFactory(data ->
-                new SimpleStringProperty(data.getValue().getId()));
-        colNombre.setCellValueFactory(data ->
-                new SimpleStringProperty(data.getValue().getNombre()));
-        colDescripcion.setCellValueFactory(data ->
-                new SimpleStringProperty(data.getValue().getDescripcion()));
-        colEstado.setCellValueFactory(data ->
-                new SimpleStringProperty(data.getValue().isActivo() ? "Activo" : "Inactivo"));
+        colId.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getId()));
+        colNombre.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getNombre()));
+        colDescripcion.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getDescripcion()));
+        colEstado.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().isActivo() ? "Activo" : "Inactivo"));
     }
 
     private void configurarBusqueda() {
@@ -145,13 +118,12 @@ public class MantenimientoTramitesController extends Controller implements Initi
     }
 
     private void configurarSeleccion() {
-        tblTramites.getSelectionModel().selectedItemProperty()
-                .addListener((obs, oldValue, nuevo) -> {
-                    if (nuevo != null) cargarTramite(nuevo);
-                });
+        tblTramites.getSelectionModel().selectedItemProperty().addListener((obs, oldValue, nuevo) -> {
+            if (nuevo != null) {
+                cargarTramite(nuevo);
+            }
+        });
     }
-
-    // ── Lógica de tabla ───────────────────────────────────────────────────────
 
     private void refrescarTabla() {
         tramitesFiltrados = new FilteredList<>(tramiteService.getListaDeTramites(), t -> true);
@@ -161,26 +133,20 @@ public class MantenimientoTramitesController extends Controller implements Initi
     }
 
     private void aplicarFiltro() {
-        if (tramitesFiltrados == null) return;
+        if (tramitesFiltrados == null) {
+            return;
+        }
 
-        String criterio = txtBusqueda.getText() == null
-                ? ""
-                : txtBusqueda.getText().trim().toLowerCase();
+        String criterio = txtBusqueda.getText() == null ? "" : txtBusqueda.getText().trim().toLowerCase();
 
         tramitesFiltrados.setPredicate(tramite -> {
-            if (criterio.isBlank()) return true;
-            return tramite.getId().toLowerCase().contains(criterio)
-                    || tramite.getNombre().toLowerCase().contains(criterio)
-                    || tramite.getDescripcion().toLowerCase().contains(criterio);
+            if (criterio.isBlank()) {
+                return true;
+            }
+            return tramite.getId().toLowerCase().contains(criterio) || tramite.getNombre().toLowerCase().contains(criterio) || tramite.getDescripcion().toLowerCase().contains(criterio);
         });
     }
 
-    // ── Formulario ────────────────────────────────────────────────────────────
-
-    /**
-     * Limpia el formulario y genera un ID sugerido para el nuevo trámite.
-     * El ID se asigna automáticamente y no puede editarse manualmente.
-     */
     private void prepararNuevoTramite() {
         tblTramites.getSelectionModel().clearSelection();
         txtId.setText(tramiteService.generarSiguienteId());
@@ -210,17 +176,9 @@ public class MantenimientoTramitesController extends Controller implements Initi
                 return;
             }
         }
-
         prepararNuevoTramite();
     }
 
-    // ── Validaciones ──────────────────────────────────────────────────────────
-
-    /**
-     * Valida que los campos obligatorios estén completos antes de guardar.
-     *
-     * @return true si los datos son válidos
-     */
     private boolean camposValidos() {
         if (txtId.getText() == null || txtId.getText().isBlank()) {
             mostrarAviso("El ID del trámite no puede estar vacío.");
@@ -232,8 +190,6 @@ public class MantenimientoTramitesController extends Controller implements Initi
         }
         return true;
     }
-
-    // ── Avisos ────────────────────────────────────────────────────────────────
 
     private void mostrarAviso(String mensaje) {
         Controller controller = FlowController.getInstance().getController("AvisoView");

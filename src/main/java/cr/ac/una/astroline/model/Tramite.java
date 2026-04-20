@@ -1,11 +1,5 @@
 package cr.ac.una.astroline.model;
 
-/**
- * Representa un tipo de trámite que puede atenderse en el sistema.
- * Se persiste en data/tramites.json
- *
- * @author JohanDanilo
- */
 public class Tramite {
 
     private String id;
@@ -23,17 +17,37 @@ public class Tramite {
         this.activo = activo;
     }
 
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public String getId() {
+        return id;
+    }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public String getNombre() {
+        return nombre;
+    }
 
-    public boolean isActivo() { return activo; }
-    public void setActivo(boolean activo) { this.activo = activo; }
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
 
     @Override
     public String toString() {

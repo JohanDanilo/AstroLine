@@ -1,11 +1,5 @@
 package cr.ac.una.astroline.model;
 
-/**
- * Representa la información general de la empresa.
- * Se persiste en data/empresa.json
- *
- * @author JohanDanilo
- */
 public class Empresa {
 
     private String nombre;
@@ -14,7 +8,7 @@ public class Empresa {
     private String telefono;
     private String correo;
     private String direccion;
-    private long lastModified; // epoch millis — se setea en cada CRUD
+    private long lastModified;
 
     public Empresa() {
     }
@@ -29,25 +23,58 @@ public class Empresa {
         this.direccion = direccion;
     }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public String getNombre() {
+        return nombre;
+    }
 
-    public String getLogoPath() { return logoPath; }
-    public void setLogoPath(String logoPath) { this.logoPath = logoPath; }
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 
-    public String getPinAdmin() { return pinAdmin; }
-    public void setPinAdmin(String pinAdmin) { this.pinAdmin = pinAdmin; }
+    public String getLogoPath() {
+        return logoPath;
+    }
 
-    public String getTelefono() { return telefono; }
-    public void setTelefono(String telefono) { this.telefono = telefono; }
+    public void setLogoPath(String logoPath) {
+        this.logoPath = logoPath;
+    }
 
-    public String getCorreo() { return correo; }
-    public void setCorreo(String correo) { this.correo = correo; }
+    public String getPinAdmin() {
+        return pinAdmin;
+    }
 
-    public String getDireccion() { return direccion; }
-    public void setDireccion(String direccion) { this.direccion = direccion; }
-    
-    public Long getLastModified() { return lastModified; }
+    public void setPinAdmin(String pinAdmin) {
+        this.pinAdmin = pinAdmin;
+    }
+
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
+
+    public String getCorreo() {
+        return correo;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
+    }
+
+    public String getDireccion() {
+        return direccion;
+    }
+
+    public void setDireccion(String direccion) {
+        this.direccion = direccion;
+    }
+
+    public Long getLastModified() {
+        return lastModified;
+    }
+
     public void setLastModified(Long last) {
         this.lastModified = last;
     }

@@ -9,11 +9,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 
-/**
- * FXML Controller class
- *
- * @author takka_sama
- */
 public class AvisoController extends Controller implements Initializable {
 
     @FXML
@@ -21,18 +16,22 @@ public class AvisoController extends Controller implements Initializable {
     @FXML
     private MFXButton btnAceptar;
 
-    /**
-     * Initializes the controller class.
-     */
+
     @Override
-    public void initialize(URL url, ResourceBundle rb) { }    
+    public void initialize(URL url, ResourceBundle rb) {
+    }
+
     @Override
-    public void initialize() { }
+    public void initialize() {
+    }
+
     @FXML
     private void onActionBtnAceptar(ActionEvent event) {
         getStage().close();
     }
-    
-    public void cambiarInformacionDeAviso(String msg){ this.lblAviso.setText(msg);}
-    
+
+    public void cambiarInformacionDeAviso(String msg) {
+        this.lblAviso.setText(msg);
+    }
+
 }
