@@ -20,7 +20,7 @@
             <HBox alignment="CENTER" spacing="10.0">
                <children>
                   <MFXComboBox fx:id="cmbSucursal" floatingText="Sucursal" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onActionCmbSucursal" prefHeight="40.0" prefWidth="320.0" styleClass="custom-field" HBox.hgrow="ALWAYS" />
-                  <Button mnemonicParsing="false" onAction="#onBtnAgregarSucursal" styleClass="jfx-btn-agregar">
+                  <Button mnemonicParsing="false" onAction="#onBtnAgregarSucursal" styleClass="jfx-btn-crear">
                      <graphic>
                         <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
                      </graphic>
@@ -41,7 +41,7 @@
             <HBox prefHeight="40.0" prefWidth="880.0" spacing="10.0">
                <children>
                   <MFXTextField fx:id="txtBarraBusquedaEstaciones" floatMode="BORDER" floatingText="Buscar estación" maxWidth="1.7976931348623157E308" styleClass="custom-field" HBox.hgrow="ALWAYS" />
-                  <Button fx:id="btnAgregarEstacion" mnemonicParsing="false" onAction="#onBtnAgregarEstacion" styleClass="jfx-btn-agregar">
+                  <Button fx:id="btnAgregarEstacion" mnemonicParsing="false" onAction="#onBtnAgregarEstacion" styleClass="jfx-btn-crear">
                      <graphic>
                         <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true" />
                      </graphic>
