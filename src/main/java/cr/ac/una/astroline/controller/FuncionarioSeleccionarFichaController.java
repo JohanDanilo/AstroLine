@@ -69,7 +69,7 @@ public class FuncionarioSeleccionarFichaController extends Controller implements
             .filter(f -> !soloPreferencial || f.isPreferencial())
             .collect(Collectors.toList());
 
-    System.out.println("[DEBUG] Fichas tras filtro: " + enEspera.size());
+//    System.out.println("[DEBUG] Fichas tras filtro: " + enEspera.size());
 
     cmbFichas.setItems(FXCollections.observableArrayList(enEspera));
 
@@ -97,10 +97,13 @@ public class FuncionarioSeleccionarFichaController extends Controller implements
 
         if (seleccionada == null) return;
 
-        // Registrar llamado y persistir estado
-        seleccionada.registrarLlamado(seleccionada.getEstacionId() != null
-                ? seleccionada.getEstacionId() : "EST-01");
-        fichaService.actualizarEstado(seleccionada.getId(), Ficha.Estado.LLAMADA);
+//        // Registrar llamado y persistir estado
+//        seleccionada.registrarLlamado(seleccionada.getEstacionId() != null
+//                ? seleccionada.getEstacionId() : "EST-01");
+//        fichaService.actualizarEstado(seleccionada.getId(), Ficha.Estado.LLAMADA);
+fichaService.registrarLlamado(seleccionada.getId(),
+        seleccionada.getEstacionId() != null
+        ? seleccionada.getEstacionId() : ConfiguracionService.getInstancia().getEstacionId());
 
         // Enviar la ficha directamente al controller padre
         if (controllerPadre != null) {
