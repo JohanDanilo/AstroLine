@@ -2,7 +2,7 @@
 setlocal
 
 set "BASE=%~dp0"
-set "JAR=%BASE%target\AstroLine-1.0-SNAPSHOT.jar"
+set "JAR=%BASE%AstroLine-1.0-SNAPSHOT.jar"
 set "ICO=%BASE%icono.ico"
 
 REM ---------- Verificar que el JAR existe ----------

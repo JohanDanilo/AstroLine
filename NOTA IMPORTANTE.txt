@@ -1,0 +1,22 @@
+Credenciales por defecto (primer arranque)
+
+Usuario	admin
+Contraseña	1234
+PIN de Kiosko	1234
+
+Para obtener los accesos directos (.lnk) se requiere ejecutar el archivo setup.bat haciendo doble click en él. Esto porque los enlaces de Windows no pueden usar "rutas relativas" entonces el setup los construye buscando el jdk instalado y los guarda en la carpeta actual.
+
+Adicionalmente debe tomar en cuenta que el archivo configuracion.json se crea con campos nulos después del primer inicio del app, por lo que para poder usar el app en modo funcionario se recomienda guardar y reemplazar el contenido del archivo configuracion.json en la carpeta data con este:
+
+{
+  "sucursalId": "sucursal-1",
+  "estacionId": "E-1-1",
+  "tramiteIds": [
+    "A",
+    "B",
+    "C"
+  ],
+  "preferencial": false
+}
+
+Ver documentación en: https://github.com/JohanDanilo/AstroLine

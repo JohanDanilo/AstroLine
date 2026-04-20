@@ -4,15 +4,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
-//import cr.ac.una.astroline.model.Usuario;
 
 public class AppContext {
 
     private static AppContext INSTANCE = null;
     private static HashMap<String, Object> context = new HashMap<>();
-     
+
     private AppContext() {
-        //cargarPropiedades();
+
     }
 
     private static void createInstance() {
@@ -31,20 +30,15 @@ public class AppContext {
         }
         return INSTANCE;
     }
-    
-    private void cargarPropiedades(){
+
+    private void cargarPropiedades() {
         try {
             FileInputStream configFile;
             configFile = new FileInputStream("config/properties.ini");
             Properties appProperties = new Properties();
             appProperties.load(configFile);
             configFile.close();
-//            if (appProperties.getProperty("propiedades.rutalog") != null) {
-//                this.set("rutalog",appProperties.getProperty("propiedades.rutalog"));
-//            }
-//            if (appProperties.getProperty("propiedades.resturl") != null) {
-//                this.set("resturl",appProperties.getProperty("propiedades.resturl"));
-  //          }
+
         } catch (IOException io) {
             System.out.println("Archivo de configuración no encontrado.");
         }
@@ -55,7 +49,7 @@ public class AppContext {
         throw new CloneNotSupportedException();
     }
 
-    public Object get(String parameter){    
+    public Object get(String parameter) {
         return context.get(parameter);
     }
 

@@ -16,49 +16,45 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 
-/**
- * Controller placeholder del módulo Administrador.
- * Será implementado por José.
- *
- */
 public class AdminController extends Controller implements Initializable {
 
-    private EmpresaService empresaService = EmpresaService.getInstancia();;
+    private EmpresaService empresaService = EmpresaService.getInstancia();
+    ;
     
-    @FXML private BorderPane root;
-    @FXML private ImageView logoEmpresa;
     @FXML
-    private Label nombreEmpresa; 
+    private BorderPane root;
+    @FXML
+    private ImageView logoEmpresa;
+    @FXML
+    private Label nombreEmpresa;
     @FXML
     private MFXButton btnConfiguracionGeneral;
-    
     @FXML
     private MFXButton btnTramites;
     @FXML
     private MFXButton btnRankings;
     @FXML
-    private MFXButton btnClientes;  
+    private MFXButton btnClientes;
     @FXML
     private MFXButton btnConfigEstacion;
-
     private Empresa empresa;
     @FXML
     private MFXButton btnSucursales;
-    
+
     @Override
     public void initialize() {
         setNombreVista("Administrador");
         actualizarVista(empresaService.getEmpresa());
 
-        // 🔥 Escuchar cambios en tiempo real
         empresaService.getEmpresaProperty().addListener((obs, oldEmp, newEmp) -> {
             actualizarVista(newEmp);
         });
     }
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // TODO
-    }    
+
+    }
 
     @FXML
     private void onActionBtnVerClientes(ActionEvent event) {
@@ -66,7 +62,7 @@ public class AdminController extends Controller implements Initializable {
     }
 
     @FXML
-    private void onActionBtnGeneral (ActionEvent event) {
+    private void onActionBtnGeneral(ActionEvent event) {
         FlowController.getInstance().goView("MantenimientoParametrosGeneralesView");
     }
 
@@ -79,26 +75,22 @@ public class AdminController extends Controller implements Initializable {
     private void onBtnTramites(ActionEvent event) {
         FlowController.getInstance().goView("MantenimientoTramitesView");
     }
-    
+
     @FXML
     private void onBtnSucursales(ActionEvent event) {
         FlowController.getInstance().goView("MantenimientoSucursalView");
     }
-    
+
     @FXML
     private void onBtnRankings(ActionEvent event) {
         FlowController.getInstance().goView("EstadisticasView");
     }
-    
-    // -------------------------------------------------------------------------
-    // CARGA INICIAL
-    // -------------------------------------------------------------------------
 
     private void actualizarVista(Empresa empresa) {
-        if (empresa == null) return;
-
+        if (empresa == null) {
+            return;
+        }
         nombreEmpresa.setText(empresa.getNombre());
-
         try {
             Image image = null;
 
@@ -127,5 +119,5 @@ public class AdminController extends Controller implements Initializable {
             e.printStackTrace();
         }
     }
-    
+
 }

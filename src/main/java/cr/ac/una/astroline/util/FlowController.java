@@ -80,8 +80,8 @@ public class FlowController {
     public void goMain() {
         try {
             FXMLLoader loader = new FXMLLoader(
-                App.class.getResource("/cr/ac/una/astroline/view/PrincipalView.fxml"),
-                this.idioma
+                    App.class.getResource("/cr/ac/una/astroline/view/PrincipalView.fxml"),
+                    this.idioma
             );
             Parent root = loader.load();
 
@@ -96,7 +96,7 @@ public class FlowController {
             this.mainStage.show();
         } catch (IOException ex) {
             java.util.logging.Logger.getLogger(FlowController.class.getName())
-                .log(Level.SEVERE, "Error inicializando la vista base.", ex);
+                    .log(Level.SEVERE, "Error inicializando la vista base.", ex);
         }
     }
 
@@ -107,8 +107,8 @@ public class FlowController {
             }
 
             FXMLLoader loader = new FXMLLoader(
-                App.class.getResource("/cr/ac/una/astroline/view/" + acceso + "View.fxml"),
-                this.idioma
+                    App.class.getResource("/cr/ac/una/astroline/view/" + acceso + "View.fxml"),
+                    this.idioma
             );
 
             Parent root = loader.load();
@@ -125,7 +125,7 @@ public class FlowController {
 
         } catch (IOException ex) {
             java.util.logging.Logger.getLogger(FlowController.class.getName())
-                .log(Level.SEVERE, "Error inicializando la vista base.", ex);
+                    .log(Level.SEVERE, "Error inicializando la vista base.", ex);
         }
     }
 
@@ -163,19 +163,12 @@ public class FlowController {
             default:
                 break;
         }
-        stage.centerOnScreen();
-        stage.show();
+        if (!stage.isShowing()) {
+            stage.centerOnScreen();
+            stage.show();
+        }
     }
 
-    // -------------------------------------------------------------------------
-    // NUEVO MÉTODO — navega dentro del mismo Stage del controller llamante.
-    //
-    // Úsalo desde ventanas flotantes (abiertas con goViewInWindow) que NO forman
-    // parte del layout principal con BorderPane+VBox.  De esta forma la
-    // navegación queda contenida en su propia ventana y nunca toca mainStage.
-    //
-    // Si el caller aún no tiene Stage asignado, cae al mainStage como fallback.
-    // -------------------------------------------------------------------------
     public void goViewInCallerStage(String viewName, Controller caller) {
         FXMLLoader loader = getLoader(viewName);
         Controller controller = loader.getController();
@@ -190,7 +183,6 @@ public class FlowController {
         MFXThemeManager.addOn(targetStage.getScene(), Themes.DEFAULT, Themes.LEGACY);
         targetStage.getScene().setRoot(loader.getRoot());
 
-        // ← NUEVO: actualizar el listener para que limpie el root correcto al cerrar
         final Stage stageCapturado = targetStage;
         targetStage.setOnHidden((WindowEvent e) -> {
             if (stageCapturado.getScene() != null) {
@@ -199,11 +191,12 @@ public class FlowController {
             controller.setStage(null);
         });
 
-        targetStage.centerOnScreen();
-        targetStage.show();
+        if (!targetStage.isShowing()) {
+            targetStage.centerOnScreen();
+            targetStage.show();
+        }
     }
 
-    // Sobrecarga con acción por si se necesita en el futuro
     public void goViewInCallerStage(String viewName, Controller caller, String accion) {
         FXMLLoader loader = getLoader(viewName);
         Controller controller = loader.getController();
@@ -218,24 +211,27 @@ public class FlowController {
 
         MFXThemeManager.addOn(targetStage.getScene(), Themes.DEFAULT, Themes.LEGACY);
         targetStage.getScene().setRoot(loader.getRoot());
-        targetStage.centerOnScreen();
-        targetStage.show();
+        if (!targetStage.isShowing()) {
+            targetStage.centerOnScreen();
+            targetStage.show();
+        }
     }
-    // -------------------------------------------------------------------------
 
     public void goViewInStage(String viewName, Stage stage) {
         FXMLLoader loader = getLoader(viewName);
         Controller controller = loader.getController();
         controller.setStage(stage);
-        stage.getScene().setRoot(loader.getRoot());
-        stage.centerOnScreen();
+        if (!stage.isShowing()) {
+            stage.centerOnScreen();
+            stage.show();
+        }
     }
 
     public void goViewInWindow(String viewName) {
         try {
             FXMLLoader loader = new FXMLLoader(
-                App.class.getResource("/cr/ac/una/astroline/view/" + viewName + ".fxml"),
-                this.idioma
+                    App.class.getResource("/cr/ac/una/astroline/view/" + viewName + ".fxml"),
+                    this.idioma
             );
             Parent root = loader.load();
             Controller controller = loader.getController();
@@ -246,7 +242,7 @@ public class FlowController {
             stage.setTitle(controller.getNombreVista());
             stage.setOnHidden((WindowEvent event) -> {
                 if (stage.getScene() != null) {
-                    stage.getScene().setRoot(new Pane()); // ← desconecta el root del caché de la escena
+                    stage.getScene().setRoot(new Pane());
                 }
                 controller.setStage(null);
             });
@@ -260,7 +256,7 @@ public class FlowController {
 
         } catch (IOException ex) {
             java.util.logging.Logger.getLogger(FlowController.class.getName())
-                .log(Level.SEVERE, "Error abriendo ventana [" + viewName + "].", ex);
+                    .log(Level.SEVERE, "Error abriendo ventana [" + viewName + "].", ex);
         }
     }
 
@@ -308,7 +304,7 @@ public class FlowController {
     private void applyIcon(Stage stage) {
         stage.getIcons().clear();
         stage.getIcons().add(new Image(
-            App.class.getResourceAsStream("/cr/ac/una/astroline/resource/logo.png")
+                App.class.getResourceAsStream("/cr/ac/una/astroline/resource/logo.png")
         ));
     }
 

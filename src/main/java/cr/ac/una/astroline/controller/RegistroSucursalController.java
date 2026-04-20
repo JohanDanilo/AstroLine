@@ -17,52 +17,31 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.AnchorPane;
 
-/**
- * Controlador del formulario de creacion/edicion de sucursales.
- * Se abre como modal desde MantenimientoSucursalController.
- *
- * Datos de entrada via AppContext (seteados ANTES de abrir la ventana):
- *   "sucursalParaEditar" -> Sucursal  (null = CREAR, non-null = EDITAR)
- *
- * Al cerrar correctamente deposita en AppContext:
- *   "ultimaSucursalId"  -> String   (ID de la sucursal creada o editada)
- *
- * IMPORTANTE — Ciclo de vida:
- *   initialize(URL, ResourceBundle) -> solo configura componentes estaticos.
- *   initialize()                    -> hook de FlowController; aqui se lee
- *                                      AppContext porque en este punto el stage
- *                                      y el contexto estan listos.
- *
- * @author JohanDanilo
- */
 public class RegistroSucursalController extends Controller implements Initializable {
 
-    @FXML private AnchorPane   root;
-    @FXML private Label        lblTitulo;
-    @FXML private MFXTextField txtNombre;
-    @FXML private TextArea     txtAreaAviso;
-    @FXML private MFXButton    btnGuardar;
-    @FXML private MFXButton    btnCancelar;
+    @FXML
+    private AnchorPane root;
+    @FXML
+    private Label lblTitulo;
+    @FXML
+    private MFXTextField txtNombre;
+    @FXML
+    private TextArea txtAreaAviso;
+    @FXML
+    private MFXButton btnGuardar;
+    @FXML
+    private MFXButton btnCancelar;
 
     private final SucursalService sucursalService = SucursalService.getInstancia();
 
     private Sucursal sucursalParaEditar;
-    private boolean  esEdicion;
+    private boolean esEdicion;
 
-    /**
-     * Llamado por FXMLLoader durante load().
-     * Solo configuracion estatica — NO leer AppContext aqui.
-     */
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Sin logica de datos — ver initialize() abajo
+
     }
 
-    /**
-     * Hook de FlowController. Corre DESPUES de que el stage esta configurado
-     * y AppContext fue seteado por el padre. Aqui se detecta el modo y
-     * se precargan los campos.
-     */
     @Override
     public void initialize() {
         sucursalParaEditar = (Sucursal) AppContext.getInstance().get("sucursalParaEditar");
@@ -86,7 +65,7 @@ public class RegistroSucursalController extends Controller implements Initializa
     @FXML
     private void onActionBtnGuardar(ActionEvent event) {
         String nombre = txtNombre.getText() == null ? "" : txtNombre.getText().trim();
-        String aviso  = txtAreaAviso.getText() == null ? "" : txtAreaAviso.getText().trim();
+        String aviso = txtAreaAviso.getText() == null ? "" : txtAreaAviso.getText().trim();
 
         if (nombre.isBlank()) {
             mostrarAlerta(Alert.AlertType.WARNING,
@@ -149,8 +128,12 @@ public class RegistroSucursalController extends Controller implements Initializa
 
     private boolean existeNombre(String nombre, String excluirId) {
         for (Sucursal s : sucursalService.getListaDeSucursales()) {
-            if (excluirId != null && excluirId.equals(s.getId())) continue;
-            if (nombre.equalsIgnoreCase(s.getNombre())) return true;
+            if (excluirId != null && excluirId.equals(s.getId())) {
+                continue;
+            }
+            if (nombre.equalsIgnoreCase(s.getNombre())) {
+                return true;
+            }
         }
         return false;
     }

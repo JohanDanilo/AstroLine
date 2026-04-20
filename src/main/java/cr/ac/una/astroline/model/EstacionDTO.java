@@ -7,13 +7,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-/**
- * DTO de Estacion para binding con formularios JavaFX.
- * Los tramiteIds se manejan como lista plana — el drag and drop
- * los modifica directamente sobre este campo.
- *
- * @author takka_sama
- */
 public class EstacionDTO {
 
     private StringProperty id;
@@ -21,7 +14,7 @@ public class EstacionDTO {
     private StringProperty sucursalId;
     private BooleanProperty preferencial;
     private BooleanProperty estaActiva;
-    private List<String> tramiteIds; // no necesita Property — lo maneja drag and drop
+    private List<String> tramiteIds;
 
     public EstacionDTO() {
         this.id = new SimpleStringProperty("");
@@ -32,33 +25,71 @@ public class EstacionDTO {
         this.tramiteIds = new ArrayList<>();
     }
 
-    // ── Getters/Setters de valores ────────────────────────────────────────────
+    public String getId() {
+        return id.get();
+    }
 
-    public String getId() { return id.get(); }
-    public void setId(String id) { this.id.set(id); }
+    public void setId(String id) {
+        this.id.set(id);
+    }
 
-    public String getNombre() { return nombre.get(); }
-    public void setNombre(String nombre) { this.nombre.set(nombre); }
+    public String getNombre() {
+        return nombre.get();
+    }
 
-    public String getSucursalId() { return sucursalId.get(); }
-    public void setSucursalId(String sucursalId) { this.sucursalId.set(sucursalId); }
+    public void setNombre(String nombre) {
+        this.nombre.set(nombre);
+    }
 
-    public boolean isPreferencial() { return preferencial.get(); }
-    public void setPreferencial(boolean preferencial) { this.preferencial.set(preferencial); }
+    public String getSucursalId() {
+        return sucursalId.get();
+    }
 
-    public boolean isEstaActiva() { return estaActiva.get(); }
-    public void setEstaActiva(boolean estaActiva) { this.estaActiva.set(estaActiva); }
+    public void setSucursalId(String sucursalId) {
+        this.sucursalId.set(sucursalId);
+    }
 
-    public List<String> getTramiteIds() { return tramiteIds; }
+    public boolean isPreferencial() {
+        return preferencial.get();
+    }
+
+    public void setPreferencial(boolean preferencial) {
+        this.preferencial.set(preferencial);
+    }
+
+    public boolean isEstaActiva() {
+        return estaActiva.get();
+    }
+
+    public void setEstaActiva(boolean estaActiva) {
+        this.estaActiva.set(estaActiva);
+    }
+
+    public List<String> getTramiteIds() {
+        return tramiteIds;
+    }
+
     public void setTramiteIds(List<String> tramiteIds) {
         this.tramiteIds = tramiteIds != null ? tramiteIds : new ArrayList<>();
     }
 
-    // ── Properties para binding ───────────────────────────────────────────────
+    public StringProperty getIdProperty() {
+        return id;
+    }
 
-    public StringProperty getIdProperty() { return id; }
-    public StringProperty getNombreProperty() { return nombre; }
-    public StringProperty getSucursalIdProperty() { return sucursalId; }
-    public BooleanProperty getPrefencialProperty() { return preferencial; }
-    public BooleanProperty getEstaActivaProperty() { return estaActiva; }
+    public StringProperty getNombreProperty() {
+        return nombre;
+    }
+
+    public StringProperty getSucursalIdProperty() {
+        return sucursalId;
+    }
+
+    public BooleanProperty getPrefencialProperty() {
+        return preferencial;
+    }
+
+    public BooleanProperty getEstaActivaProperty() {
+        return estaActiva;
+    }
 }

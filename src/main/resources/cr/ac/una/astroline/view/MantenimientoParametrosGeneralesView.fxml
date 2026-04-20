@@ -55,6 +55,7 @@
                <content>
                   <HBox spacing="5.0">
                      <children>
+
                         <VBox spacing="10.0" HBox.hgrow="ALWAYS">
                            <children>
                               <MFXTextField fx:id="txtBusquedaFuncionario" floatingText="Buscar funcionario..." maxWidth="1.7976931348623157E308" styleClass="custom-field" />

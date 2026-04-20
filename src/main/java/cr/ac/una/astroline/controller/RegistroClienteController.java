@@ -8,10 +8,8 @@ import cr.ac.una.astroline.service.ClienteService;
 import cr.ac.una.astroline.util.FlowController;
 import cr.ac.una.astroline.util.GsonUtil;
 import cr.ac.una.astroline.util.SyncManager;
-
 import io.github.palexdev.materialfx.controls.*;
 import io.github.palexdev.materialfx.utils.SwingFXUtils;
-
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +24,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.imageio.ImageIO;
-
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -39,48 +36,52 @@ import javafx.stage.FileChooser;
 
 public class RegistroClienteController extends Controller implements Initializable {
 
-    // ── FXML fields ──────────────────────────────────────────────────────────
-    @FXML private MFXDatePicker dpFechaNacimiento;
-    @FXML private MFXTextField  txtCedula;
-    @FXML private MFXTextField  txtNombre;
-    @FXML private MFXTextField  txtApellido;
-    @FXML private MFXTextField  txtTelefono;
-    @FXML private MFXTextField  txtCorreo;
-    @FXML private AnchorPane    root;
-    @FXML private ImageView     fotoCliente;
-    @FXML private MFXButton     btnSubirFoto;
-    @FXML private MFXButton     btnAbrirCamara;
-    @FXML private MFXButton     btnTomarFoto;
-    @FXML private MFXButton     btnRegresarAListaClientes;
-    @FXML private MFXButton     btnGuardarCambiosClientes;
-    @FXML private MFXButton     btnDescartar;
+    @FXML
+    private MFXDatePicker dpFechaNacimiento;
+    @FXML
+    private MFXTextField txtCedula;
+    @FXML
+    private MFXTextField txtNombre;
+    @FXML
+    private MFXTextField txtApellido;
+    @FXML
+    private MFXTextField txtTelefono;
+    @FXML
+    private MFXTextField txtCorreo;
+    @FXML
+    private AnchorPane root;
+    @FXML
+    private ImageView fotoCliente;
+    @FXML
+    private MFXButton btnSubirFoto;
+    @FXML
+    private MFXButton btnAbrirCamara;
+    @FXML
+    private MFXButton btnTomarFoto;
+    @FXML
+    private MFXButton btnRegresarAListaClientes;
+    @FXML
+    private MFXButton btnGuardarCambiosClientes;
+    @FXML
+    private MFXButton btnDescartar;
 
     private static final String DEFAULT_FOTO_PATH;
+
     static {
         URL resource = RegistroClienteController.class.getResource(
-            "/cr/ac/una/astroline/resource/LogoUser.png");
+                "/cr/ac/una/astroline/resource/LogoUser.png");
         DEFAULT_FOTO_PATH = resource != null ? resource.toExternalForm() : "";
     }
 
-    // ── Estado ───────────────────────────────────────────────────────────────
     private final ClienteService clienteService = ClienteService.getInstancia();
     private Cliente editingCliente = null;
     private String fotoPathSeleccionado = "";
 
-    /**
-     * Subdirectorio de fotos relativo al dataDir.
-     * El path que se guarda en el JSON siempre usa '/' como separador:
-     *   "fotos/Cliente_123456789.png"
-     * Esto funciona igual en Windows y Linux porque Paths.get() acepta '/'.
-     */
     private static final String FOTOS_SUBDIR = "fotos";
 
-    // ── Cámara ───────────────────────────────────────────────────────────────
     private Webcam webcam;
     private ScheduledExecutorService camaraScheduler;
     private final AtomicBoolean camaraActiva = new AtomicBoolean(false);
-
-    // ─────────────────────────────────────────────────────────────────────────
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -90,12 +91,13 @@ public class RegistroClienteController extends Controller implements Initializab
     }
 
     @Override
-    public void initialize() {}
-
-    // ── Cargar cliente (modo edición) ─────────────────────────────────────────
+    public void initialize() {
+    }
 
     public void cargarClienteParaEditar(Cliente cliente) {
-        if (cliente == null) return;
+        if (cliente == null) {
+            return;
+        }
         editingCliente = cliente;
 
         ClienteDTO dto = new ClienteDTO();
@@ -109,21 +111,14 @@ public class RegistroClienteController extends Controller implements Initializab
         dpFechaNacimiento.setValue(dto.getFechaNacimiento());
         txtCedula.setEditable(false);
 
-        String foto = (dto.getFotoPath() != null && !dto.getFotoPath().isEmpty())
-                      ? dto.getFotoPath()
-                      : DEFAULT_FOTO_PATH;
+        String foto = (dto.getFotoPath() != null && !dto.getFotoPath().isEmpty()) ? dto.getFotoPath() : DEFAULT_FOTO_PATH;
         fotoPathSeleccionado = foto;
         mostrarImagenLocal(foto);
     }
 
-    // ── Detección de contexto ─────────────────────────────────────────────────
-    
     private boolean estaEnMainStage() {
-        return getStage() == null
-            || getStage() == FlowController.getInstance().getMainStage();
+        return getStage() == null || getStage() == FlowController.getInstance().getMainStage();
     }
-
-    // ── Navegación de vuelta a VerCliente ─────────────────────────────────────
 
     private void navegarALista() {
         if (estaEnMainStage()) {
@@ -133,8 +128,6 @@ public class RegistroClienteController extends Controller implements Initializab
         }
     }
 
-    // ── Eventos de navegación y guardado ─────────────────────────────────────
-
     @FXML
     private void OnActionRegresarRegistroCliente(ActionEvent event) {
         navegarALista();
@@ -142,7 +135,9 @@ public class RegistroClienteController extends Controller implements Initializab
 
     @FXML
     private void OnActionGuardarCambiosClientes(ActionEvent event) {
-        if (!camposValidos()) return;
+        if (!camposValidos()) {
+            return;
+        }
         Cliente cliente = construirClienteDesdeFormulario();
 
         if (editingCliente != null) {
@@ -152,31 +147,27 @@ public class RegistroClienteController extends Controller implements Initializab
         }
     }
 
-    // ── Foto: subir desde archivo ─────────────────────────────────────────────
-
     @FXML
     private void onBtnSubirFoto(ActionEvent event) {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Seleccionar foto del cliente");
         chooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Imágenes", "*.png", "*.jpg", "*.jpeg", "*.gif")
+                new FileChooser.ExtensionFilter("Imágenes", "*.png", "*.jpg", "*.jpeg", "*.gif")
         );
 
         File archivo = chooser.showOpenDialog(root.getScene().getWindow());
-        if (archivo == null) return;
+        if (archivo == null) {
+            return;
+        }
 
         try {
-            String relPath = copiarFotoADataDir(archivo.toPath(),
-                                                generarNombreFoto(archivo.getName()));
+            String relPath = copiarFotoADataDir(archivo.toPath(), generarNombreFoto(archivo.getName()));
             fotoPathSeleccionado = relPath;
             mostrarImagenLocal(relPath);
         } catch (IOException e) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error",
-                          "No se pudo copiar la imagen: " + e.getMessage());
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo copiar la imagen: " + e.getMessage());
         }
     }
-
-    // ── Foto: abrir / cerrar cámara ───────────────────────────────────────────
 
     @FXML
     private void onBtnAbrirCamara(ActionEvent event) {
@@ -187,11 +178,11 @@ public class RegistroClienteController extends Controller implements Initializab
         }
     }
 
-    // ── Foto: capturar frame de la cámara ────────────────────────────────────
-
     @FXML
     private void onBtnTomarFoto(ActionEvent event) {
-        if (!camaraActiva.get() || webcam == null) return;
+        if (!camaraActiva.get() || webcam == null) {
+            return;
+        }
 
         BufferedImage frame = webcam.getImage();
         if (frame == null) {
@@ -200,41 +191,30 @@ public class RegistroClienteController extends Controller implements Initializab
         }
 
         try {
-            String nombre  = "foto_" + System.currentTimeMillis() + ".png";
-            // Guardar en dataDir/fotos/nombre
+            String nombre = "foto_" + System.currentTimeMillis() + ".png";
+
             Path destino = Paths.get(GsonUtil.getDataDir(), FOTOS_SUBDIR, nombre);
             Files.createDirectories(destino.getParent());
             ImageIO.write(frame, "png", destino.toFile());
 
-            // Guardar la ruta relativa con '/' (cross-platform)
             fotoPathSeleccionado = FOTOS_SUBDIR + "/" + nombre;
             Image fxImage = SwingFXUtils.toFXImage(frame, null);
             Platform.runLater(() -> fotoCliente.setImage(fxImage));
 
             detenerCamara();
-            mostrarAlerta(Alert.AlertType.INFORMATION, "Foto tomada",
-                          "La foto se guardó correctamente.");
+            mostrarAlerta(Alert.AlertType.INFORMATION, "Foto tomada", "La foto se guardó correctamente.");
         } catch (IOException e) {
-            mostrarAlerta(Alert.AlertType.ERROR, "Error",
-                          "No se pudo guardar la foto: " + e.getMessage());
+            mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo guardar la foto: " + e.getMessage());
         }
     }
 
-    // ── Descartar foto ────────────────────────────────────────────────────────
-
     @FXML
     private void onBtnDescartar(ActionEvent event) {
-        if (fotoPathSeleccionado != null
-                && !fotoPathSeleccionado.isEmpty()
-                && !fotoPathSeleccionado.equals(DEFAULT_FOTO_PATH)
-                && !fotoPathSeleccionado.startsWith("file:")
-                && !fotoPathSeleccionado.startsWith("jar:")) {
+        if (fotoPathSeleccionado != null && !fotoPathSeleccionado.isEmpty() && !fotoPathSeleccionado.equals(DEFAULT_FOTO_PATH)
+                && !fotoPathSeleccionado.startsWith("file:") && !fotoPathSeleccionado.startsWith("jar:")) {
             try {
-                // Resolver la ruta relativa contra el dataDir
-                Path fotoPath = Paths.get(GsonUtil.getDataDir(),
-                                          fotoPathSeleccionado.split("/")).toAbsolutePath();
-                Path fotoDir  = Paths.get(GsonUtil.getDataDir(),
-                                          FOTOS_SUBDIR).toAbsolutePath();
+                Path fotoPath = Paths.get(GsonUtil.getDataDir(), fotoPathSeleccionado.split("/")).toAbsolutePath();
+                Path fotoDir = Paths.get(GsonUtil.getDataDir(), FOTOS_SUBDIR).toAbsolutePath();
                 if (fotoPath.startsWith(fotoDir)) {
                     Files.deleteIfExists(fotoPath);
                 }
@@ -247,13 +227,10 @@ public class RegistroClienteController extends Controller implements Initializab
         detenerCamara();
     }
 
-    // ── Lógica de cámara ─────────────────────────────────────────────────────
-
     private void iniciarCamara() {
         webcam = Webcam.getDefault();
         if (webcam == null) {
-            mostrarAlerta(Alert.AlertType.WARNING, "Cámara",
-                          "No se detectó ninguna cámara en el sistema.");
+            mostrarAlerta(Alert.AlertType.WARNING, "Cámara", "No se detectó ninguna cámara en el sistema.");
             return;
         }
         webcam.setViewSize(WebcamResolution.VGA.getSize());
@@ -268,9 +245,13 @@ public class RegistroClienteController extends Controller implements Initializab
             return t;
         });
         camaraScheduler.scheduleAtFixedRate(() -> {
-            if (!camaraActiva.get() || !webcam.isOpen()) return;
+            if (!camaraActiva.get() || !webcam.isOpen()) {
+                return;
+            }
             BufferedImage frame = webcam.getImage();
-            if (frame == null) return;
+            if (frame == null) {
+                return;
+            }
             Image fxImage = SwingFXUtils.toFXImage(frame, null);
             Platform.runLater(() -> fotoCliente.setImage(fxImage));
         }, 0, 66, TimeUnit.MILLISECONDS);
@@ -291,53 +272,36 @@ public class RegistroClienteController extends Controller implements Initializab
         });
     }
 
-    // ── Utilidades de imagen ─────────────────────────────────────────────────
-
-    /**
-     * Copia la foto al subdirectorio dataDir/fotos/ y retorna la ruta
-     * relativa al dataDir con separador '/' (ej. "fotos/Cliente_123.png").
-     * Esta es la ruta que se persiste en el JSON y funciona en cualquier SO.
-     */
     private String copiarFotoADataDir(Path origen, String nombreDestino) throws IOException {
         Path dirFotos = Paths.get(GsonUtil.getDataDir(), FOTOS_SUBDIR);
         Files.createDirectories(dirFotos);
         Path destino = dirFotos.resolve(nombreDestino);
         Files.copy(origen, destino, StandardCopyOption.REPLACE_EXISTING);
-        // Siempre '/' para que sea válido en Windows y Linux
+
         return FOTOS_SUBDIR + "/" + nombreDestino;
     }
 
     private String generarNombreFoto(String nombreOriginal) {
-        String extension = nombreOriginal.contains(".")
-            ? nombreOriginal.substring(nombreOriginal.lastIndexOf('.'))
-            : ".jpg";
+        String extension = nombreOriginal.contains(".") ? nombreOriginal.substring(nombreOriginal.lastIndexOf('.')) : ".jpg";
         String cedula = txtCedula.getText().trim();
         return "Cliente_" + cedula + extension;
     }
 
-    /**
-     * Muestra una imagen en el ImageView.
-     *
-     * Acepta tres formatos de path:
-     *   1. URL de recurso:   "file:/..." o "jar:file:/..."  → carga directo
-     *   2. Ruta relativa:    "fotos/Cliente_123.png"        → resuelve contra dataDir
-     *   3. Ruta absoluta:    "/home/.../foto.png"           → fallback legacy
-     */
     private void mostrarImagenLocal(String path) {
-        if (path == null || path.isEmpty()) return;
+        if (path == null || path.isEmpty()) {
+            return;
+        }
         try {
             if (path.startsWith("file:") || path.startsWith("jar:")) {
                 fotoCliente.setImage(new Image(path));
                 return;
             }
-            // Intentar como ruta relativa al dataDir
             File archivo = Paths.get(GsonUtil.getDataDir(),
-                                     path.split("/")).toAbsolutePath().toFile();
+                    path.split("/")).toAbsolutePath().toFile();
             if (archivo.exists()) {
                 fotoCliente.setImage(new Image(archivo.toURI().toString()));
                 return;
             }
-            // Fallback: path absoluto (registros legacy)
             archivo = Paths.get(path).toAbsolutePath().toFile();
             if (archivo.exists()) {
                 fotoCliente.setImage(new Image(archivo.toURI().toString()));
@@ -348,8 +312,6 @@ public class RegistroClienteController extends Controller implements Initializab
             System.err.println("[RegistroCliente] No se pudo cargar imagen: " + e.getMessage());
         }
     }
-
-    // ── Lógica de negocio ─────────────────────────────────────────────────────
 
     private Cliente construirClienteDesdeFormulario() {
         ClienteDTO dto = new ClienteDTO();
@@ -366,8 +328,6 @@ public class RegistroClienteController extends Controller implements Initializab
     private void registrarCliente(Cliente cliente) {
         boolean guardado = clienteService.agregar(cliente);
         if (guardado) {
-            // El JSON ya viajó a los peers via GsonUtil.guardarYPropagar().
-            // Ahora propagamos la imagen para que la otra máquina también la tenga.
             propagarFotoSiCorresponde();
             mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Cliente registrado correctamente.");
             limpiarFormulario();
@@ -389,21 +349,12 @@ public class RegistroClienteController extends Controller implements Initializab
         }
     }
 
-    /**
-     * Propaga la imagen de perfil a los peers si es una imagen local
-     * (no el ícono por defecto embebido en el JAR).
-     */
     private void propagarFotoSiCorresponde() {
-        if (fotoPathSeleccionado == null
-                || fotoPathSeleccionado.isEmpty()
-                || fotoPathSeleccionado.startsWith("file:")
-                || fotoPathSeleccionado.startsWith("jar:")) {
+        if (fotoPathSeleccionado == null || fotoPathSeleccionado.isEmpty() || fotoPathSeleccionado.startsWith("file:") || fotoPathSeleccionado.startsWith("jar:")) {
             return;
         }
         SyncManager.getInstancia().propagarImagen(fotoPathSeleccionado);
     }
-
-    // ── Validaciones ─────────────────────────────────────────────────────────
 
     private boolean camposValidos() {
         if (txtCedula.getText().trim().isEmpty()) {
@@ -426,11 +377,11 @@ public class RegistroClienteController extends Controller implements Initializab
     }
 
     private boolean esFormatoCorreoValido(String correo) {
-        if (correo == null || correo.trim().isEmpty()) return true;
+        if (correo == null || correo.trim().isEmpty()) {
+            return true;
+        }
         return correo.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$");
     }
-
-    // ── Formulario ────────────────────────────────────────────────────────────
 
     public void limpiarFormulario() {
         txtCedula.clear();
@@ -453,4 +404,5 @@ public class RegistroClienteController extends Controller implements Initializab
         alerta.setContentText(mensaje);
         alerta.showAndWait();
     }
+
 }

@@ -9,13 +9,6 @@ import cr.ac.una.astroline.model.Tramite;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Se ejecuta una sola vez al arrancar la app desde App.java.
- * Crea los archivos JSON faltantes en data/ con contenido inicial.
- * Si el archivo ya existe, no lo toca.
- *
- * @author JohanDanilo
- */
 public class DataInitializer {
 
     private DataInitializer() {
@@ -33,19 +26,22 @@ public class DataInitializer {
     }
 
     private static void inicializarConfiguracion() {
-        if (GsonUtil.existe("configuracion.json")) return;
-        ConfiguracionLocal config = new ConfiguracionLocal(); // constructor vacío, todo null
+        if (GsonUtil.existe("configuracion.json")) {
+            return;
+        }
+        ConfiguracionLocal config = new ConfiguracionLocal();
         GsonUtil.guardar(config, "configuracion.json");
         System.out.println("[DataInitializer] configuracion.json creado vacío.");
     }
 
     private static void inicializarSucursales() {
-        if (GsonUtil.existe("sucursales.json")) return;
+        if (GsonUtil.existe("sucursales.json")) {
+            return;
+        }
 
         Sucursal sucursal = new Sucursal("sucursal-1", "Sucursal Central");
         sucursal.setTextoAviso("Bienvenido a AstroLine. Por favor espere su turno.");
 
-        // Estación inicial que atiende todos los trámites
         Estacion estacion = new Estacion("E-1-1", "Estación 1", "sucursal-1", false, true);
         estacion.agregarTramite("A");
         estacion.agregarTramite("B");
@@ -60,13 +56,17 @@ public class DataInitializer {
     }
 
     private static void inicializarClientes() {
-        if (GsonUtil.existe("clientes.json")) return;
+        if (GsonUtil.existe("clientes.json")) {
+            return;
+        }
         GsonUtil.guardar(new ArrayList<>(), "clientes.json");
         System.out.println("[DataInitializer] clientes.json creado vacío.");
     }
-    
+
     private static void inicializarFuncionarios() {
-        if (GsonUtil.existe("funcionarios.json")) return;
+        if (GsonUtil.existe("funcionarios.json")) {
+            return;
+        }
 
         Funcionario funcionario = new Funcionario();
         funcionario.setNombre("Administrador");
@@ -79,13 +79,15 @@ public class DataInitializer {
 
         List<Funcionario> lista = new ArrayList<>();
         lista.add(funcionario);
-        GsonUtil.guardar(lista, "funcionarios.json"); // ← guarda [{}], no {}
+        GsonUtil.guardar(lista, "funcionarios.json");
 
         System.out.println("[DataInitializer] funcionarios.json creado con funcionario predeterminado.");
     }
-    
+
     private static void inicializarEmpresa() {
-        if (GsonUtil.existe("empresa.json")) return;
+        if (GsonUtil.existe("empresa.json")) {
+            return;
+        }
         Empresa empresa = new Empresa();
         empresa.setNombre("Astroline Corp");
         empresa.setLogoPath("assets/logo.png");
@@ -98,11 +100,12 @@ public class DataInitializer {
     }
 
     private static void inicializarTramites() {
-        if (GsonUtil.existe("tramites.json")) return;
+        if (GsonUtil.existe("tramites.json")) {
+            return;
+        }
 
         List<Tramite> lista = new ArrayList<>();
 
-        // El id ES la letra del id del tramite
         lista.add(new Tramite("A", "Pasaporte", "Trámites relacionados a pasaportes", true));
         lista.add(new Tramite("B", "Licencia", "Trámites relacionados a licencias", true));
         lista.add(new Tramite("C", "Cédula", "Trámites relacionados a cédulas", true));
@@ -113,7 +116,9 @@ public class DataInitializer {
     }
 
     private static void inicializarFichas() {
-        if (GsonUtil.existe("fichas.json")) return;
+        if (GsonUtil.existe("fichas.json")) {
+            return;
+        }
 
         GsonUtil.guardar(new ArrayList<>(), "fichas.json");
 
@@ -121,12 +126,13 @@ public class DataInitializer {
     }
 
     private static void inicializarHistorial() {
-        if (GsonUtil.existe("historial.json")) return;
+        if (GsonUtil.existe("historial.json")) {
+            return;
+        }
 
         GsonUtil.guardar(new ArrayList<>(), "historial.json");
 
         System.out.println("[DataInitializer] historial.json creado vacío.");
     }
-    
 
 }

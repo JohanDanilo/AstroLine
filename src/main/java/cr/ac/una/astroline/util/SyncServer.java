@@ -11,56 +11,36 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * Servidor HTTP liviano para sincronización de archivos JSON e imágenes entre peers.
- *
- * Endpoints:
- *   GET  /files              → lista archivos JSON sincronizables
- *   GET  /file?name=x        → descarga JSON
- *   POST /file?name=x        → recibe JSON
- *   GET  /images             → lista imágenes en subdirectorios sincronizables
- *   GET  /image?name=x       → descarga imagen (x = ruta relativa, ej. fotos/foto.png)
- *   POST /image?name=x       → recibe imagen
- *
- * @author JohanDanilo
- */
 public class SyncServer {
 
     private static final int PORT = 8080;
     private static HttpServer server;
-    
-    /**
-    * Archivos que participan en sincronización P2P.
-    * configuracion.json está EXCLUIDO — es por equipo, no compartido.
-    */
-   private static final Set<String> ARCHIVOS_SINCRONIZABLES = Set.of(
-       "sucursales.json",
-       "tramites.json",
-       "empresa.json",
-       "funcionarios.json",
-       "fichas.json",
-       "historial.json",
-       "clientes.json"
-   );
 
-    /**
-     * Subdirectorios de imágenes que participan en sincronización P2P.
-     * Las imágenes se almacenan como rutas relativas: "fotos/foto.png", "logoEmpresa/logo.png"
-     */
-    static final Set<String> IMAGE_SUBDIRS = Set.of(
-        "fotos",
-        "logoEmpresa"
+    private static final Set<String> ARCHIVOS_SINCRONIZABLES = Set.of(
+            "sucursales.json",
+            "tramites.json",
+            "empresa.json",
+            "funcionarios.json",
+            "fichas.json",
+            "historial.json",
+            "clientes.json"
     );
 
-    private SyncServer() {}
+    static final Set<String> IMAGE_SUBDIRS = Set.of(
+            "fotos",
+            "logoEmpresa"
+    );
+
+    private SyncServer() {
+    }
 
     public static void start() {
         try {
             server = HttpServer.create(new InetSocketAddress(PORT), 0);
-            server.createContext("/files",  new FilesListHandler());
-            server.createContext("/file",   new FileHandler());
+            server.createContext("/files", new FilesListHandler());
+            server.createContext("/file", new FileHandler());
             server.createContext("/images", new ImagesListHandler());
-            server.createContext("/image",  new ImageHandler());
+            server.createContext("/image", new ImageHandler());
 
             ExecutorService executor = Executors.newCachedThreadPool(r -> {
                 Thread t = new Thread(r, "astroline-http-worker");
@@ -76,28 +56,34 @@ public class SyncServer {
     }
 
     public static void stop() {
-        if (server != null) server.stop(0);
+        if (server != null) {
+            server.stop(0);
+        }
     }
 
-    // ─── GET /files ──────────────────────────────────────────────────────────
-
     static class FilesListHandler implements HttpHandler {
+
         @Override
         public void handle(HttpExchange ex) throws IOException {
-            if (!"GET".equals(ex.getRequestMethod())) { ex.sendResponseHeaders(405, -1); return; }
+            if (!"GET".equals(ex.getRequestMethod())) {
+                ex.sendResponseHeaders(405, -1);
+                return;
+            }
 
             StringBuilder json = new StringBuilder("[");
             Path dataDir = Paths.get(GsonUtil.getDataDir());
 
             if (Files.exists(dataDir)) {
                 File[] files = dataDir.toFile().listFiles(
-                    (d, n) -> n.endsWith(".json") && ARCHIVOS_SINCRONIZABLES.contains(n));
+                        (d, n) -> n.endsWith(".json") && ARCHIVOS_SINCRONIZABLES.contains(n));
                 if (files != null) {
                     for (int i = 0; i < files.length; i++) {
-                        if (i > 0) json.append(",");
+                        if (i > 0) {
+                            json.append(",");
+                        }
                         json.append(String.format(
-                            "{\"name\":\"%s\",\"lastModified\":%d}",
-                            files[i].getName(), files[i].lastModified()
+                                "{\"name\":\"%s\",\"lastModified\":%d}",
+                                files[i].getName(), files[i].lastModified()
                         ));
                     }
                 }
@@ -108,37 +94,43 @@ public class SyncServer {
         }
     }
 
-    // ─── GET /file?name=x  →  devuelve JSON ──────────────────────────────────
-    // ─── POST /file?name=x →  guarda JSON   ──────────────────────────────────
-
     static class FileHandler implements HttpHandler {
+
         @Override
         public void handle(HttpExchange ex) throws IOException {
             String fileName = extractParam(ex.getRequestURI().getQuery(), "name");
-            if (fileName == null || fileName.isEmpty()) { ex.sendResponseHeaders(400, -1); return; }
+            if (fileName == null || fileName.isEmpty()) {
+                ex.sendResponseHeaders(400, -1);
+                return;
+            }
             fileName = Paths.get(fileName).getFileName().toString(); // bloquea path traversal
 
             if ("GET".equals(ex.getRequestMethod())) {
                 Path path = Paths.get(GsonUtil.getDataDir(), fileName);
-                if (!Files.exists(path)) { ex.sendResponseHeaders(404, -1); return; }
+                if (!Files.exists(path)) {
+                    ex.sendResponseHeaders(404, -1);
+                    return;
+                }
                 byte[] content = Files.readAllBytes(path);
                 ex.getResponseHeaders().set("Content-Type", "application/json");
                 ex.sendResponseHeaders(200, content.length);
-                try (OutputStream os = ex.getResponseBody()) { os.write(content); }
+                try (OutputStream os = ex.getResponseBody()) {
+                    os.write(content);
+                }
 
             } else if ("POST".equals(ex.getRequestMethod())) {
-                // Rechazar archivos que no participan en P2P
                 if (!ARCHIVOS_SINCRONIZABLES.contains(fileName)) {
                     ex.sendResponseHeaders(403, -1);
                     return;
                 }
-                // Registrar al peer que nos envió datos
                 String senderIp = ex.getRemoteAddress().getAddress().getHostAddress();
                 SyncManager.getInstancia().registrarPeer(senderIp);
 
                 byte[] content = ex.getRequestBody().readAllBytes();
                 Path dataDir = Paths.get(GsonUtil.getDataDir());
-                if (!Files.exists(dataDir)) Files.createDirectories(dataDir);
+                if (!Files.exists(dataDir)) {
+                    Files.createDirectories(dataDir);
+                }
 
                 synchronized (SyncManager.getInstancia()) {
                     Path destino = dataDir.resolve(fileName);
@@ -147,8 +139,9 @@ public class SyncServer {
                     if (lmHeader != null) {
                         try {
                             Files.setLastModifiedTime(destino,
-                                FileTime.fromMillis(Long.parseLong(lmHeader)));
-                        } catch (NumberFormatException ignored) {}
+                                    FileTime.fromMillis(Long.parseLong(lmHeader)));
+                        } catch (NumberFormatException ignored) {
+                        }
                     }
                 }
 
@@ -160,14 +153,14 @@ public class SyncServer {
         }
     }
 
-    // ─── GET /images ─────────────────────────────────────────────────────────
-    // Lista todas las imágenes de los subdirectorios sincronizables.
-    // Respuesta: [{"name":"fotos/Cliente_123.png","lastModified":1234}, ...]
-
     static class ImagesListHandler implements HttpHandler {
+
         @Override
         public void handle(HttpExchange ex) throws IOException {
-            if (!"GET".equals(ex.getRequestMethod())) { ex.sendResponseHeaders(405, -1); return; }
+            if (!"GET".equals(ex.getRequestMethod())) {
+                ex.sendResponseHeaders(405, -1);
+                return;
+            }
 
             StringBuilder json = new StringBuilder("[");
             boolean primero = true;
@@ -175,19 +168,24 @@ public class SyncServer {
 
             for (String subdir : IMAGE_SUBDIRS) {
                 Path dirImg = dataDir.resolve(subdir);
-                if (!Files.exists(dirImg)) continue;
+                if (!Files.exists(dirImg)) {
+                    continue;
+                }
 
                 File[] archivos = dirImg.toFile().listFiles(
-                    (d, n) -> isImageFile(n));
-                if (archivos == null) continue;
+                        (d, n) -> isImageFile(n));
+                if (archivos == null) {
+                    continue;
+                }
 
                 for (File archivo : archivos) {
-                    if (!primero) json.append(",");
-                    // Nombre incluye el subdirectorio: "fotos/Cliente_123.png"
+                    if (!primero) {
+                        json.append(",");
+                    }
                     String relName = subdir + "/" + archivo.getName();
                     json.append(String.format(
-                        "{\"name\":\"%s\",\"lastModified\":%d}",
-                        relName, archivo.lastModified()
+                            "{\"name\":\"%s\",\"lastModified\":%d}",
+                            relName, archivo.lastModified()
                     ));
                     primero = false;
                 }
@@ -198,33 +196,37 @@ public class SyncServer {
         }
     }
 
-    // ─── GET /image?name=fotos/foto.png  →  bytes de imagen ──────────────────
-    // ─── POST /image?name=fotos/foto.png →  guarda imagen    ──────────────────
-
     static class ImageHandler implements HttpHandler {
+
         @Override
         public void handle(HttpExchange ex) throws IOException {
             String rawName = extractParam(ex.getRequestURI().getQuery(), "name");
-            if (rawName == null || rawName.isEmpty()) { ex.sendResponseHeaders(400, -1); return; }
+            if (rawName == null || rawName.isEmpty()) {
+                ex.sendResponseHeaders(400, -1);
+                return;
+            }
 
-            // Normalizar separadores y validar estructura
             String relPath = rawName.replace("\\", "/");
             if (!esRutaImagenValida(relPath)) {
                 ex.sendResponseHeaders(403, -1);
                 return;
             }
 
-            // Construir la ruta absoluta segura segmento a segmento
             String[] segmentos = relPath.split("/");
             Path imagePath = Paths.get(GsonUtil.getDataDir(), segmentos);
 
             if ("GET".equals(ex.getRequestMethod())) {
-                if (!Files.exists(imagePath)) { ex.sendResponseHeaders(404, -1); return; }
+                if (!Files.exists(imagePath)) {
+                    ex.sendResponseHeaders(404, -1);
+                    return;
+                }
                 byte[] content = Files.readAllBytes(imagePath);
                 String mimeType = detectarMime(imagePath.getFileName().toString());
                 ex.getResponseHeaders().set("Content-Type", mimeType);
                 ex.sendResponseHeaders(200, content.length);
-                try (OutputStream os = ex.getResponseBody()) { os.write(content); }
+                try (OutputStream os = ex.getResponseBody()) {
+                    os.write(content);
+                }
 
             } else if ("POST".equals(ex.getRequestMethod())) {
                 String senderIp = ex.getRemoteAddress().getAddress().getHostAddress();
@@ -239,15 +241,14 @@ public class SyncServer {
                     if (lmHeader != null) {
                         try {
                             Files.setLastModifiedTime(imagePath,
-                                FileTime.fromMillis(Long.parseLong(lmHeader)));
-                        } catch (NumberFormatException ignored) {}
+                                    FileTime.fromMillis(Long.parseLong(lmHeader)));
+                        } catch (NumberFormatException ignored) {
+                        }
                     }
                 }
 
                 System.out.println("[SyncServer] Imagen recibida: " + relPath);
                 ex.sendResponseHeaders(200, -1);
-                // ✅ FIX BUG①: notificar a los controladores suscritos para
-                // que refresquen la UI igual que hace escribirImagenLocal().
                 DataNotifier.notifyChange(relPath);
             } else {
                 ex.sendResponseHeaders(405, -1);
@@ -255,35 +256,39 @@ public class SyncServer {
         }
     }
 
-    // ─── Utilidades ──────────────────────────────────────────────────────────
-
-    /**
-     * Valida que la ruta relativa de imagen sea segura:
-     * - Sin segmentos ".."
-     * - El primer segmento está en IMAGE_SUBDIRS
-     * - El nombre de archivo corresponde a una imagen
-     */
     private static boolean esRutaImagenValida(String relPath) {
         String[] partes = relPath.split("/");
-        if (partes.length != 2) return false;               // solo subdir/archivo
-        for (String parte : partes) {
-            if ("..".equals(parte) || parte.isEmpty()) return false;
+        if (partes.length != 2) {
+            return false;
         }
-        if (!IMAGE_SUBDIRS.contains(partes[0])) return false;
-        if (!isImageFile(partes[1])) return false;
+        for (String parte : partes) {
+            if ("..".equals(parte) || parte.isEmpty()) {
+                return false;
+            }
+        }
+        if (!IMAGE_SUBDIRS.contains(partes[0])) {
+            return false;
+        }
+        if (!isImageFile(partes[1])) {
+            return false;
+        }
         return true;
     }
 
     private static boolean isImageFile(String nombre) {
         String n = nombre.toLowerCase();
         return n.endsWith(".png") || n.endsWith(".jpg")
-            || n.endsWith(".jpeg") || n.endsWith(".gif");
+                || n.endsWith(".jpeg") || n.endsWith(".gif");
     }
 
     private static String detectarMime(String nombre) {
         String n = nombre.toLowerCase();
-        if (n.endsWith(".png"))  return "image/png";
-        if (n.endsWith(".gif"))  return "image/gif";
+        if (n.endsWith(".png")) {
+            return "image/png";
+        }
+        if (n.endsWith(".gif")) {
+            return "image/gif";
+        }
         return "image/jpeg";
     }
 
@@ -291,15 +296,20 @@ public class SyncServer {
         byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
         ex.getResponseHeaders().set("Content-Type", "application/json");
         ex.sendResponseHeaders(200, bytes.length);
-        try (OutputStream os = ex.getResponseBody()) { os.write(bytes); }
+        try (OutputStream os = ex.getResponseBody()) {
+            os.write(bytes);
+        }
     }
 
     private static String extractParam(String query, String param) {
-        if (query == null) return null;
+        if (query == null) {
+            return null;
+        }
         for (String part : query.split("&")) {
             String[] kv = part.split("=", 2);
-            if (kv.length == 2 && param.equals(kv[0]))
+            if (kv.length == 2 && param.equals(kv[0])) {
                 return URLDecoder.decode(kv[1], StandardCharsets.UTF_8);
+            }
         }
         return null;
     }

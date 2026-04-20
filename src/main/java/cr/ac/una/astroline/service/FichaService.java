@@ -10,73 +10,34 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Lógica de negocio para la gestión de fichas. Maneja generación, persistencia
- * y archivado automático al historial.
- *
- * Sistema de códigos de ficha: - El código visible (A-001, B-005...) se calcula
- * por posición global del día. - Las fichas 1-10 → A-001 a A-010 - Las fichas
- * 11-20 → B-001 a B-010 - Las fichas 21-30 → C-001 a C-010 - Las fichas 31-40 →
- * D-001 a D-010 - Las fichas 41-50 → E-001 a E-010 - La ficha 51 reinicia en
- * A-001 (ciclo de 50) El trámite elegido por el cliente se guarda en tramiteId
- * pero NO determina la letra del código.
- *
- * @author AstroLine
- */
 public class FichaService {
 
     private static final String ARCHIVO_FICHAS = "fichas.json";
     private static final String ARCHIVO_HISTORIAL = "historial.json";
-    private static final ZoneId ZONA_CR           = ZoneId.of("America/Costa_Rica");
-    private static final DateTimeFormatter FORMATO_FECHA =
-            DateTimeFormatter.ofPattern("dd-MM-yyyy");
-    
+    private static final ZoneId ZONA_CR = ZoneId.of("America/Costa_Rica");
+    private static final DateTimeFormatter FORMATO_FECHA
+            = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
     public static FichaService instancia;
 
-    /**
-     * Letras disponibles en orden. Deben ser exactamente 5.
-     */
     private static final char[] LETRAS = {'A', 'B', 'C', 'D', 'E'};
 
-    /**
-     * Números por letra (del 1 al 10).
-     */
     private static final int NUMEROS_POR_LETRA = 10;
 
-    /**
-     * Tamaño total del ciclo: 5 letras × 10 números = 50 fichas.
-     */
     private static final int CICLO = LETRAS.length * NUMEROS_POR_LETRA;
-    
-    
-    public static FichaService getInstancia(){
+
+    public static FichaService getInstancia() {
         if (instancia == null) {
             instancia = new FichaService();
         }
         return instancia;
     }
-    // -------------------------------------------------------------------------
-    // GENERACIÓN DE FICHA
-    // -------------------------------------------------------------------------
-    /**
-     * Genera una nueva ficha para el trámite indicado. Si es la primera ficha
-     * del día, archiva las fichas anteriores primero.
-     *
-     * El código visible (letra + número) se determina por la posición global de
-     * la ficha en el día, independientemente del trámite elegido.
-     *
-     * @param tramiteId id del trámite (guardado para registro, no afecta el
-     * código)
-     * @param sucursalId id de la sucursal
-     * @param cedulaCliente cédula del cliente, null si no se identificó
-     * @param preferencial true si tiene atención preferencial
-     */
+
     public Respuesta generarFicha(String tramiteId, String sucursalId,
             String cedulaCliente, boolean preferencial) {
         try {
             List<Ficha> fichasActivas = GsonUtil.leerLista(ARCHIVO_FICHAS, Ficha.class);
 
-            // Si hay fichas de un día anterior, archivarlas primero
             if (!fichasActivas.isEmpty() && esDeOtroDia(fichasActivas.get(0))) {
                 Respuesta rArchivo = archivarFichas(fichasActivas);
                 if (!rArchivo.getEstado()) {
@@ -85,25 +46,19 @@ public class FichaService {
                 fichasActivas = new ArrayList<>();
             }
 
-            // Calcular letra y número por posición global en el ciclo
             int[] posicion = calcularPosicionGlobal(fichasActivas);
             String letra = String.valueOf(LETRAS[posicion[0]]);
             int numero = posicion[1];
 
-            // ID único: letra + número + fecha + timestamp (evita colisiones al reiniciar)
             String fechaHoy = LocalDate.now(ZONA_CR).format(FORMATO_FECHA);
-            String id = letra + "-" + String.format("%03d", numero)
-                    + "-" + fechaHoy + "-" + System.currentTimeMillis();
+            String id = letra + "-" + String.format("%03d", numero) + "-" + fechaHoy + "-" + System.currentTimeMillis();
 
-            Ficha ficha = new Ficha(id, numero, letra, tramiteId,
-                    sucursalId, cedulaCliente, preferencial);
+            Ficha ficha = new Ficha(id, numero, letra, tramiteId, sucursalId, cedulaCliente, preferencial);
 
             fichasActivas.add(ficha);
             GsonUtil.guardar(fichasActivas, ARCHIVO_FICHAS);
 
-            return new Respuesta(true,
-                    "Ficha generada: " + ficha.getCodigo(),
-                    "", "ficha", ficha);
+            return new Respuesta(true, "Ficha generada: " + ficha.getCodigo(), "", "ficha", ficha);
 
         } catch (Exception e) {
             return new Respuesta(false,
@@ -112,12 +67,6 @@ public class FichaService {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // CONSULTAS
-    // -------------------------------------------------------------------------
-    /**
-     * Retorna todas las fichas activas del día actual.
-     */
     public Respuesta obtenerFichasActivas() {
         try {
             List<Ficha> lista = GsonUtil.leerLista(ARCHIVO_FICHAS, Ficha.class);
@@ -129,43 +78,24 @@ public class FichaService {
         }
     }
 
-    /**
-     * Retorna las últimas n fichas del historial (para el módulo de
-     * funcionarios).
-     *
-     * @param cantidad cantidad de fichas a retornar
-     */
     public Respuesta obtenerUltimasDelHistorial(int cantidad) {
         try {
             List<Ficha> historial = GsonUtil.leerLista(ARCHIVO_HISTORIAL, Ficha.class);
 
-            // Tomar las últimas 'cantidad' fichas
             int desde = Math.max(0, historial.size() - cantidad);
             List<Ficha> ultimas = historial.subList(desde, historial.size());
 
             return new Respuesta(true, "", "", "lista", new ArrayList<>(ultimas));
         } catch (Exception e) {
-            return new Respuesta(false,
-                    "No se pudo obtener el historial.",
-                    "FichaService.obtenerUltimasDelHistorial > " + e.getMessage());
+            return new Respuesta(false, "No se pudo obtener el historial.", "FichaService.obtenerUltimasDelHistorial > " + e.getMessage());
         }
     }
 
-    /**
-     * Actualiza el estado de una ficha existente en fichas.json. Usado por el
-     * módulo de funcionarios para marcarla ATENDIDA, etc.
-     *
-     * @param fichaId id de la ficha a actualizar
-     * @param estado nuevo estado
-     */
     public Respuesta actualizarEstado(String fichaId, Ficha.Estado estado) {
         try {
             List<Ficha> fichas = GsonUtil.leerLista(ARCHIVO_FICHAS, Ficha.class);
 
-            Ficha encontrada = fichas.stream()
-                    .filter(f -> f.getId().equals(fichaId))
-                    .findFirst()
-                    .orElse(null);
+            Ficha encontrada = fichas.stream().filter(f -> f.getId().equals(fichaId)).findFirst().orElse(null);
 
             if (encontrada == null) {
                 return new Respuesta(false, "Ficha no encontrada.", "");
@@ -177,70 +107,37 @@ public class FichaService {
             return new Respuesta(true, "Estado actualizado.", "", "ficha", encontrada);
 
         } catch (Exception e) {
-            return new Respuesta(false,
-                    "No se pudo actualizar la ficha.",
-                    "FichaService.actualizarEstado > " + e.getMessage());
+            return new Respuesta(false, "No se pudo actualizar la ficha.", "FichaService.actualizarEstado > " + e.getMessage());
         }
     }
 
-    // -------------------------------------------------------------------------
-    // MÉTODOS PRIVADOS
-    // -------------------------------------------------------------------------
-    /**
-     * Calcula la letra y el número de la próxima ficha según la posición global
-     * dentro del ciclo de 50 (5 letras × 10 números).
-     *
-     * Ejemplos: 0 fichas activas → índice 0 → A-001 9 fichas activas → índice 9
-     * → A-010 10 fichas activas → índice 10 → B-001 49 fichas activas → índice
-     * 49 → E-010 50 fichas activas → índice 0 → A-001 (reinicio)
-     *
-     * @param fichasActivas lista actual de fichas del día
-     * @return int[0] = índice de letra (0=A, 1=B...), int[1] = número (1-10)
-     */
     private int[] calcularPosicionGlobal(List<Ficha> fichasActivas) {
-        int indiceGlobal = fichasActivas.size() % CICLO; // reinicia cada 50
-        int indiceLetra = indiceGlobal / NUMEROS_POR_LETRA; // 0-4
-        int numero = (indiceGlobal % NUMEROS_POR_LETRA) + 1; // 1-10
+        int indiceGlobal = fichasActivas.size() % CICLO;
+        int indiceLetra = indiceGlobal / NUMEROS_POR_LETRA;
+        int numero = (indiceGlobal % NUMEROS_POR_LETRA) + 1;
         return new int[]{indiceLetra, numero};
     }
 
-    /**
-     * Verifica si una ficha fue emitida en un día diferente al de hoy.
-     */
     private boolean esDeOtroDia(Ficha ficha) {
         String fechaHoy = LocalDate.now(ZONA_CR).format(FORMATO_FECHA);
-        // fechaHoraEmision tiene formato "dd-MM-yyyy HH:mm:ss"
-        // los primeros 10 caracteres son la fecha
+
         String fechaFicha = ficha.getFechaHoraEmision().substring(0, 10);
         return !fechaFicha.equals(fechaHoy);
     }
 
-    /**
-     * Mueve todas las fichas al historial.json y limpia fichas.json.
-     */
     private Respuesta archivarFichas(List<Ficha> fichasAArchivar) {
         try {
             List<Ficha> historialExistente = GsonUtil.leerLista(ARCHIVO_HISTORIAL, Ficha.class);
             historialExistente.addAll(fichasAArchivar);
             GsonUtil.guardar(historialExistente, ARCHIVO_HISTORIAL);
             GsonUtil.guardar(new ArrayList<>(), ARCHIVO_FICHAS);
-            System.out.println("[FichaService] " + fichasAArchivar.size()
-                    + " fichas archivadas en historial.json");
+            System.out.println("[FichaService] " + fichasAArchivar.size() + " fichas archivadas en historial.json");
             return new Respuesta(true, "", "");
         } catch (Exception e) {
-            return new Respuesta(false,
-                    "Error al archivar fichas.",
-                    "FichaService.archivarFichas > " + e.getMessage());
+            return new Respuesta(false, "Error al archivar fichas.", "FichaService.archivarFichas > " + e.getMessage());
         }
     }
 
-    /**
-     * Retorna el nombre del trámite asociado a una ficha. Delega la búsqueda al
-     * TramiteService (fuente de verdad del catálogo).
-     *
-     * @param ficha la ficha de la que se quiere conocer el trámite
-     * @return nombre del trámite, o "Trámite no encontrado" si el id no existe
-     */
     public String getNombreTramite(Ficha ficha) {
         if (ficha == null || ficha.getTramiteId() == null) {
             return "Sin trámite";
@@ -256,15 +153,12 @@ public class FichaService {
         }
         return ficha.getCodigoLetra();
     }
-    
+
     public Respuesta registrarLlamado(String fichaId, String estacionId) {
         try {
             List<Ficha> fichas = GsonUtil.leerLista(ARCHIVO_FICHAS, Ficha.class);
 
-            Ficha encontrada = fichas.stream()
-                    .filter(f -> f.getId().equals(fichaId))
-                    .findFirst()
-                    .orElse(null);
+            Ficha encontrada = fichas.stream().filter(f -> f.getId().equals(fichaId)).findFirst().orElse(null);
 
             if (encontrada == null) {
                 return new Respuesta(false, "Ficha no encontrada.", "");
@@ -276,11 +170,7 @@ public class FichaService {
             return new Respuesta(true, "Llamado registrado.", "", "ficha", encontrada);
 
         } catch (Exception e) {
-            return new Respuesta(false,
-                    "No se pudo registrar el llamado.",
-                    "FichaService.registrarLlamado > " + e.getMessage());
+            return new Respuesta(false, "No se pudo registrar el llamado.", "FichaService.registrarLlamado > " + e.getMessage());
         }
     }
-    
-    
 }

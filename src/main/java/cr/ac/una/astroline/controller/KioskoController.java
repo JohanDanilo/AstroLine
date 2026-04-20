@@ -37,33 +37,35 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
-
-/**
- * FXML Controller class
- *
- * @author JohanDanilo
- */
 public class KioskoController extends Controller implements Initializable {
 
-
-    @FXML private AnchorPane root;
-    @FXML private ImageView imgLogo;
-    @FXML private Label lblNombreEmpresa;
-    @FXML private MFXComboBox<Tramite> cmbTramite;
-    @FXML private MFXTextField txtCedula;
-    @FXML private VBox panelPinAdmin;
-    @FXML private MFXPasswordField passwordFldAdmin;
-    @FXML private MFXButton onBtnConfirmar;
-    @FXML private MFXButton btnCancelar;
-    @FXML private HBox panelMensaje;
-    @FXML private Label lblMensaje;
+    @FXML
+    private AnchorPane root;
+    @FXML
+    private ImageView imgLogo;
+    @FXML
+    private Label lblNombreEmpresa;
+    @FXML
+    private MFXComboBox<Tramite> cmbTramite;
+    @FXML
+    private MFXTextField txtCedula;
+    @FXML
+    private VBox panelPinAdmin;
+    @FXML
+    private MFXPasswordField passwordFldAdmin;
+    @FXML
+    private MFXButton onBtnConfirmar;
+    @FXML
+    private MFXButton btnCancelar;
+    @FXML
+    private HBox panelMensaje;
+    @FXML
+    private Label lblMensaje;
 
     private final FichaService fichaService = new FichaService();
     private final Mensaje utilMensaje = new Mensaje();
-
-    // Empresa se carga una vez en initialize() y se reutiliza en PDF
-    private Empresa empresa = EmpresaService.getInstancia().getEmpresa();;
-
+    private Empresa empresa = EmpresaService.getInstancia().getEmpresa();
+    ;
     private String pinAdminCorrecto;
     private boolean preferencialPorPin = false;
 
@@ -72,12 +74,8 @@ public class KioskoController extends Controller implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // reservado para Initializable — lógica real en initialize()
-    }
 
-    // -------------------------------------------------------------------------
-    // ACCIONES
-    // -------------------------------------------------------------------------
+    }
 
     @FXML
     private void onBtnPreferencial(ActionEvent event) {
@@ -134,25 +132,23 @@ public class KioskoController extends Controller implements Initializable {
 
         Ficha ficha = (Ficha) respuesta.getResultado("ficha");
 
-        // ── Generar y entregar PDF ────────────────────────────────────────────
-        Cliente cliente = cedula.isEmpty()
-                ? null
-                : ClienteService.getInstancia().buscarPorCedula(cedula);
+        /*Generar PDF*/
+        Cliente cliente = cedula.isEmpty() ? null : ClienteService.getInstancia().buscarPorCedula(cedula);
 
-        Respuesta respuestaPDF = PdfService.getInstancia()
-                .generarFichaPDF(ficha, cliente);
+        Respuesta respuestaPDF = PdfService.getInstancia().generarFichaPDF(ficha, cliente);
 
         if (respuestaPDF.getEstado()) {
             File archivoPDF = (File) respuestaPDF.getResultado("archivo");
             abrirYImprimir(archivoPDF);
         } else {
-            // El PDF falló pero la ficha ya fue registrada — no es error crítico
+
             System.err.println("[KioskoController] PDF no generado: " + respuestaPDF.getMensaje());
         }
 
-        // ── Confirmación en pantalla ──────────────────────────────────────────
         String mensajeExito = "Tu ficha es: " + ficha.getCodigo();
-        if (ficha.isPreferencial()) mensajeExito += "  (Preferencial)";
+        if (ficha.isPreferencial()) {
+            mensajeExito += "  (Preferencial)";
+        }
         mostrarExito(mensajeExito);
 
         limpiarFormulario();
@@ -187,25 +183,19 @@ public class KioskoController extends Controller implements Initializable {
         limpiarFormulario();
     }
 
-    // -------------------------------------------------------------------------
-    // CARGA INICIAL
-    // -------------------------------------------------------------------------
-
     private void cargarEmpresa() {
 
-        if (empresa == null) return;
+        if (empresa == null) {
+            return;
+        }
 
         lblNombreEmpresa.setText(empresa.getNombre());
-        
+
         this.pinAdminCorrecto = empresa.getPinAdmin();
 
         if (empresa.getLogoPath() != null && !empresa.getLogoPath().isBlank()) {
             try {
-                // Esto extrae SOLO el nombre del archivo (ejemplo: "logo_empresa.png")
-                // sin importar qué carpetas traiga el String original
                 String nombreSolo = new java.io.File(empresa.getLogoPath()).getName();
-
-                // Ahora construimos la ruta limpia
                 java.io.File archivoLogo = new java.io.File("data/logoEmpresa/" + nombreSolo);
 
                 if (archivoLogo.exists()) {
@@ -216,29 +206,26 @@ public class KioskoController extends Controller implements Initializable {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        
+
         }
     }
-    
+
     private void cargarTramites() {
         List<Tramite> activos = TramiteService.getInstancia().getTramitesActivos();
         cmbTramite.setConverter(new javafx.util.StringConverter<Tramite>() {
-            @Override public String toString(Tramite t) {
+            @Override
+            public String toString(Tramite t) {
                 return t == null ? "" : t.getId() + " — " + t.getNombre();
             }
-            @Override public Tramite fromString(String s) { return null; }
+
+            @Override
+            public Tramite fromString(String s) {
+                return null;
+            }
         });
         cmbTramite.getItems().addAll(activos);
     }
 
-    // -------------------------------------------------------------------------
-    // UTILIDADES DE IMPRESIÓN / PDF
-    // -------------------------------------------------------------------------
-
-    /**
-     * Abre el PDF en el visor del SO y lo envía a la impresora predeterminada.
-     * Muestra la ruta guardada al usuario mediante alert informativo.
-     */
     private void abrirYImprimir(File pdf) {
         if (!Desktop.isDesktopSupported()) {
             System.err.println("[KioskoController] java.awt.Desktop no disponible.");
@@ -259,10 +246,6 @@ public class KioskoController extends Controller implements Initializable {
             System.err.println("[KioskoController] No se pudo abrir/imprimir el PDF: " + ex.getMessage());
         }
     }
-
-    // -------------------------------------------------------------------------
-    // UTILIDADES DE UI
-    // -------------------------------------------------------------------------
 
     private void limpiarFormulario() {
         cmbTramite.clearSelection();
@@ -301,19 +284,13 @@ public class KioskoController extends Controller implements Initializable {
         panelMensaje.setManaged(true);
     }
 
-    // -------------------------------------------------------------------------
-    // LÓGICA DE NEGOCIO
-    // -------------------------------------------------------------------------
-
     @FXML
     private void onBtnNumero(ActionEvent event) {
         MFXButton btn = (MFXButton) event.getSource();
         if (panelPinAdmin.isVisible()) {
-            // Panel del PIN abierto → escribir en el password field (sin límite de longitud)
             String actual = passwordFldAdmin.getText();
             passwordFldAdmin.setText(actual + btn.getText());
         } else {
-            // Panel cerrado → escribir en cédula (máximo 12 dígitos para DIMEX)
             String actual = txtCedula.getText();
             if (actual.length() < 12) {
                 txtCedula.setText(actual + btn.getText());
@@ -340,12 +317,10 @@ public class KioskoController extends Controller implements Initializable {
         return cedula.matches("\\d{9}");
     }
 
-    /**
-     * Detecta automáticamente si el cliente es mayor de 65 años
-     * buscando su fecha de nacimiento en clientes.json por cédula.
-     */
     private boolean detectarPreferencial(String cedula) {
-        if (cedula == null || cedula.isBlank()) return false;
+        if (cedula == null || cedula.isBlank()) {
+            return false;
+        }
         Cliente cliente = ClienteService.getInstancia().buscarPorCedula(cedula);
         return cliente != null && cliente.esMayorDe65();
     }

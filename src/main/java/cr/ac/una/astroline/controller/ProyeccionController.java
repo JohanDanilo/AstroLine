@@ -4,6 +4,7 @@ import cr.ac.una.astroline.model.Empresa;
 import cr.ac.una.astroline.model.Estacion;
 import cr.ac.una.astroline.model.Ficha;
 import cr.ac.una.astroline.model.Sucursal;
+import cr.ac.una.astroline.service.AudioService;
 import cr.ac.una.astroline.service.ConfiguracionService;
 import cr.ac.una.astroline.service.EmpresaService;
 import cr.ac.una.astroline.service.FichaService;
@@ -30,7 +31,6 @@ import javafx.util.Duration;
 
 public class ProyeccionController extends Controller implements Initializable {
 
-    // ── FXML ────────────────────────────────────────────────────────────────
     @FXML private Label lblFechaActual;
     @FXML private Label lblHoraActual;
     @FXML private Label lblNombreEmpresa;
@@ -51,67 +51,39 @@ public class ProyeccionController extends Controller implements Initializable {
     @FXML private Label lblNumeroFichaAnterior4;
     @FXML private Label lblEstacionFichaAnterior4;
     @FXML private Label lblMensajeDeProyeccion;
-    @FXML private Pane paneMarquee;  // ← nuevo, requiere el cambio en el FXML
+    @FXML private Pane paneMensaje;
 
-    // ── Servicios ────────────────────────────────────────────────────────────
     private final Empresa empresa = EmpresaService.getInstancia().getEmpresa();
-    private final FichaService fichaService = FichaService.getInstancia(); // ← singleton
-
-    // ── Marquee ──────────────────────────────────────────────────────────────
-    /**
-     * Dirección del texto en movimiento.
-     * DERECHA_A_IZQUIERDA: texto entra por la derecha y sale por la izquierda (estándar).
-     * IZQUIERDA_A_DERECHA: ticker inverso.
-     */
-    public enum DireccionMarquee {
-        DERECHA_A_IZQUIERDA,
-        IZQUIERDA_A_DERECHA
-    }
-
-    private DireccionMarquee direccionMarquee = DireccionMarquee.DERECHA_A_IZQUIERDA;
-    private double velocidadPixelesPorSegundo = 80.0; // ajustable
-    private Timeline timelineMarquee;
-
-    // ── Formato fechaHoraLlamado ─────────────────────────────────────────────
-    private static final DateTimeFormatter FORMATO_LLAMADO =
-            DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-
-    // ── Inicialización ───────────────────────────────────────────────────────
-
-
-    // ── Marquee ──────────────────────────────────────────────────────────────
-    /**
-     * Dirección del texto en movimiento.
-     * DERECHA_A_IZQUIERDA: texto entra por la derecha y sale por la izquierda (estándar).
-     * IZQUIERDA_A_DERECHA: ticker inverso.
-     */
-    public enum DireccionMarquee {
-        DERECHA_A_IZQUIERDA,
-        IZQUIERDA_A_DERECHA
-    }
-
-    private DireccionMarquee direccionMarquee = DireccionMarquee.DERECHA_A_IZQUIERDA;
-    private double velocidadPixelesPorSegundo = 80.0; // ajustable
-    private Timeline timelineMarquee;
-
-    // ── Inicialización ───────────────────────────────────────────────────────
-
+    private final FichaService fichaService = FichaService.getInstancia();
+    private final AudioService audioService = AudioService.getInstancia();
 
     @Override
     public void initialize() {
+    }
+
+    public enum DireccionMarquee {
+        DERECHA_A_IZQUIERDA,
+        IZQUIERDA_A_DERECHA
+    }
+
+    private DireccionMarquee direccionMensaje = DireccionMarquee.DERECHA_A_IZQUIERDA;
+    private double velocidadPixelesPorSegundo = 80.0;
+    private Timeline tiempoMensaje;
+
+    private String ultimaFichaAnunciadaId = null;
+    private String ultimoTimestampAnunciado = null;
+
+    private static final DateTimeFormatter FORMATO_LLAMADO = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+
+    @Override
+    public void initialize(URL url, ResourceBundle rb) {
         setNombreVista("Proyeccion");
         actualizarReloj();
         cargarEmpresa();
         cargarMensajeProyeccion();
         iniciarPollerFichas();
-        iniciarMarquee();
+        iniciarProyeccionMensaje();
     }
-
-    @Override
-    public void initialize(URL url, ResourceBundle rb) {
-    }
-
-    // ── Empresa ──────────────────────────────────────────────────────────────
 
     private void cargarEmpresa() {
         if (empresa == null) return;
@@ -131,8 +103,6 @@ public class ProyeccionController extends Controller implements Initializable {
         }
     }
 
-    // ── Reloj ────────────────────────────────────────────────────────────────
-
     private void actualizarReloj() {
         DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         DateTimeFormatter formatoHora  = DateTimeFormatter.ofPattern("hh:mm:ss a");
@@ -149,12 +119,9 @@ public class ProyeccionController extends Controller implements Initializable {
         reloj.play();
     }
 
-    // ── Fichas ───────────────────────────────────────────────────────────────
-
     private void iniciarPollerFichas() {
         Timeline pollerFichas = new Timeline(
-                new KeyFrame(Duration.seconds(1), e -> actualizarFichasEnPantalla())
-        );
+                new KeyFrame(Duration.seconds(1), e -> actualizarFichasEnPantalla()));
         pollerFichas.setCycleCount(Timeline.INDEFINITE);
         pollerFichas.play();
     }
@@ -173,11 +140,42 @@ public class ProyeccionController extends Controller implements Initializable {
                         Comparator.reverseOrder()))
                 .collect(Collectors.toList());
 
-        mostrarFichaActual(llamadas.size() > 0 ? llamadas.get(0) : null);
+        Ficha fichaActual = llamadas.size() > 0 ? llamadas.get(0) : null;
+
+        anunciarSiEsNueva(fichaActual);
+
+        mostrarFichaActual(fichaActual);
         mostrarFichaAnterior(lblLetraFichaAnterior1, lblNumeroFichaAnterior1, lblEstacionFichaAnterior1, llamadas.size() > 1 ? llamadas.get(1) : null);
         mostrarFichaAnterior(lblLetraFichaAnterior2, lblNumeroFichaAnterior2, lblEstacionFichaAnterior2, llamadas.size() > 2 ? llamadas.get(2) : null);
         mostrarFichaAnterior(lblLetraFichaAnterior3, lblNumeroFichaAnterior3, lblEstacionFichaAnterior3, llamadas.size() > 3 ? llamadas.get(3) : null);
         mostrarFichaAnterior(lblLetraFichaAnterior4, lblNumeroFichaAnterior4, lblEstacionFichaAnterior4, llamadas.size() > 4 ? llamadas.get(4) : null);
+    }
+
+    private void anunciarSiEsNueva(Ficha ficha) {
+        if (ficha == null) {
+            ultimaFichaAnunciadaId = null;
+            ultimoTimestampAnunciado = null;
+            return;
+        }
+
+        String idActual = ficha.getId();
+        String timestampActual = ficha.getFechaHoraLlamado();
+
+        // Si es la misma ficha Y el mismo timestamp → ya fue anunciada, no repetir
+        if (idActual.equals(ultimaFichaAnunciadaId)
+                && timestampActual != null
+                && timestampActual.equals(ultimoTimestampAnunciado)) {
+            return;
+        }
+
+        ultimaFichaAnunciadaId = idActual;
+        ultimoTimestampAnunciado = timestampActual;
+
+        String letra = fichaService.getCodigoLetra(ficha);
+        String numero = ficha.getNumeroFormateado();
+        String estacion = resolverNombreEstacion(ficha.getEstacionId());
+
+        audioService.anunciarFicha(letra, numero, estacion);
     }
 
     private void mostrarFichaActual(Ficha ficha) {
@@ -205,33 +203,28 @@ public class ProyeccionController extends Controller implements Initializable {
     }
 
     private String resolverNombreEstacion(String estacionId) {
-        if (estacionId == null) return "-";
-        Estacion estacion = SucursalService.getInstancia().buscarEstacion(estacionId);
-        return estacion != null ? estacion.getNombre() : estacionId;
-    }
 
-    // ── Marquee ──────────────────────────────────────────────────────────────
+        Estacion estacion = SucursalService.getInstancia().buscarEstacion(estacionId);
+        if (estacion == null || estacionId.isBlank()) {
+            String numero = estacionId.substring(estacionId.lastIndexOf("-") + 1);
+            return "Estacion " + numero;
+        }
+        return estacion.getNombre();
+    }
 
     private void cargarMensajeProyeccion() {
         String mensaje = "";
 
-        // leer la configuración local de esta máquina
         var config = ConfiguracionService.getInstancia().getConfiguracion();
 
-        if (config != null && config.getSucursalId() != null 
-                           && !config.getSucursalId().isBlank()) {
-
-            // buscar la sucursal configurada
+        if (config != null && config.getSucursalId() != null&& !config.getSucursalId().isBlank()) {
             Sucursal sucursal = SucursalService.getInstancia().buscarSucursal(config.getSucursalId());
 
-            // leer su textoAviso
-            if (sucursal != null && sucursal.getTextoAviso() != null 
-                                 && !sucursal.getTextoAviso().isBlank()) {
+            if (sucursal != null && sucursal.getTextoAviso() != null && !sucursal.getTextoAviso().isBlank()) {
                 mensaje = sucursal.getTextoAviso();
             }
         }
 
-        // Paso 4: fallback si la máquina no está configurada o el aviso está vacío
         if (mensaje.isBlank()) {
             mensaje = "Bienvenido — Gracias por preferirnos";
         }
@@ -239,90 +232,65 @@ public class ProyeccionController extends Controller implements Initializable {
         lblMensajeDeProyeccion.setText(mensaje);
     }
 
-    /**
-     * Arranca el marquee una vez que la ventana está visible,
-     * momento en el que el Pane ya tiene un ancho real.
-     */
-    private void iniciarMarquee() {
-        // Centramos verticalmente el label dentro del Pane
-        lblMensajeDeProyeccion.layoutYProperty().bind(
-                paneMarquee.heightProperty()
-                           .subtract(lblMensajeDeProyeccion.heightProperty())
-                           .divide(2)
-        );
+    private void iniciarProyeccionMensaje() {
+        lblMensajeDeProyeccion.layoutYProperty().bind( paneMensaje.heightProperty().subtract(lblMensajeDeProyeccion.heightProperty()).divide(2) );
 
-        // Clip para que el texto no se "derrame" fuera del panel
         Rectangle clip = new Rectangle();
-        clip.widthProperty().bind(paneMarquee.widthProperty());
-        clip.heightProperty().bind(paneMarquee.heightProperty());
-        paneMarquee.setClip(clip);
+        clip.widthProperty().bind(paneMensaje.widthProperty());
+        clip.heightProperty().bind(paneMensaje.heightProperty());
+        paneMensaje.setClip(clip);
 
-        // Esperamos a que la ventana esté mostrándose para tener anchos reales
-        paneMarquee.sceneProperty().addListener((obsScene, oldScene, newScene) -> {
+        paneMensaje.sceneProperty().addListener((obsScene, oldScene, newScene) -> {
             if (newScene == null) return;
             newScene.windowProperty().addListener((obsWin, oldWin, newWin) -> {
                 if (newWin == null) return;
                 newWin.showingProperty().addListener((obsShowing, waShowing, isShowing) -> {
-                    if (isShowing) arrancarMarquee();
+                    if (isShowing) arrancarProyeccionMensaje();
                 });
             });
         });
     }
 
-    /**
-     * Calcula posición de inicio/fin según dirección y lanza (o reinicia) la animación.
-     * Se puede llamar desde fuera para actualizar velocidad o dirección en caliente.
-     */
-    private void arrancarMarquee() {
-        if (timelineMarquee != null) timelineMarquee.stop();
+    private void arrancarProyeccionMensaje() {
+        if (tiempoMensaje != null) tiempoMensaje.stop();
 
-        // Forzamos layout para obtener el ancho real del texto
         lblMensajeDeProyeccion.applyCss();
         lblMensajeDeProyeccion.layout();
 
-        double anchoLabel      = lblMensajeDeProyeccion.getLayoutBounds().getWidth();
-        double anchoContenedor = paneMarquee.getWidth();
+        double anchoLabel = lblMensajeDeProyeccion.getLayoutBounds().getWidth();
+        double anchoContenedor = paneMensaje.getWidth();
 
         double posInicio, posFin;
 
-        if (direccionMarquee == DireccionMarquee.DERECHA_A_IZQUIERDA) {
-            posInicio = anchoContenedor;          // entra por la derecha
-            posFin    = -anchoLabel;              // sale por la izquierda
+        if (direccionMensaje == DireccionMarquee.DERECHA_A_IZQUIERDA) {
+            posInicio = anchoContenedor;
+            posFin = -anchoLabel;
         } else {
-            posInicio = -anchoLabel;              // entra por la izquierda
-            posFin    = anchoContenedor;          // sale por la derecha
+            posInicio = -anchoLabel;
+            posFin = anchoContenedor;
         }
 
-        double distancia       = Math.abs(posFin - posInicio);
+        double distancia        = Math.abs(posFin - posInicio);
         double duracionSegundos = distancia / velocidadPixelesPorSegundo;
 
-        timelineMarquee = new Timeline(
-                new KeyFrame(Duration.ZERO,
-                        new KeyValue(lblMensajeDeProyeccion.translateXProperty(), posInicio)),
-                new KeyFrame(Duration.seconds(duracionSegundos),
-                        new KeyValue(lblMensajeDeProyeccion.translateXProperty(), posFin))
-        );
-        timelineMarquee.setCycleCount(Timeline.INDEFINITE);
-        timelineMarquee.play();
+        tiempoMensaje = new Timeline(
+                new KeyFrame(Duration.ZERO, new KeyValue(lblMensajeDeProyeccion.translateXProperty(), posInicio)),
+                new KeyFrame(Duration.seconds(duracionSegundos),new KeyValue(lblMensajeDeProyeccion.translateXProperty(), posFin)));
+        tiempoMensaje.setCycleCount(Timeline.INDEFINITE);
+        tiempoMensaje.play();
     }
 
-    // ── API pública para configurar el marquee ───────────────────────────────
-
-    /**
-     * Cambia la velocidad del marquee en tiempo real.
-     * @param pixelesPorSegundo  Ej: 60 = lento, 120 = rápido. Default: 80.
-     */
-    public void setVelocidadMarquee(double pixelesPorSegundo) {
+    public void setVelocidadMensaje(double pixelesPorSegundo) {
         this.velocidadPixelesPorSegundo = pixelesPorSegundo;
-        if (paneMarquee.getScene() != null) arrancarMarquee();
+        if (paneMensaje.getScene() != null) arrancarProyeccionMensaje();
     }
 
-    /**
-     * Cambia la dirección del marquee en tiempo real.
-     * @param direccion  DERECHA_A_IZQUIERDA | IZQUIERDA_A_DERECHA
-     */
-    public void setDireccionMarquee(DireccionMarquee direccion) {
-        this.direccionMarquee = direccion;
-        if (paneMarquee.getScene() != null) arrancarMarquee();
+    public void setDireccionMensaje(DireccionMarquee direccion) {
+        this.direccionMensaje = direccion;
+        if (paneMensaje.getScene() != null) arrancarProyeccionMensaje();
+    }
+
+    public void setAudioHabilitado(boolean habilitado) {
+        audioService.setHabilitado(habilitado);
     }
 }

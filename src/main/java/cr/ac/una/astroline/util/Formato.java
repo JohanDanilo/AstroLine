@@ -127,7 +127,6 @@ public class Formato {
                     return null;
                 }
             }
-            //c.setText(c.getText().replaceAll("[^a-zA-Z ]", ""));
             if(c.getControlNewText().matches(".*[^a-zA-Z ].*")){
                 return null;
             }

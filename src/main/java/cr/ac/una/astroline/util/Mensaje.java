@@ -6,10 +6,6 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
 import javafx.stage.Window;
 
-/**
- *
- * @author ccarranza
- */
 public class Mensaje {
 
     public void show(AlertType tipo, String titulo, String mensaje) {

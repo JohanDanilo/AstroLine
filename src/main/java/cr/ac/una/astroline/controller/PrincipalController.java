@@ -11,12 +11,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import java.io.File;
 
-/**
- * Controller de la pantalla principal de selección de rol.
- * Carga la información de la empresa y navega al módulo seleccionado.
- *
- * @author AstroLine
- */
 public class PrincipalController extends Controller {
 
     @FXML
@@ -24,7 +18,7 @@ public class PrincipalController extends Controller {
 
     @FXML
     private Label lblNombreEmpresa;
-    
+
     private static String acceso = "";
 
     @Override
@@ -32,15 +26,13 @@ public class PrincipalController extends Controller {
         cargarDatosEmpresa();
     }
 
-    /**
-     * Carga el logo y nombre de la empresa desde empresa.json.
-     * Si el archivo no existe muestra los valores por defecto.
-     */
     private void cargarDatosEmpresa() {
-        
+
         Empresa empresa = GsonUtil.leer("empresa.json", Empresa.class);
-        if (empresa == null) return;
-        
+        if (empresa == null) {
+            return;
+        }
+
         AppContext.getInstance().set("empresa", empresa);
 
         if (lblNombreEmpresa != null && empresa.getNombre() != null) {
@@ -56,15 +48,15 @@ public class PrincipalController extends Controller {
     }
 
     @FXML
-    private void irAdministrador() { 
-        SessionManager.getInstancia().setModoAcceso("admin"); 
+    private void irAdministrador() {
+        SessionManager.getInstancia().setModoAcceso("admin");
         FlowController.getInstance().goViewInWindow("LoginFuncionarioView");
         getStage().close();
     }
 
     @FXML
     private void irFuncionario() {
-        SessionManager.getInstancia().setModoAcceso("funcionario"); 
+        SessionManager.getInstancia().setModoAcceso("funcionario");
         FlowController.getInstance().goViewInWindow("LoginFuncionarioView");
         getStage().close();
     }

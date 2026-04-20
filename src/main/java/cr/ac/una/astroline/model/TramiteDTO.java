@@ -5,11 +5,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-/**
- * DTO de Tramite para binding con formularios JavaFX.
- *
- * @author JohanDanilo
- */
 public class TramiteDTO {
 
     private StringProperty id;
@@ -24,20 +19,51 @@ public class TramiteDTO {
         this.activo = new SimpleBooleanProperty(true);
     }
 
-    public String getId() { return id.get(); }
-    public void setId(String id) { this.id.set(id); }
+    public String getId() {
+        return id.get();
+    }
 
-    public String getNombre() { return nombre.get(); }
-    public void setNombre(String nombre) { this.nombre.set(nombre); }
+    public void setId(String id) {
+        this.id.set(id);
+    }
 
-    public String getDescripcion() { return descripcion.get(); }
-    public void setDescripcion(String descripcion) { this.descripcion.set(descripcion); }
+    public String getNombre() {
+        return nombre.get();
+    }
 
-    public boolean isActivo() { return activo.get(); }
-    public void setActivo(boolean activo) { this.activo.set(activo); }
+    public void setNombre(String nombre) {
+        this.nombre.set(nombre);
+    }
 
-    public StringProperty getIdProperty() { return id; }
-    public StringProperty getNombreProperty() { return nombre; }
-    public StringProperty getDescripcionProperty() { return descripcion; }
-    public BooleanProperty getActivoProperty() { return activo; }
+    public String getDescripcion() {
+        return descripcion.get();
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion.set(descripcion);
+    }
+
+    public boolean isActivo() {
+        return activo.get();
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo.set(activo);
+    }
+
+    public StringProperty getIdProperty() {
+        return id;
+    }
+
+    public StringProperty getNombreProperty() {
+        return nombre;
+    }
+
+    public StringProperty getDescripcionProperty() {
+        return descripcion;
+    }
+
+    public BooleanProperty getActivoProperty() {
+        return activo;
+    }
 }

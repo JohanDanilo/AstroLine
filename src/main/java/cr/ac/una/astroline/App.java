@@ -1,6 +1,5 @@
 package cr.ac.una.astroline;
 
-
 import cr.ac.una.astroline.util.DataInitializer;
 import cr.ac.una.astroline.util.FlowController;
 import cr.ac.una.astroline.util.SessionManager;
@@ -15,24 +14,16 @@ import javafx.stage.Stage;
 
 import javafx.application.Application;
 
-/**
- * Clase principal de la aplicación AstroLine.
- * Inicializa el tema visual y delega la navegación al FlowController.
- *
- * @author JohanDanilo
- */
-
 public class App extends Application {
-    
+
     private static Scene scene;
     private static String acceso = "";
-    
-    
+
     @Override
     public void start(Stage stage) throws Exception {
-        SyncManager.getInstancia().iniciar(); 
-        
-        DataInitializer.inicializar();    
+        SyncManager.getInstancia().iniciar();
+
+        DataInitializer.inicializar();
 
         FlowController.getInstance().InitializeFlow(stage, null);
 
@@ -40,7 +31,7 @@ public class App extends Application {
 
         switch (modo) {
             case "admin":
-                SessionManager.getInstancia().setModoAcceso("admin"); 
+                SessionManager.getInstancia().setModoAcceso("admin");
                 FlowController.getInstance().goViewInWindow("LoginFuncionarioView");
                 break;
 
@@ -62,7 +53,7 @@ public class App extends Application {
                 break;
         }
     }
-    
+
     @Override
     public void stop() throws Exception {
         SyncManager.getInstancia().detener();
