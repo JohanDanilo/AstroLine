@@ -9,43 +9,34 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane fx:id="root" prefHeight="320.0" prefWidth="440.0"
-            stylesheets="@Styles.css"
-            xmlns="http://javafx.com/javafx/25"
-            xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="cr.ac.una.astroline.controller.RegistroSucursalController">
+<AnchorPane fx:id="root" prefHeight="320.0" prefWidth="440.0" styleClass="jfx-root" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.RegistroSucursalController">
    <children>
-      <VBox alignment="CENTER" spacing="20.0"
-            AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
-            AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <VBox alignment="CENTER" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
 
             <!-- Título dinámico: "Nueva Sucursal" o "Editar Sucursal" -->
-            <Label fx:id="lblTitulo" alignment="CENTER" maxWidth="1.7976931348623157E308"
-                   text="Registro de Sucursal" />
+            <Label fx:id="lblTitulo" alignment="CENTER" maxWidth="1.7976931348623157E308" styleClass="jfx-label-titulo" text="Registro de Sucursal" />
 
             <!-- Campo nombre -->
-            <MFXTextField fx:id="txtNombre" floatingText="Nombre de la sucursal"
-                          maxWidth="1.7976931348623157E308">
+            <MFXTextField fx:id="txtNombre" floatingText="Nombre de la sucursal" maxWidth="1.7976931348623157E308" styleClass="mfx-text-field-neon" VBox.vgrow="ALWAYS">
                <VBox.margin>
                   <Insets left="30.0" right="30.0" />
                </VBox.margin>
             </MFXTextField>
 
             <!-- Texto de aviso que se muestra en la pantalla de Proyección -->
-            <Label text="Texto de aviso (Proyección)" />
-            <TextArea fx:id="txtAreaAviso" promptText="Mensaje que corre en ciclo en la pantalla de proyección..."
-                      prefHeight="90.0" maxWidth="1.7976931348623157E308" wrapText="true">
+            <Label styleClass="card-title" text="Texto de aviso (Proyección)" />
+            <TextArea fx:id="txtAreaAviso" maxWidth="1.7976931348623157E308" prefHeight="90.0" promptText="Mensaje que corre en ciclo en la pantalla de proyección..." styleClass="mfx-text-field-neon" wrapText="true" VBox.vgrow="ALWAYS">
                <VBox.margin>
                   <Insets left="30.0" right="30.0" />
                </VBox.margin>
             </TextArea>
 
             <!-- Botones -->
-            <HBox alignment="CENTER" spacing="30.0">
+            <HBox alignment="CENTER" spacing="30.0" VBox.vgrow="ALWAYS">
                <children>
-                  <MFXButton fx:id="btnGuardar" onAction="#onActionBtnGuardar" text="Guardar" />
-                  <MFXButton fx:id="btnCancelar" onAction="#onActionBtnCancelar" text="Cancelar" />
+                  <MFXButton fx:id="btnGuardar" onAction="#onActionBtnGuardar" prefHeight="30.0" prefWidth="130.0" styleClass="jfx-btn-principal" text="Guardar" HBox.hgrow="ALWAYS" />
+                  <MFXButton fx:id="btnCancelar" onAction="#onActionBtnCancelar" prefHeight="30.0" prefWidth="124.0" styleClass="jfx-btn-principal" text="Cancelar" HBox.hgrow="ALWAYS" />
                </children>
             </HBox>
 

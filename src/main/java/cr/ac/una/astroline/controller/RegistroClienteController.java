@@ -156,7 +156,7 @@ public class RegistroClienteController extends Controller implements Initializab
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Seleccionar foto del cliente");
         chooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Imágenes", ".png", ".jpg", ".jpeg", ".gif")
+            new FileChooser.ExtensionFilter("Imágenes", "*.png", "*.jpg", "*.jpeg", "*.gif")
         );
 
         File archivo = chooser.showOpenDialog(root.getScene().getWindow());
@@ -403,4 +403,6 @@ public class RegistroClienteController extends Controller implements Initializab
         alerta.setContentText(mensaje);
         alerta.showAndWait();
     }
+
 }
+

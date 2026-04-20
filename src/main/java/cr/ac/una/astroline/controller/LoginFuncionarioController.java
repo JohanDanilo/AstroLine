@@ -83,4 +83,8 @@ public class LoginFuncionarioController extends Controller implements Initializa
             System.out.println("Credenciales incorrectas.");
         }
     }
+    @FXML
+    private void onCerrar(ActionEvent event) {
+        getStage().close();
+    }
 }

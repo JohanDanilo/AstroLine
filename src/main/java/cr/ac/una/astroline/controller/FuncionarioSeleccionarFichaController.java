@@ -2,6 +2,7 @@
 package cr.ac.una.astroline.controller;
 
 import cr.ac.una.astroline.model.Ficha;
+import cr.ac.una.astroline.service.ConfiguracionService;
 import cr.ac.una.astroline.service.FichaService;
 import cr.ac.una.astroline.util.Respuesta;
 import io.github.palexdev.materialfx.controls.MFXButton;
@@ -51,32 +52,40 @@ public class FuncionarioSeleccionarFichaController extends Controller implements
     // -------------------------------------------------------------------------
     // CARGA DEL COMBO
     // -------------------------------------------------------------------------
-
     private void cargarFichasEnEspera() {
-        Respuesta respuesta = fichaService.obtenerFichasActivas();
-        if (!respuesta.getEstado()) return;
+    Respuesta respuesta = fichaService.obtenerFichasActivas();
+    if (!respuesta.getEstado()) return;
 
-        List<Ficha> activas = (List<Ficha>) respuesta.getResultado("lista");
-        List<Ficha> enEspera = activas.stream()
-                .filter(Ficha::estaEsperando)
-                .collect(Collectors.toList());
+    ConfiguracionService cfg = ConfiguracionService.getInstancia();
+    cfg.recargarConfiguracion(); // fuerza relectura del JSON por si acaso
+    List<String> tramitesConfigurados = cfg.getTramitesConfigurados();
+    boolean soloPreferencial = cfg.isPreferencial();
 
-        cmbFichas.setItems(FXCollections.observableArrayList(enEspera));
+    List<Ficha> activas = (List<Ficha>) respuesta.getResultado("lista");
 
-        cmbFichas.setConverter(new javafx.util.StringConverter<Ficha>() {
-            @Override
-            public String toString(Ficha ficha) {
-                if (ficha == null) return "";
-                String tipo = ficha.isPreferencial() ? " Atención Preferencial" : "";
-                return ficha.getCodigo() + " | " + ficha.getTramiteId() + tipo;
-            }
+    List<Ficha> enEspera = activas.stream()
+            .filter(Ficha::estaEsperando)
+            .filter(f -> tramitesConfigurados.isEmpty() || tramitesConfigurados.contains(f.getTramiteId()))
+            .filter(f -> !soloPreferencial || f.isPreferencial())
+            .collect(Collectors.toList());
 
-            @Override
-            public Ficha fromString(String string) {
-                return null;
-            }
-        });
-    }
+    System.out.println("[DEBUG] Fichas tras filtro: " + enEspera.size());
+
+    cmbFichas.setItems(FXCollections.observableArrayList(enEspera));
+
+    cmbFichas.setConverter(new javafx.util.StringConverter<Ficha>() {
+        @Override
+        public String toString(Ficha ficha) {
+            if (ficha == null) return "";
+            String tipo = ficha.isPreferencial() ? " | Preferencial" : "";
+            return ficha.getCodigo() + " | " + ficha.getTramiteId() + tipo;
+        }
+
+        @Override
+        public Ficha fromString(String string) { return null; }
+    });
+}
+
 
     // -------------------------------------------------------------------------
     // LLAMAR FICHA SELECCIONADA
