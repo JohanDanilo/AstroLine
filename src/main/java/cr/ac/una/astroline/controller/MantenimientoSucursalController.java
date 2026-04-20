@@ -76,7 +76,7 @@ public class MantenimientoSucursalController extends Controller implements Initi
     @FXML private TableColumn<Tramite, String> colTramiteAsignado;
     @FXML private TableColumn<Tramite, String> colEstadoAsignado;
 
-    @FXML private TableView<Tramite>           tableTramitesDiponibles;   // typo del FXML respetado
+    @FXML private TableView<Tramite>           tableTramitesDiponibles;
     @FXML private TableColumn<Tramite, String> colTramiteDisponible;
     @FXML private TableColumn<Tramite, String> colEstadoDisponible;
 
@@ -337,7 +337,6 @@ public class MantenimientoSucursalController extends Controller implements Initi
                 tramitesAsignados.remove(tramite);
                 tramitesDisponibles.add(tramite);
 
-                // 🔥 CLAVE: trabajar con copia
                 Estacion copia = estacionSeleccionada.clonarEstacion(estacionSeleccionada);
                 copia.quitarTramite(tramiteId);
 

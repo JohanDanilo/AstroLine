@@ -117,7 +117,7 @@ public class RegistroClienteController extends Controller implements Initializab
     }
 
     // ── Detección de contexto ─────────────────────────────────────────────────
-
+    
     private boolean estaEnMainStage() {
         return getStage() == null
             || getStage() == FlowController.getInstance().getMainStage();

@@ -30,7 +30,7 @@
         para no quedar limitados a su prefWidth/prefHeight.
 -->
 
-<BorderPane fx:id="root" prefHeight="500.0" prefWidth="700.0" styleClass="root" stylesheets="@estadisticas.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.EstadisticasController">
+<BorderPane fx:id="root" prefHeight="500.0" prefWidth="700.0" styleClass="root-estadisticas" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.EstadisticasController">
 
     <!-- ══════════════════════ HEADER ══════════════════════ -->
     <top>
@@ -39,7 +39,7 @@
                 <Insets bottom="12" left="20" right="20" top="12" />
             </padding>
 
-            <Label styleClass="title" text="Estadísticas de la empresa" />
+            <Label styleClass="titulo-estadisticas" text="Estadísticas de la empresa" />
 
             <!-- Spacer flexible -->
             <Region HBox.hgrow="ALWAYS" />

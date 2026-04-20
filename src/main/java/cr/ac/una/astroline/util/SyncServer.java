@@ -28,20 +28,20 @@ public class SyncServer {
 
     private static final int PORT = 8080;
     private static HttpServer server;
-
+    
     /**
-     * Archivos JSON que participan en sincronización P2P.
-     * configuracion.json está EXCLUIDO — es por equipo, no compartido.
-     */
-    private static final Set<String> ARCHIVOS_SINCRONIZABLES = Set.of(
-        "sucursales.json",
-        "tramites.json",
-        "empresa.json",
-        "funcionarios.json",
-        "fichas.json",
-        "historial.json",
-        "clientes.json"
-    );
+    * Archivos que participan en sincronización P2P.
+    * configuracion.json está EXCLUIDO — es por equipo, no compartido.
+    */
+   private static final Set<String> ARCHIVOS_SINCRONIZABLES = Set.of(
+       "sucursales.json",
+       "tramites.json",
+       "empresa.json",
+       "funcionarios.json",
+       "fichas.json",
+       "historial.json",
+       "clientes.json"
+   );
 
     /**
      * Subdirectorios de imágenes que participan en sincronización P2P.
@@ -127,10 +127,12 @@ public class SyncServer {
                 try (OutputStream os = ex.getResponseBody()) { os.write(content); }
 
             } else if ("POST".equals(ex.getRequestMethod())) {
+                // Rechazar archivos que no participan en P2P
                 if (!ARCHIVOS_SINCRONIZABLES.contains(fileName)) {
                     ex.sendResponseHeaders(403, -1);
                     return;
                 }
+                // Registrar al peer que nos envió datos
                 String senderIp = ex.getRemoteAddress().getAddress().getHostAddress();
                 SyncManager.getInstancia().registrarPeer(senderIp);
 

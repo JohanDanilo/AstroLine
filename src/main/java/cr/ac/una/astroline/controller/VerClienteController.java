@@ -152,7 +152,14 @@ public class VerClienteController extends Controller implements Initializable {
     }
 
     // ── Detección de contexto ─────────────────────────────────────────────────
-
+    //
+    // Admin  → goView("VerClienteView")       → stage == mainStage
+    // Func.  → goViewInWindow("VerClienteView") → stage == Stage flotante
+    //
+    // Este método decide cuál de los dos métodos de navegación usar:
+    //   true  (Admin)     → goView()              embebe en VBox center de AdminView
+    //   false (Funcionario) → goViewInCallerStage() reemplaza root de ventana flotante
+    //
     private boolean estaEnMainStage() {
         return getStage() == null
             || getStage() == FlowController.getInstance().getMainStage();
@@ -203,7 +210,7 @@ public class VerClienteController extends Controller implements Initializable {
                           "Seleccioná un cliente para editar.");
             return;
         }
-        irARegistro(seleccionado);
+        irARegistro(seleccionado); // cliente = modo edición
     }
 
     @FXML
