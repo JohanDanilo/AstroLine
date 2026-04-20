@@ -3,6 +3,7 @@ package cr.ac.una.astroline.util;
 import cr.ac.una.astroline.model.Ficha;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 import java.util.HashMap;
@@ -101,6 +102,7 @@ public class AudioManager {
             if (audio.isRunning()) audio.stop();
             audio.setFramePosition(0);
             audio.start();
+            audio.drain();
 
             long duracionMs = audio.getMicrosecondLength() / 1000;
             
@@ -116,13 +118,10 @@ public class AudioManager {
     
     public void llamarFicha(Ficha ficha) {
 
-        List<String> secuencia = new java.util.ArrayList<>();
+        List<String> secuencia = new ArrayList<>();
         secuencia.add("ficha");
         
-        secuencia.add(ficha.getId());
-        
-        String numero = String.valueOf(ficha.getNumeroFormateado());
-        for (char digito : numero.toCharArray()) 
+        for (char digito : ficha.getCodigo().toCharArray()) 
             secuencia.add(String.valueOf(digito));
 
         secuencia.add("llamado");
@@ -130,12 +129,15 @@ public class AudioManager {
         secuencia.add("estacion");
         
         String estacion = ficha.getEstacionId();
-        
-        for(char digito : estacion.toCharArray())
+        String digitos = estacion.substring(estacion.lastIndexOf("-") + 1);
+         
+        for(char digito : digitos.toCharArray())
                 secuencia.add(String.valueOf(digito));
         
             
         new Thread(() -> reproducirSecuencia(secuencia)).start();
+        
+        System.out.println("[AudioManger] Se reproduce el audio");
     }
     
 }

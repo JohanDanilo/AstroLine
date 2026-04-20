@@ -239,7 +239,7 @@ public class FichaService implements DataNotifier.Listener{
     }
     
 
-    public List<Ficha> obtenerFichasParaProyeccion(String sucursalId, boolean esOrdenDesendente ,int nFichas){
+    public List<Ficha> obtenerFichasParaProyeccion(String sucursalId, boolean esOrdenAsendente ,int nFichas){
         
         List<Ficha> listaActual = (List<Ficha>)obtenerFichasActivas().getResultado("lista");
         if(listaActual == null || listaActual.isEmpty()) return new ArrayList<>();
@@ -249,22 +249,19 @@ public class FichaService implements DataNotifier.Listener{
             if(actual.getEstado() == Ficha.Estado.LLAMADA && actual.getSucursalId().equals(sucursalId))
                 listaAtendidas.add(actual);
         
-         listaAtendidas.sort((ficha1, ficha2) -> {
-          if(esOrdenDesendente){
-            if(ficha1.getFechaHoraLlamado() == null) return 1;
-            if(ficha2.getFechaHoraLlamado() == null) return -1; 
-          }
-          else {
-            if(ficha1.getFechaHoraLlamado() == null) return -1;
-            if(ficha2.getFechaHoraLlamado() == null) return 1; 
-          }
-          DateTimeFormatter formatoParaComparar = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-          
-          ZonedDateTime timeFicha1 = LocalDateTime.parse(ficha1.getFechaHoraLlamado(),formatoParaComparar).atZone(ZONA_CR);
-          ZonedDateTime timeFicha2 = LocalDateTime.parse(ficha2.getFechaHoraLlamado(),formatoParaComparar).atZone(ZONA_CR);
-          
-          return timeFicha2.compareTo(timeFicha1);
-          
+        listaAtendidas.sort((ficha1, ficha2) -> {
+            
+            if(ficha1.getFechaHoraLlamado() == null) return esOrdenAsendente ? 1 : -1;
+            if(ficha2.getFechaHoraLlamado() == null) return esOrdenAsendente ? -1 : 1;
+
+            DateTimeFormatter formatoParaComparar = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+
+            ZonedDateTime timeFicha1 = LocalDateTime.parse(ficha1.getFechaHoraLlamado(), formatoParaComparar).atZone(ZONA_CR);
+            ZonedDateTime timeFicha2 = LocalDateTime.parse(ficha2.getFechaHoraLlamado(), formatoParaComparar).atZone(ZONA_CR);
+
+            return esOrdenAsendente 
+                ? timeFicha1.compareTo(timeFicha2)
+                : timeFicha2.compareTo(timeFicha1);
         });
         
         List<Ficha> ordenada = new ArrayList<>();

@@ -8,38 +8,44 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" styleClass="jfx-root" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.ProyeccionController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1000.0" styleClass="jfx-root" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.ProyeccionController">
    <center>
-      <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+      <HBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="200.0" spacing="30.0" BorderPane.alignment="CENTER">
          <children>
-            <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="400.0" HBox.hgrow="ALWAYS">
+            <VBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="400.0" HBox.hgrow="ALWAYS">
                <children>
-                  <VBox alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="100.0" VBox.vgrow="ALWAYS">
+                  <VBox alignment="CENTER" maxHeight="502.0" maxWidth="1000.0" prefHeight="200.0" prefWidth="100.0" styleClass="v-box-ficha-principal" VBox.vgrow="ALWAYS">
                      <children>
-                        <Label fx:id="lblAtendiendoCode1" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="jfx-label-titulo" text="Numero de ficha " VBox.vgrow="ALWAYS" />
-                        <Label fx:id="lblAtendiendoEstacion1" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="jfx-label-titulo" text="Estacion" VBox.vgrow="ALWAYS" />
-                        <ImageView fx:id="imgAtendiendoPref1" fitHeight="50.0" fitWidth="67.0" pickOnBounds="true" preserveRatio="true">
+                        <Label fx:id="lblAtendiendoCode1" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="label-ficha-principal" text="Numero de ficha " VBox.vgrow="ALWAYS">
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin></Label>
+                        <Label fx:id="lblAtendiendoEstacion1" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="label-estacion-principal" text="Estacion" VBox.vgrow="ALWAYS">
+                           <VBox.margin>
+                              <Insets left="50.0" right="50.0" />
+                           </VBox.margin></Label>
+                        <ImageView fx:id="imgAtendiendoPref1" fitHeight="100.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-pref">
                            <image>
                               <Image url="@../resource/Preferencial.png" />
                            </image>
                         </ImageView>
                      </children>
                      <VBox.margin>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                        <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
                      </VBox.margin></VBox>
-                  <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="200.0" spacing="10.0" VBox.vgrow="ALWAYS">
+                  <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="200.0" spacing="30.0" VBox.vgrow="ALWAYS">
                      <children>
-                        <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                        <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="50.0" prefWidth="200.0" styleClass="vbox-ficha-secundaria" HBox.hgrow="ALWAYS">
                            <children>
                               <VBox alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="174.0" spacing="10.0" HBox.hgrow="ALWAYS">
                                  <children>
-                                    <Label fx:id="lblAtendiendoCode2" styleClass="jfx-label-titulo" text="Numero de Ficha" />
-                                    <Label fx:id="lblAtendiendoEstacion2" styleClass="jfx-label-titulo" text="Estacion" />
+                                    <Label fx:id="lblAtendiendoCode2" styleClass="label-ficha-secundaria" text="Numero de Ficha" />
+                                    <Label fx:id="lblAtendiendoEstacion2" styleClass="label-estacion-secundaria" text="Estacion" />
                                  </children>
                               </VBox>
                               <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
                                  <children>
-                                    <ImageView fx:id="imgAtendiendoPref2" fitHeight="48.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true">
+                                    <ImageView fx:id="imgAtendiendoPref2" fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true" styleClass="image-view-pref">
                                        <VBox.margin>
                                           <Insets />
                                        </VBox.margin>
@@ -51,20 +57,23 @@
                               </VBox>
                            </children>
                            <HBox.margin>
-                              <Insets left="10.0" />
+                              <Insets left="30.0" />
                            </HBox.margin>
                         </HBox>
-                        <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                        <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="200.0" styleClass="vbox-ficha-secundaria" HBox.hgrow="ALWAYS">
                            <children>
                               <VBox alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="174.0" spacing="10.0" HBox.hgrow="ALWAYS">
                                  <children>
-                                    <Label fx:id="lblAtendiendoCode3" styleClass="jfx-label-titulo" text="Numero de Ficha" />
-                                    <Label fx:id="lblAtendiendoEstacion3" styleClass="jfx-label-titulo" text="Estacion" />
+                                    <Label fx:id="lblAtendiendoCode3" styleClass="label-ficha-secundaria" text="Numero de Ficha" />
+                                    <Label fx:id="lblAtendiendoEstacion3" styleClass="label-estacion-secundaria" text="Estacion" />
                                  </children>
+                                 <HBox.margin>
+                                    <Insets />
+                                 </HBox.margin>
                               </VBox>
                               <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
                                  <children>
-                                    <ImageView fx:id="imgAtendiendoPref3" fitHeight="48.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true">
+                                    <ImageView fx:id="imgAtendiendoPref3" fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
                                        <VBox.margin>
                                           <Insets />
                                        </VBox.margin>
@@ -75,18 +84,21 @@
                                  </children>
                               </VBox>
                            </children>
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
                         </HBox>
-                        <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="200.0" HBox.hgrow="ALWAYS">
+                        <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="200.0" styleClass="vbox-ficha-secundaria" HBox.hgrow="ALWAYS">
                            <children>
                               <VBox alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="100.0" prefWidth="174.0" spacing="10.0" HBox.hgrow="ALWAYS">
                                  <children>
-                                    <Label fx:id="lblAtendiendoCode4" styleClass="jfx-label-titulo" text="Numero de Ficha" />
-                                    <Label fx:id="lblAtendiendoEstacion4" styleClass="jfx-label-titulo" text="Estacion" />
+                                    <Label fx:id="lblAtendiendoCode4" styleClass="label-ficha-secundaria" text="Numero de Ficha" />
+                                    <Label fx:id="lblAtendiendoEstacion4" styleClass="label-estacion-secundaria" text="Estacion" />
                                  </children>
                               </VBox>
                               <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
                                  <children>
-                                    <ImageView fx:id="imgAtendiendoPref4" fitHeight="48.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true">
+                                    <ImageView fx:id="imgAtendiendoPref4" fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
                                        <VBox.margin>
                                           <Insets />
                                        </VBox.margin>
@@ -97,8 +109,14 @@
                                  </children>
                               </VBox>
                            </children>
+                           <HBox.margin>
+                              <Insets right="30.0" />
+                           </HBox.margin>
                         </HBox>
                      </children>
+                     <padding>
+                        <Insets top="30.0" />
+                     </padding>
                   </HBox>
                </children>
             </VBox>
@@ -106,19 +124,26 @@
       </HBox>
    </center>
    <top>
-      <HBox prefHeight="48.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+      <HBox prefHeight="48.0" prefWidth="200.0" styleClass="header-box" BorderPane.alignment="CENTER">
          <children>
             <ImageView fx:id="imgLogo" fitHeight="48.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true">
                <HBox.margin>
                   <Insets />
                </HBox.margin>
             </ImageView>
-            <Label fx:id="lblEmpresa" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="48.0" prefWidth="300.0" styleClass="jfx-label-titulo" text="Empresa" HBox.hgrow="ALWAYS" />
-            <Label fx:id="lblFechaYHora" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="jfx-label-titulo" text="FechaYHora" HBox.hgrow="ALWAYS" />
+            <Label fx:id="lblEmpresa" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="48.0" prefWidth="300.0" styleClass="label-empresa" text="Empresa" HBox.hgrow="ALWAYS" />
+            <Label fx:id="lblFechaYHora" alignment="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="label-fecha-hora" text="FechaYHora" HBox.hgrow="ALWAYS" />
          </children>
       </HBox>
    </top>
    <bottom>
-      <Label fx:id="lblAnuncios" alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="32.0" prefWidth="800.0" styleClass="jfx-label-subtitulo" text="Anuncios" BorderPane.alignment="CENTER" />
+      <HBox prefHeight="30.0" prefWidth="1000.0" styleClass="hbox-avisos" BorderPane.alignment="CENTER">
+         <children>
+            <Label fx:id="lblAnuncios" alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="16.0" prefWidth="1000.0" styleClass="label-avisos" text="Anuncios" HBox.hgrow="ALWAYS" />
+         </children>
+         <BorderPane.margin>
+            <Insets top="30.0" />
+         </BorderPane.margin>
+      </HBox>
    </bottom>
 </BorderPane>

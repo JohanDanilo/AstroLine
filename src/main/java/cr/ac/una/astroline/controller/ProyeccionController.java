@@ -4,7 +4,6 @@ package cr.ac.una.astroline.controller;
 import cr.ac.una.astroline.App;
 import cr.ac.una.astroline.model.Empresa;
 import cr.ac.una.astroline.model.Ficha;
-import cr.ac.una.astroline.model.Sucursal;
 import cr.ac.una.astroline.service.ConfiguracionService;
 import cr.ac.una.astroline.util.*;
 import cr.ac.una.astroline.service.FichaService;
@@ -18,8 +17,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
-import javafx.animation.FadeTransition;
 
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
@@ -42,7 +41,7 @@ public class ProyeccionController extends Controller implements Initializable, D
     private FichaService fichas = FichaService.getInstancia();
     private String sucursalId = ConfiguracionService.getInstancia().getSucursalId();
     
-    private ZonedDateTime ultimaFechaLlamada;
+    private String ultimaFichaLlamadaFecha;
     private String ultimaFichaLlamadaId;
     
     private List<Label> lblCodesAtendidas;
@@ -119,21 +118,22 @@ public class ProyeccionController extends Controller implements Initializable, D
         lblCodesAtendidas = List.of(lblAtendiendoCode1, lblAtendiendoCode2, lblAtendiendoCode3, lblAtendiendoCode4);
         lblEstacionesAtendidas = List.of(lblAtendiendoEstacion1, lblAtendiendoEstacion2, lblAtendiendoEstacion3, lblAtendiendoEstacion4);
         imgsPrefAtendidas = List.of(imgAtendiendoPref1, imgAtendiendoPref2, imgAtendiendoPref3, imgAtendiendoPref4);
+        
         actualizarVista();
         
     }
     
-    private void actualizarVista(){
-        verificarFichaLlamada();
+    private void actualizarVista(){   
         limpiarUI();
         cargarFichasAUI();
+        verificarFichaLlamada();     
     }
     
     
     //__________________ CARGAR FICHAS A LA UI    
     
     private void cargarFichasAUI(){
-        List<Ficha> filtrada = fichas.obtenerFichasParaProyeccion(sucursalId, true, 4);
+        List<Ficha> filtrada = fichas.obtenerFichasParaProyeccion(sucursalId, false, 4);
      
         if(filtrada == null || filtrada.isEmpty()) return;
         
@@ -147,9 +147,9 @@ public class ProyeccionController extends Controller implements Initializable, D
     private void actualizarFicha(Ficha ficha, int indice){
         if(ficha == null) return;
         
-        lblCodesAtendidas.get(indice).setText(ficha.getCodigo());
-        lblEstacionesAtendidas.get(indice).setText(ficha.getEstacionId());
-        
+        lblCodesAtendidas.get(indice).setText("Ficha :  " + ficha.getCodigo());
+        lblEstacionesAtendidas.get(indice).setText("Estacion :  " + ficha.getTramiteId());
+             
         imgsPrefAtendidas.get(indice).setVisible(ficha.isPreferencial());
         imgsPrefAtendidas.get(indice).setManaged(ficha.isPreferencial());
        
@@ -209,45 +209,29 @@ public class ProyeccionController extends Controller implements Initializable, D
     
     //__________________ VERIFICACION Y CONFRIMACION DE LLAMADO DE FICHAS 
     
-    private void verificarFichaLlamada(){
-        
-        List<Ficha> lista = fichas.obtenerFichasParaProyeccion(sucursalId, false ,4);
-        
-        for(int i = 0; i < lista.size() && 
-                lista.get(i).getEstado() != Ficha.Estado.LLAMADA; i++) 
-            anunciarLlamadoDeFicha(lista.get(i));
-            
-    }
+private void verificarFichaLlamada() {
+    List<Ficha> recientes = fichas.obtenerFichasParaProyeccion(sucursalId, false, 1);
     
-    private void anunciarLlamadoDeFicha(Ficha ficha){
-        
-        if(!puedoVolverALlamar(ficha)) return;
-        
-        ultimaFechaLlamada = LocalDateTime.parse(ficha.getFechaHoraLlamado(),
-                            FORMATO_FECHA).atZone(ZONA_CR);
-        ultimaFichaLlamadaId = ficha.getId();
-        
-        AudioManager.getINSTANCIA().llamarFicha(ficha);
-               
-    }
+    System.out.println("[DEBUG] recientes: " + (recientes == null ? "null" : recientes.size()));
     
-    private boolean puedoVolverALlamar(Ficha aVerificar){
-        
-        if(aVerificar == null || aVerificar.getFechaHoraLlamado() == null) return false;
-       
-        
-        ZonedDateTime fechaActual =
-            LocalDateTime.parse(aVerificar.getFechaHoraLlamado(), 
-                    FORMATO_FECHA).atZone(ZONA_CR);
+    if (recientes == null || recientes.isEmpty()) return;
 
-        if(aVerificar.getId().equals(ultimaFichaLlamadaId))
-             return ultimaFechaLlamada != null && 
-                     fechaActual.isAfter(ultimaFechaLlamada);
-        
-        return true;
+    Ficha masReciente = recientes.get(0);
+
+    if (masReciente.getEstacionId() == null) {
+        return;
     }
-    
-    //________________ Barra de anuncios
+
+    if (Objects.equals(masReciente.getId(), ultimaFichaLlamadaId)
+            && Objects.equals(masReciente.getFechaHoraLlamado(), ultimaFichaLlamadaFecha)) {
+        return;
+    }
+
+    ultimaFichaLlamadaFecha = masReciente.getFechaHoraLlamado();
+    ultimaFichaLlamadaId = masReciente.getId();
+
+    AudioManager.getINSTANCIA().llamarFicha(masReciente);
+}    //________________ Barra de anuncios
     
     private void rotarBarraDeAvisos(){
         
