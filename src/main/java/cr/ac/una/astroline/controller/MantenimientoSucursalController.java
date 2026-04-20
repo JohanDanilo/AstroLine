@@ -24,8 +24,6 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextInputDialog;
@@ -66,14 +64,19 @@ public class MantenimientoSucursalController extends Controller implements Initi
     // Botones con fx:id (necesarios para disable/enable)
     @FXML private Button btnEliminarSucursal;
     @FXML private Button btnAgregarEstacion;
+    @FXML private Button btnEditarEstacion;
+    @FXML private Button btnEliminarEstacion;
 
-    @FXML private ListView<Estacion> listaEstaciones;
+    @FXML private TableView<Estacion>           tableEstaciones;
+    @FXML private TableColumn<Estacion, String> colNombre;
+    @FXML private TableColumn<Estacion, String> colId;
+    @FXML private TableColumn<Estacion, String> colPreferencial;
 
     @FXML private TableView<Tramite>           tableTramitesAsignados;
     @FXML private TableColumn<Tramite, String> colTramiteAsignado;
     @FXML private TableColumn<Tramite, String> colEstadoAsignado;
 
-    @FXML private TableView<Tramite>           tableTramitesDiponibles;   // typo del FXML respetado
+    @FXML private TableView<Tramite>           tableTramitesDiponibles;
     @FXML private TableColumn<Tramite, String> colTramiteDisponible;
     @FXML private TableColumn<Tramite, String> colEstadoDisponible;
 
@@ -108,7 +111,7 @@ public class MantenimientoSucursalController extends Controller implements Initi
     public void initialize(URL url, ResourceBundle rb) {
         configurarComboSucursales();
         configurarColumnasTablas();
-        configurarListView();
+        configurarTableEstaciones();
         configurarFiltro();
         configurarDragOver(tableTramitesAsignados);
         configurarDragOver(tableTramitesDiponibles);
@@ -192,7 +195,7 @@ public class MantenimientoSucursalController extends Controller implements Initi
      */
     @FXML
     private void onBtnEditarEstacion(ActionEvent event) {
-        Estacion seleccionada = listaEstaciones.getSelectionModel().getSelectedItem();
+        Estacion seleccionada = tableEstaciones.getSelectionModel().getSelectedItem();
 
         if (seleccionada == null) {
             mostrarAlerta(Alert.AlertType.WARNING, "Seleccioná una estación primero.");
@@ -223,18 +226,16 @@ public class MantenimientoSucursalController extends Controller implements Initi
         eliminarEstacion();
     }
 
-    // ── Handlers ListView ─────────────────────────────────────────────────────
+    // ── Handlers TableView Estaciones ─────────────────────────────────────────
 
-    @FXML
     private void onMousePressedEstaciones(MouseEvent event) {
-        if (listaEstaciones.getSelectionModel().getSelectedItem() == null) {
+        if (tableEstaciones.getSelectionModel().getSelectedItem() == null) {
             limpiarTramites();
             estacionSeleccionada = null;
             actualizarEstadoControles();
         }
     }
 
-    @FXML
     private void onKeyPressedEstaciones(KeyEvent event) {
         if (event.getCode() == KeyCode.DELETE) eliminarEstacion();
     }
@@ -336,7 +337,6 @@ public class MantenimientoSucursalController extends Controller implements Initi
                 tramitesAsignados.remove(tramite);
                 tramitesDisponibles.add(tramite);
 
-                // CLAVE: trabajar con copia
                 Estacion copia = estacionSeleccionada.clonarEstacion(estacionSeleccionada);
                 copia.quitarTramite(tramiteId);
 
@@ -453,7 +453,7 @@ public class MantenimientoSucursalController extends Controller implements Initi
     }
 
     private void eliminarEstacion() {
-        Estacion seleccionada = listaEstaciones.getSelectionModel().getSelectedItem();
+        Estacion seleccionada = tableEstaciones.getSelectionModel().getSelectedItem();
         if (seleccionada == null || sucursalActual == null) return;
 
         Alert confirmacion = new Alert(
@@ -508,23 +508,25 @@ public class MantenimientoSucursalController extends Controller implements Initi
         tableTramitesDiponibles.setItems(tramitesDisponibles);
     }
 
-    private void configurarListView() {
-        estacionesFiltradas = new FilteredList<>(estaciones, e -> true);
-        listaEstaciones.setItems(estacionesFiltradas);
-
-        listaEstaciones.setCellFactory(lv -> new ListCell<>() {
-            @Override
-            protected void updateItem(Estacion e, boolean empty) {
-                super.updateItem(e, empty);
-                if (empty || e == null) { setText(null); return; }
-                String sufPreferencial = e.isPreferencial() ? "  ★" : "";
-                String sufEstado       = e.isEstaActiva()   ? "" : "  [Inactiva]";
-                setText(e.getNombre() + sufPreferencial + sufEstado);
-            }
+    private void configurarTableEstaciones() {
+        colNombre.setCellValueFactory(d -> {
+            Estacion e = d.getValue();
+            String sufEstado = e.isEstaActiva() ? "" : "  [Inactiva]";
+            return new SimpleStringProperty(e.getNombre() + sufEstado);
         });
+        colId.setCellValueFactory(
+                d -> new SimpleStringProperty(d.getValue().getId()));
+        colPreferencial.setCellValueFactory(
+                d -> new SimpleStringProperty(d.getValue().isPreferencial() ? "★" : ""));
 
-        listaEstaciones.getSelectionModel().selectedItemProperty().addListener(
+        estacionesFiltradas = new FilteredList<>(estaciones, e -> true);
+        tableEstaciones.setItems(estacionesFiltradas);
+
+        tableEstaciones.getSelectionModel().selectedItemProperty().addListener(
                 (obs, ant, nueva) -> cargarTramitesDeEstacion(nueva));
+
+        tableEstaciones.setOnMousePressed(this::onMousePressedEstaciones);
+        tableEstaciones.setOnKeyPressed(this::onKeyPressedEstaciones);
     }
 
     private void configurarFiltro() {
@@ -597,11 +599,11 @@ public class MantenimientoSucursalController extends Controller implements Initi
         }
 
         if (!estaciones.isEmpty()) {
-            listaEstaciones.getSelectionModel().select(estaciones.get(0));
+            tableEstaciones.getSelectionModel().select(estaciones.get(0));
             return;
         }
 
-        listaEstaciones.getSelectionModel().clearSelection();
+        tableEstaciones.getSelectionModel().clearSelection();
         estacionSeleccionada = null;
         limpiarTramites();
         actualizarEstadoControles();
@@ -624,7 +626,7 @@ public class MantenimientoSucursalController extends Controller implements Initi
     private void limpiarVistaSinSucursal() {
         if (cmbSucursal.getValue() != null) cmbSucursal.setValue(null);
         lblSucursal.setText("No hay sucursales registradas.");
-        listaEstaciones.getSelectionModel().clearSelection();
+        tableEstaciones.getSelectionModel().clearSelection();
         estaciones.clear();
         estacionSeleccionada = null;
         limpiarTramites();
@@ -641,9 +643,11 @@ public class MantenimientoSucursalController extends Controller implements Initi
         boolean hayEstacion = estacionSeleccionada != null;
 
         txtBarraBusquedaEstaciones.setDisable(!haySucursal);
-        listaEstaciones.setDisable(!haySucursal);
+        tableEstaciones.setDisable(!haySucursal);
         btnAgregarEstacion.setDisable(!haySucursal);
         btnEliminarSucursal.setDisable(!haySucursal);
+        btnEditarEstacion.setDisable(!hayEstacion);
+        btnEliminarEstacion.setDisable(!hayEstacion);
         tableTramitesAsignados.setDisable(!hayEstacion);
         tableTramitesDiponibles.setDisable(!hayEstacion);
     }
@@ -665,8 +669,8 @@ public class MantenimientoSucursalController extends Controller implements Initi
         if (estacionId == null) return false;
         for (Estacion e : estaciones) {
             if (estacionId.equals(e.getId())) {
-                listaEstaciones.getSelectionModel().select(e);
-                listaEstaciones.scrollTo(e);
+                tableEstaciones.getSelectionModel().select(e);
+                tableEstaciones.scrollTo(e);
                 return true;
             }
         }

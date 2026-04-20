@@ -34,18 +34,18 @@
 
     <!-- ══════════════════════ HEADER ══════════════════════ -->
     <top>
-        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="header">
+        <HBox alignment="CENTER_LEFT" spacing="15" styleClass="header-estadisticas">
             <padding>
                 <Insets bottom="12" left="20" right="20" top="12" />
             </padding>
 
-            <Label styleClass="titulo-estadisticas" text="Estadísticas de la empresa" />
+                     <Label styleClass="titulo-estadisticas" text="Estadísticas de la empresa" />
 
             <!-- Spacer flexible -->
             <Region HBox.hgrow="ALWAYS" />
 
             <ComboBox fx:id="cbFiltroTiempo" prefWidth="130" promptText="Periodo" />
-            <ComboBox fx:id="cbSucursal" prefWidth="130" promptText="Sucursal" />
+            <ComboBox fx:id="cbSucursal" prefWidth="130" promptText="Sucursal" styleClass="com" />
         </HBox>
     </top>
 

@@ -34,6 +34,8 @@ public class FichaService {
     private static final ZoneId ZONA_CR           = ZoneId.of("America/Costa_Rica");
     private static final DateTimeFormatter FORMATO_FECHA =
             DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    
+    public static FichaService instancia;
 
     /** Letras disponibles en orden. Deben ser exactamente 5. */
     private static final char[] LETRAS = {'A', 'B', 'C', 'D', 'E'};
@@ -43,7 +45,14 @@ public class FichaService {
 
     /** Tamaño total del ciclo: 5 letras × 10 números = 50 fichas. */
     private static final int CICLO = LETRAS.length * NUMEROS_POR_LETRA;
-
+    
+    
+    public static FichaService getInstancia(){
+        if (instancia == null) {
+            instancia = new FichaService();
+        }
+        return instancia;
+    }
     // -------------------------------------------------------------------------
     // GENERACIÓN DE FICHA
     // -------------------------------------------------------------------------
@@ -242,6 +251,31 @@ public class FichaService {
     public String getCodigoLetra(Ficha ficha) {
         if (ficha == null || ficha.getCodigoLetra() == null) return "-";
         return ficha.getCodigoLetra();
+    }
+    
+    public Respuesta registrarLlamado(String fichaId, String estacionId) {
+        try {
+            List<Ficha> fichas = GsonUtil.leerLista(ARCHIVO_FICHAS, Ficha.class);
+
+            Ficha encontrada = fichas.stream()
+                    .filter(f -> f.getId().equals(fichaId))
+                    .findFirst()
+                    .orElse(null);
+
+            if (encontrada == null) {
+                return new Respuesta(false, "Ficha no encontrada.", "");
+            }
+
+            encontrada.registrarLlamado(estacionId);
+            GsonUtil.guardar(fichas, ARCHIVO_FICHAS);
+
+            return new Respuesta(true, "Llamado registrado.", "", "ficha", encontrada);
+
+        } catch (Exception e) {
+            return new Respuesta(false,
+                    "No se pudo registrar el llamado.",
+                    "FichaService.registrarLlamado > " + e.getMessage());
+        }
     }
        
        

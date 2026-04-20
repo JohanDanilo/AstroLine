@@ -6,6 +6,9 @@ import cr.ac.una.astroline.model.Funcionario;
 import cr.ac.una.astroline.model.FuncionarioDTO;
 import cr.ac.una.astroline.service.EmpresaService;
 import cr.ac.una.astroline.service.FuncionarioService;
+import cr.ac.una.astroline.util.DataNotifier;
+import cr.ac.una.astroline.util.GsonUtil;
+import cr.ac.una.astroline.util.SyncManager;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXCheckbox;
 import io.github.palexdev.materialfx.controls.MFXDatePicker;
@@ -19,12 +22,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ResourceBundle;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
-import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -35,10 +40,11 @@ import javafx.stage.FileChooser;
 
 /**
  * Controlador de la vista de Mantenimiento de Parámetros Generales.
- * Gestiona dos pestañas: Empresa y Funcionarios.
+ * Gestiona tres pestañas: General (empresa), Funcionarios y Administradores.
  *
- * Empresa   → objeto único en empresa.json
- * Funcionarios → lista en funcionarios.json
+ * Empresa        → objeto único en empresa.json
+ * Funcionarios   → lista en funcionarios.json (con filtro de búsqueda en vivo)
+ * Administradores → vista de sólo lectura filtrada por esAdmin == true
  *
  * @author JohanDanilo
  */
@@ -59,7 +65,7 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
     // ── Pestaña Funcionarios ──────────────────────────────────────────────────
     @FXML private MFXTextField txtBusquedaFuncionario;
     @FXML private MFXButton    btnNuevoFuncionario;
-    @FXML private TableView<Funcionario>         tblFuncionarios;
+    @FXML private TableView<Funcionario>           tblFuncionarios;
     @FXML private TableColumn<Funcionario, String> colCedula;
     @FXML private TableColumn<Funcionario, String> colNombreFuncionario;
     @FXML private TableColumn<Funcionario, String> colUsername;
@@ -74,12 +80,25 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
     @FXML private MFXButton        btnGuardarFuncionario;
     @FXML private MFXButton        btnEliminarFuncionario;
 
+    // ── Pestaña Administradores ───────────────────────────────────────────────
+    @FXML private TableView<Funcionario>           tblAdmins;
+    @FXML private TableColumn<Funcionario, String> colAdminNombre;
+    @FXML private TableColumn<Funcionario, String> colAdminUsername;
+    @FXML private TableColumn<Funcionario, String> colAdminCedula;
+
     // ── Servicios ─────────────────────────────────────────────────────────────
     private final FuncionarioService funcionarioService = FuncionarioService.getInstancia();
     private final EmpresaService     empresaService     = EmpresaService.getInstancia();
 
     // ── Estado ────────────────────────────────────────────────────────────────
     private Funcionario editingFuncionario = null;
+
+    /**
+     * FIX 1 — Búsqueda en vivo.
+     * filteredFuncionarios envuelve la ObservableList del servicio.
+     * El predicado se actualiza al escribir en txtBusquedaFuncionario.
+     */
+    private FilteredList<Funcionario> filteredFuncionarios;
 
     // ── Logo ──────────────────────────────────────────────────────────────────
     private static final String DEFAULT_LOGO_PATH;
@@ -90,17 +109,13 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
     }
 
     private String logoPathSeleccionado = "";
-    private static final String LOGO_DIR = "data/logoEmpresa/";
-    
-    @FXML
-    private TableView<Funcionario> tblAdmins;
-    @FXML
-    private TableColumn<Funcionario, String> colAdminNombre;
-    @FXML
-    private TableColumn<Funcionario, String> colAdminUsername;
-    @FXML
-    private TableColumn<Funcionario, String> colAdminCedula;
-    
+
+    /**
+     * Subdirectorio del logo relativo al dataDir.
+     * El path que se guarda en el JSON siempre usa '/' como separador:
+     *   "logoEmpresa/logo_empresa.png"
+     */
+    private static final String LOGO_SUBDIR = "logoEmpresa";
 
     // ── Inicialización ────────────────────────────────────────────────────────
 
@@ -111,10 +126,18 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        configurarTablaFuncionarios();
-        cargarDatosEmpresa();
-        cargarTablaFuncionarios();
+        // ── Pestaña Funcionarios ──────────────────────────────────────────────
+        configurarTablaFuncionarios();   // CellValueFactory de cada columna
+        cargarTablaFuncionarios();       // Crea FilteredList y la asigna a la tabla
+        configurarBusquedaFuncionario(); // Listener en el campo de búsqueda (REQUIERE filteredFuncionarios ya creado)
         configurarSeleccionTabla();
+
+        // ── Pestaña Administradores ───────────────────────────────────────────
+        configurarTablaAdmins();         // CellValueFactory de las columnas
+        cargarTablaAdmins();             // FilteredList(esAdmin == true) → tblAdmins
+
+        // ── Pestaña Empresa ───────────────────────────────────────────────────
+        cargarDatosEmpresa();
 
         // Reactividad P2P: si otro peer actualiza empresa.json, el formulario se refresca
         empresaService.getEmpresaProperty().addListener(
@@ -122,6 +145,18 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
                 if (nueva != null) poblarFormularioEmpresa(nueva);
             }
         );
+
+        // Cuando SyncManager escribe el logo recibido de un peer,
+        // lanza DataNotifier con la ruta relativa. Aquí recargamos
+        // el ImageView en tiempo real y sincronizamos logoPathSeleccionado.
+        DataNotifier.subscribe(fileName -> {
+            if (fileName.startsWith("logoEmpresa/")) {
+                javafx.application.Platform.runLater(() -> {
+                    logoPathSeleccionado = fileName;
+                    mostrarImagenLocal(fileName);
+                });
+            }
+        });
     }
 
     // ── Empresa: carga y guardado ─────────────────────────────────────────────
@@ -132,10 +167,6 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
         poblarFormularioEmpresa(empresa);
     }
 
-    /**
-     * Rellena los campos del formulario con los datos de la empresa.
-     * Se llama al inicializar y cuando un peer envía un cambio.
-     */
     private void poblarFormularioEmpresa(Empresa empresa) {
         EmpresaDTO dto = new EmpresaDTO();
         empresaService.cargarEnDTO(empresa, dto);
@@ -158,6 +189,7 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
         boolean guardado = empresaService.actualizar(empresa);
 
         if (guardado) {
+            propagarLogoSiCorresponde();
             mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Parámetros de empresa guardados.");
         } else {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudieron guardar los parámetros.");
@@ -193,9 +225,9 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
                 ? archivo.getName().substring(archivo.getName().lastIndexOf('.'))
                 : ".png";
             String nombreDestino = "logo_empresa" + ext;
-            String destino = copiarImagenADataDir(archivo.toPath(), nombreDestino);
-            logoPathSeleccionado = destino;
-            mostrarImagenLocal(destino);
+            String relPath = copiarImagenADataDir(archivo.toPath(), nombreDestino);
+            logoPathSeleccionado = relPath;
+            mostrarImagenLocal(relPath);
         } catch (IOException e) {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo copiar la imagen: " + e.getMessage());
         }
@@ -205,10 +237,14 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
     private void onBtnDescartarLogo(ActionEvent event) {
         if (logoPathSeleccionado != null
                 && !logoPathSeleccionado.isEmpty()
-                && !logoPathSeleccionado.equals(DEFAULT_LOGO_PATH)) {
+                && !logoPathSeleccionado.equals(DEFAULT_LOGO_PATH)
+                && !logoPathSeleccionado.startsWith("file:")
+                && !logoPathSeleccionado.startsWith("jar:")) {
             try {
-                Path logoPath = Paths.get(logoPathSeleccionado).toAbsolutePath();
-                Path logoDir  = Paths.get(LOGO_DIR).toAbsolutePath();
+                Path logoPath = Paths.get(GsonUtil.getDataDir(),
+                                          logoPathSeleccionado.split("/")).toAbsolutePath();
+                Path logoDir  = Paths.get(GsonUtil.getDataDir(),
+                                          LOGO_SUBDIR).toAbsolutePath();
                 if (logoPath.startsWith(logoDir)) {
                     Files.deleteIfExists(logoPath);
                 }
@@ -220,33 +256,109 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
         mostrarImagenLocal(DEFAULT_LOGO_PATH);
     }
 
-    // ── Funcionarios: tabla ───────────────────────────────────────────────────
+    // ── Funcionarios: tabla y búsqueda ────────────────────────────────────────
 
+    /**
+     * Configura las CellValueFactory de las columnas de tblFuncionarios.
+     * NO carga datos — eso lo hace cargarTablaFuncionarios().
+     */
     private void configurarTablaFuncionarios() {
         colCedula.setCellValueFactory(new PropertyValueFactory<>("cedula"));
         colNombreFuncionario.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         colUsername.setCellValueFactory(new PropertyValueFactory<>("username"));
-        // Columna Rol: muestra "Admin" o "Funcionario" según el flag esAdmin
         colRol.setCellValueFactory(data ->
-            new javafx.beans.property.SimpleStringProperty(
-                data.getValue().esAdmin() ? "Admin" : "Funcionario"
-            )
+            new SimpleStringProperty(data.getValue().esAdmin() ? "Admin" : "Funcionario")
         );
     }
 
+    /**
+     * FIX 1 — Búsqueda en vivo.
+     *
+     * Crea la FilteredList que envuelve la ObservableList del servicio y la
+     * asigna a tblFuncionarios a través de una SortedList (para preservar
+     * el soporte de ordenación por columna).
+     *
+     * Debe llamarse ANTES de configurarBusquedaFuncionario().
+     */
     private void cargarTablaFuncionarios() {
-        tblFuncionarios.setItems(funcionarioService.getListaDeFuncionarios());
+        filteredFuncionarios = new FilteredList<>(
+            funcionarioService.getListaDeFuncionarios(),
+            f -> true  // inicialmente muestra todos
+        );
+
+        SortedList<Funcionario> sortedFuncionarios = new SortedList<>(filteredFuncionarios);
+        // Enlaza el comparador de la tabla para que el click en columna ordene correctamente
+        sortedFuncionarios.comparatorProperty().bind(tblFuncionarios.comparatorProperty());
+
+        tblFuncionarios.setItems(sortedFuncionarios);
     }
 
     /**
-     * Al seleccionar un funcionario en la tabla, carga sus datos en el formulario.
+     * FIX 1 (cont.) — Listener en el campo de búsqueda.
+     *
+     * Filtra por cédula, nombre, apellidos o username de forma
+     * case-insensitive. El filtro se aplica en tiempo real al escribir.
+     *
+     * PRECONDICIÓN: filteredFuncionarios debe existir (llamar después de
+     * cargarTablaFuncionarios).
      */
+    private void configurarBusquedaFuncionario() {
+        txtBusquedaFuncionario.textProperty().addListener((obs, oldVal, newVal) -> {
+            String filtro = (newVal == null) ? "" : newVal.trim().toLowerCase();
+
+            if (filtro.isEmpty()) {
+                filteredFuncionarios.setPredicate(f -> true);
+                return;
+            }
+
+            filteredFuncionarios.setPredicate(f -> {
+                if (f.getCedula()    != null && f.getCedula().toLowerCase().contains(filtro))    return true;
+                if (f.getNombre()    != null && f.getNombre().toLowerCase().contains(filtro))    return true;
+                if (f.getApellidos() != null && f.getApellidos().toLowerCase().contains(filtro)) return true;
+                if (f.getUsername()  != null && f.getUsername().toLowerCase().contains(filtro))  return true;
+                return false;
+            });
+        });
+    }
+
     private void configurarSeleccionTabla() {
         tblFuncionarios.getSelectionModel().selectedItemProperty().addListener(
             (obs, anterior, seleccionado) -> {
                 if (seleccionado != null) cargarFuncionarioParaEditar(seleccionado);
             }
         );
+    }
+
+    // ── Administradores: tabla ────────────────────────────────────────────────
+
+    /**
+     * FIX 2 — Configura las CellValueFactory de las columnas de tblAdmins.
+     *
+     * colAdminNombre muestra "nombre apellidos" concatenados.
+     */
+    private void configurarTablaAdmins() {
+        colAdminNombre.setCellValueFactory(data ->
+            new SimpleStringProperty(
+                data.getValue().getNombre() + " " + data.getValue().getApellidos()
+            )
+        );
+        colAdminUsername.setCellValueFactory(new PropertyValueFactory<>("username"));
+        colAdminCedula.setCellValueFactory(new PropertyValueFactory<>("cedula"));
+    }
+
+    /**
+     * FIX 2 (cont.) — Carga tblAdmins con los funcionarios cuyo esAdmin == true.
+     *
+     * Usa la misma ObservableList del servicio como fuente, por lo que
+     * la tabla se actualiza automáticamente cuando se agrega, edita o
+     * elimina un funcionario desde la pestaña Funcionarios.
+     */
+    private void cargarTablaAdmins() {
+        FilteredList<Funcionario> soloAdmins = new FilteredList<>(
+            funcionarioService.getListaDeFuncionarios(),
+            Funcionario::esAdmin
+        );
+        tblAdmins.setItems(soloAdmins);
     }
 
     // ── Funcionarios: formulario ──────────────────────────────────────────────
@@ -275,8 +387,6 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
             mostrarAlerta(Alert.AlertType.WARNING, "Sin selección", "Seleccioná un funcionario para eliminar.");
             return;
         }
-        // No permitir eliminar el propio admin que está logueado
-        // (protección básica — SessionManager podría reforzar esto)
         boolean eliminado = funcionarioService.remover(seleccionado);
         if (eliminado) {
             mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Funcionario eliminado.");
@@ -300,8 +410,6 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
         txtPasswordFuncionario.setText(dto.getPassword());
         dpFechaNacimiento.setValue(dto.getFechaNacimiento());
         chkEsAdmin.setSelected(dto.esAdmin());
-
-        // Cédula no editable al modificar — es la clave primaria
         txtCedulaFuncionario.setEditable(false);
     }
 
@@ -403,11 +511,11 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
     }
 
     private String copiarImagenADataDir(Path origen, String nombreDestino) throws IOException {
-        Path dir = Paths.get(LOGO_DIR);
+        Path dir = Paths.get(GsonUtil.getDataDir(), LOGO_SUBDIR);
         Files.createDirectories(dir);
         Path destino = dir.resolve(nombreDestino);
         Files.copy(origen, destino, StandardCopyOption.REPLACE_EXISTING);
-        return destino.toString();
+        return LOGO_SUBDIR + "/" + nombreDestino;
     }
 
     private void mostrarImagenLocal(String path) {
@@ -415,15 +523,31 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
         try {
             if (path.startsWith("file:") || path.startsWith("jar:")) {
                 imgLogoEmpresa.setImage(new Image(path));
-            } else {
-                File archivo = Paths.get(path).toAbsolutePath().toFile();
-                imgLogoEmpresa.setImage(archivo.exists()
-                    ? new Image(archivo.toURI().toString())
-                    : new Image(DEFAULT_LOGO_PATH));
+                return;
             }
+            File archivo = Paths.get(GsonUtil.getDataDir(),
+                                     path.split("/")).toAbsolutePath().toFile();
+            if (archivo.exists()) {
+                imgLogoEmpresa.setImage(new Image(archivo.toURI().toString()));
+                return;
+            }
+            archivo = Paths.get(path).toAbsolutePath().toFile();
+            imgLogoEmpresa.setImage(archivo.exists()
+                ? new Image(archivo.toURI().toString())
+                : new Image(DEFAULT_LOGO_PATH));
         } catch (Exception e) {
             System.err.println("[MantenimientoParametros] No se pudo cargar imagen: " + e.getMessage());
         }
+    }
+
+    private void propagarLogoSiCorresponde() {
+        if (logoPathSeleccionado == null
+                || logoPathSeleccionado.isEmpty()
+                || logoPathSeleccionado.startsWith("file:")
+                || logoPathSeleccionado.startsWith("jar:")) {
+            return;
+        }
+        SyncManager.getInstancia().propagarImagen(logoPathSeleccionado);
     }
 
     private void mostrarAlerta(Alert.AlertType tipo, String titulo, String mensaje) {
@@ -433,5 +557,4 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
         alerta.setContentText(mensaje);
         alerta.showAndWait();
     }
-
 }

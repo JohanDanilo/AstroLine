@@ -11,14 +11,14 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane fx:id="root" prefHeight="400.0" prefWidth="600.0" styleClass="jfx-root" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.MantenimientoTramitesController">
+<AnchorPane fx:id="root" prefHeight="500.0" prefWidth="700.0" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.MantenimientoTramitesController">
    <children>
       <VBox spacing="16.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
             <Label styleClass="jfx-label-titulo" text="Mantenimiento de Tramites" />
             <HBox alignment="CENTER_LEFT" spacing="10.0" VBox.vgrow="ALWAYS">
                <children>
-                  <MFXTextField fx:id="txtBusqueda" floatingText="Buscar tramite" maxWidth="1.7976931348623157E308" styleClass="mfx-text-field-neon" HBox.hgrow="ALWAYS" />
+                  <MFXTextField fx:id="txtBusqueda" floatingText="Buscar tramite" maxWidth="1.7976931348623157E308" styleClass="custom-field" HBox.hgrow="ALWAYS" />
                   <MFXButton fx:id="btnNuevo" onAction="#onActionBtnNuevo" prefHeight="53.0" prefWidth="79.0" styleClass="jfx-btn-secundario" text="Nuevo" />
                </children>
                <padding>
@@ -27,7 +27,7 @@
             </HBox>
             <HBox spacing="16.0" VBox.vgrow="ALWAYS">
                <children>
-                  <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                  <VBox prefHeight="315.0" prefWidth="361.0" spacing="10.0" HBox.hgrow="ALWAYS">
                      <children>
                         <Label styleClass="jfx-label-titulo" text="Catalogo" />
                         <TableView fx:id="tblTramites" prefHeight="420.0" prefWidth="520.0" VBox.vgrow="ALWAYS">
@@ -43,12 +43,12 @@
                         </TableView>
                      </children>
                   </VBox>
-                  <VBox prefWidth="280.0" spacing="12.0">
+                  <VBox alignment="TOP_CENTER" prefWidth="280.0" spacing="12.0">
                      <children>
                         <Label styleClass="jfx-label-titulo" text="Detalle" />
-                        <MFXTextField fx:id="txtId" floatingText="ID" styleClass="mfx-text-field-neon" />
-                        <MFXTextField fx:id="txtNombre" floatingText="Nombre" styleClass="mfx-text-field-neon" />
-                        <MFXTextField fx:id="txtDescripcion" floatingText="Descripcion" styleClass="mfx-text-field-neon" />
+                        <MFXTextField fx:id="txtId" floatingText="ID" styleClass="custom-field" />
+                        <MFXTextField fx:id="txtNombre" floatingText="Nombre" styleClass="custom-field" />
+                        <MFXTextField fx:id="txtDescripcion" floatingText="Descripcion" styleClass="custom-field" />
                         <MFXCheckbox fx:id="chkActivo" styleClass="mfx-checkbox-seleccion" text="Activo" />
                         <HBox spacing="10.0">
                            <children>
