@@ -6,6 +6,8 @@ import cr.ac.una.astroline.model.Cliente;
 import cr.ac.una.astroline.model.ClienteDTO;
 import cr.ac.una.astroline.service.ClienteService;
 import cr.ac.una.astroline.util.FlowController;
+import cr.ac.una.astroline.util.GsonUtil;
+import cr.ac.una.astroline.util.SyncManager;
 
 import io.github.palexdev.materialfx.controls.*;
 import io.github.palexdev.materialfx.utils.SwingFXUtils;
@@ -64,7 +66,14 @@ public class RegistroClienteController extends Controller implements Initializab
     private final ClienteService clienteService = ClienteService.getInstancia();
     private Cliente editingCliente = null;
     private String fotoPathSeleccionado = "";
-    private static final String FOTOS_DIR = "data/fotos/";
+
+    /**
+     * Subdirectorio de fotos relativo al dataDir.
+     * El path que se guarda en el JSON siempre usa '/' como separador:
+     *   "fotos/Cliente_123456789.png"
+     * Esto funciona igual en Windows y Linux porque Paths.get() acepta '/'.
+     */
+    private static final String FOTOS_SUBDIR = "fotos";
 
     // ── Cámara ───────────────────────────────────────────────────────────────
     private Webcam webcam;
@@ -108,13 +117,7 @@ public class RegistroClienteController extends Controller implements Initializab
     }
 
     // ── Detección de contexto ─────────────────────────────────────────────────
-    //
-    // Este controller llega desde dos caminos:
-    //   Admin      → goView() fija stage = mainStage
-    //   Funcionario → goViewInCallerStage() fija stage = Stage flotante
-    //
-    // Con esto, la vuelta a VerClienteView usa el método correcto en cada caso.
-    //
+
     private boolean estaEnMainStage() {
         return getStage() == null
             || getStage() == FlowController.getInstance().getMainStage();
@@ -156,17 +159,17 @@ public class RegistroClienteController extends Controller implements Initializab
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Seleccionar foto del cliente");
         chooser.getExtensionFilters().add(
-            new FileChooser.ExtensionFilter("Imágenes", ".png", ".jpg", ".jpeg", ".gif")
+            new FileChooser.ExtensionFilter("Imágenes", "*.png", "*.jpg", "*.jpeg", "*.gif")
         );
 
         File archivo = chooser.showOpenDialog(root.getScene().getWindow());
         if (archivo == null) return;
 
         try {
-            String destino = copiarFotoADataDir(archivo.toPath(),
-                                               generarNombreFoto(archivo.getName()));
-            fotoPathSeleccionado = destino;
-            mostrarImagenLocal(destino);
+            String relPath = copiarFotoADataDir(archivo.toPath(),
+                                                generarNombreFoto(archivo.getName()));
+            fotoPathSeleccionado = relPath;
+            mostrarImagenLocal(relPath);
         } catch (IOException e) {
             mostrarAlerta(Alert.AlertType.ERROR, "Error",
                           "No se pudo copiar la imagen: " + e.getMessage());
@@ -198,11 +201,13 @@ public class RegistroClienteController extends Controller implements Initializab
 
         try {
             String nombre  = "foto_" + System.currentTimeMillis() + ".png";
-            Path   destino = Paths.get(FOTOS_DIR, nombre);
+            // Guardar en dataDir/fotos/nombre
+            Path destino = Paths.get(GsonUtil.getDataDir(), FOTOS_SUBDIR, nombre);
             Files.createDirectories(destino.getParent());
             ImageIO.write(frame, "png", destino.toFile());
 
-            fotoPathSeleccionado = destino.toString();
+            // Guardar la ruta relativa con '/' (cross-platform)
+            fotoPathSeleccionado = FOTOS_SUBDIR + "/" + nombre;
             Image fxImage = SwingFXUtils.toFXImage(frame, null);
             Platform.runLater(() -> fotoCliente.setImage(fxImage));
 
@@ -221,10 +226,15 @@ public class RegistroClienteController extends Controller implements Initializab
     private void onBtnDescartar(ActionEvent event) {
         if (fotoPathSeleccionado != null
                 && !fotoPathSeleccionado.isEmpty()
-                && !fotoPathSeleccionado.equals(DEFAULT_FOTO_PATH)) {
+                && !fotoPathSeleccionado.equals(DEFAULT_FOTO_PATH)
+                && !fotoPathSeleccionado.startsWith("file:")
+                && !fotoPathSeleccionado.startsWith("jar:")) {
             try {
-                Path fotoPath = Paths.get(fotoPathSeleccionado).toAbsolutePath();
-                Path fotoDir  = Paths.get(FOTOS_DIR).toAbsolutePath();
+                // Resolver la ruta relativa contra el dataDir
+                Path fotoPath = Paths.get(GsonUtil.getDataDir(),
+                                          fotoPathSeleccionado.split("/")).toAbsolutePath();
+                Path fotoDir  = Paths.get(GsonUtil.getDataDir(),
+                                          FOTOS_SUBDIR).toAbsolutePath();
                 if (fotoPath.startsWith(fotoDir)) {
                     Files.deleteIfExists(fotoPath);
                 }
@@ -283,12 +293,18 @@ public class RegistroClienteController extends Controller implements Initializab
 
     // ── Utilidades de imagen ─────────────────────────────────────────────────
 
+    /**
+     * Copia la foto al subdirectorio dataDir/fotos/ y retorna la ruta
+     * relativa al dataDir con separador '/' (ej. "fotos/Cliente_123.png").
+     * Esta es la ruta que se persiste en el JSON y funciona en cualquier SO.
+     */
     private String copiarFotoADataDir(Path origen, String nombreDestino) throws IOException {
-        Path dirFotos = Paths.get(FOTOS_DIR);
+        Path dirFotos = Paths.get(GsonUtil.getDataDir(), FOTOS_SUBDIR);
         Files.createDirectories(dirFotos);
         Path destino = dirFotos.resolve(nombreDestino);
         Files.copy(origen, destino, StandardCopyOption.REPLACE_EXISTING);
-        return destino.toString();
+        // Siempre '/' para que sea válido en Windows y Linux
+        return FOTOS_SUBDIR + "/" + nombreDestino;
     }
 
     private String generarNombreFoto(String nombreOriginal) {
@@ -299,19 +315,35 @@ public class RegistroClienteController extends Controller implements Initializab
         return "Cliente_" + cedula + extension;
     }
 
+    /**
+     * Muestra una imagen en el ImageView.
+     *
+     * Acepta tres formatos de path:
+     *   1. URL de recurso:   "file:/..." o "jar:file:/..."  → carga directo
+     *   2. Ruta relativa:    "fotos/Cliente_123.png"        → resuelve contra dataDir
+     *   3. Ruta absoluta:    "/home/.../foto.png"           → fallback legacy
+     */
     private void mostrarImagenLocal(String path) {
         if (path == null || path.isEmpty()) return;
         try {
             if (path.startsWith("file:") || path.startsWith("jar:")) {
                 fotoCliente.setImage(new Image(path));
-            } else {
-                File archivo = Paths.get(path).toAbsolutePath().toFile();
-                if (archivo.exists()) {
-                    fotoCliente.setImage(new Image(archivo.toURI().toString()));
-                } else {
-                    fotoCliente.setImage(new Image(DEFAULT_FOTO_PATH));
-                }
+                return;
             }
+            // Intentar como ruta relativa al dataDir
+            File archivo = Paths.get(GsonUtil.getDataDir(),
+                                     path.split("/")).toAbsolutePath().toFile();
+            if (archivo.exists()) {
+                fotoCliente.setImage(new Image(archivo.toURI().toString()));
+                return;
+            }
+            // Fallback: path absoluto (registros legacy)
+            archivo = Paths.get(path).toAbsolutePath().toFile();
+            if (archivo.exists()) {
+                fotoCliente.setImage(new Image(archivo.toURI().toString()));
+                return;
+            }
+            fotoCliente.setImage(new Image(DEFAULT_FOTO_PATH));
         } catch (Exception e) {
             System.err.println("[RegistroCliente] No se pudo cargar imagen: " + e.getMessage());
         }
@@ -334,6 +366,9 @@ public class RegistroClienteController extends Controller implements Initializab
     private void registrarCliente(Cliente cliente) {
         boolean guardado = clienteService.agregar(cliente);
         if (guardado) {
+            // El JSON ya viajó a los peers via GsonUtil.guardarYPropagar().
+            // Ahora propagamos la imagen para que la otra máquina también la tenga.
+            propagarFotoSiCorresponde();
             mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Cliente registrado correctamente.");
             limpiarFormulario();
             navegarALista();
@@ -345,12 +380,27 @@ public class RegistroClienteController extends Controller implements Initializab
     private void actualizarCliente(Cliente cliente) {
         boolean actualizado = clienteService.actualizar(cliente);
         if (actualizado) {
+            propagarFotoSiCorresponde();
             mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Modificación realizada correctamente.");
             limpiarFormulario();
             navegarALista();
         } else {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo modificar el cliente.");
         }
+    }
+
+    /**
+     * Propaga la imagen de perfil a los peers si es una imagen local
+     * (no el ícono por defecto embebido en el JAR).
+     */
+    private void propagarFotoSiCorresponde() {
+        if (fotoPathSeleccionado == null
+                || fotoPathSeleccionado.isEmpty()
+                || fotoPathSeleccionado.startsWith("file:")
+                || fotoPathSeleccionado.startsWith("jar:")) {
+            return;
+        }
+        SyncManager.getInstancia().propagarImagen(fotoPathSeleccionado);
     }
 
     // ── Validaciones ─────────────────────────────────────────────────────────

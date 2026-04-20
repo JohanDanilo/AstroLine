@@ -20,6 +20,19 @@
     -fx-background-color: radial-gradient(center 50% 50%, radius 100%, #ffffff, #f0f1f7);
 }
 
+.jfx-root-opcional{
+    /* Gradiente con un punto de luz sutilmente desplazado hacia arriba */
+    -fx-background-color: radial-gradient(
+        focus-angle 0deg, 
+        focus-distance 0%, 
+        center 50% 40%, 
+        radius 100%, 
+        #161b40 0%,   /* Un tono un poco más claro en el centro para dar brillo */
+        #0b0f2a 45%,  /* Tu color original */
+        #020617 100%  /* El cierre profundo */
+    );
+}
+
 .jfx-label-titulo {
     -fx-text-fill: white;
     -fx-font-size: 15px;
@@ -108,10 +121,12 @@
     -fx-effect: dropshadow(gaussian, rgba(217,70,239,0.6), 10, 0.5, 0, 0);
 }
 
+.jfx-btn-principal:focused {
+    -fx-background-color: linear-gradient(to right, #d946ef, #6366f1);
+}
 .jfx-btn-principal:hover {
     -fx-background-color: linear-gradient(to right, #c026d3, #4f46e5);
 }
-
 .jfx-btn-principal:pressed {
     -fx-background-color: linear-gradient(to right, #a21caf, #4338ca);
 }
@@ -129,6 +144,9 @@
     -fx-effect: dropshadow(gaussian, rgba(6, 182, 212, 0.6), 10, 0.5, 0, 0);
 }
 
+.jfx-btn-secundario:focused {
+    -fx-background-color: linear-gradient(to right, #06b6d4, #6366f1);
+}
 .jfx-btn-secundario:hover {
     -fx-background-color: linear-gradient(to right, #06b6d4, #4f46e5);
 }
@@ -147,12 +165,14 @@
     -fx-effect: dropshadow(gaussian, rgba(6, 182, 212, 0.6), 10, 0.5, 0, 0);
 }
 
+.jfx-btn-terciario:focused {
+    -fx-background-color: transparent;
+}
 .jfx-btn-terciario:hover {
     -fx-background-color: linear-gradient(to right, #06b6d4, #4f46e5);
 }
 .jfx-btn-terciario:pressed {
     -fx-background-color: linear-gradient(to right, #06b6d4, #4338ca);
-    
 }
 
 /********************************Botones Modulo Funcionario***********************/
@@ -242,70 +262,107 @@
     -fx-background-color: #06b6d4;
     -fx-text-fill: black;
 }
-/***********************Table View**************************/
+
+/***********************Table View - FIXED**************************/
 .table-view {
     -fx-background-color: transparent;
-    -fx-border-color: #ffffff;
-    -fx-border-radius: 10;
-    -fx-background-radius: 10;
-
-    /* glow exterior */
-    /*-fx-effect: dropshadow(gaussian, #ccffff, 15, 0.5, 0, 0);*/
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+    -fx-border-width: 1.5;
+    -fx-text-fill: white;
+    -fx-text-background-color: white;
 }
 
-/* fondo interno */
 .table-view .viewport {
     -fx-background-color: transparent;
 }
 
-/* filas */
 .table-row-cell {
-    -fx-background-color: white;
+    -fx-background-color: transparent;
     -fx-border-color: transparent;
+    -fx-table-cell-border-color: rgba(124, 58, 237, 0.15);
 }
 
-/* filas al pasar mouse */
+.table-row-cell:odd {
+    -fx-background-color: rgba(30, 15, 60, 0.4);
+}
+
 .table-row-cell:hover {
-    -fx-background-color: black;
-    -fx-background-color: rgba(255, 255, 255, 1);
+    -fx-background-color: rgba(99, 102, 241, 0.25);
 }
 
-/* fila seleccionada */
 .table-row-cell:selected {
-    -fx-background-color: rgba(204, 255, 255, 1);
-    -fx-effect: dropshadow(gaussian, #ccffff, 10, 0.7, 0, 0);
+    -fx-background-color: rgba(217, 70, 239, 0.35);
+    -fx-effect: dropshadow(gaussian, rgba(217, 70, 239, 0.6), 12, 0.5, 0, 0);
 }
 
-/* celdas */
+/* ✅ Texto blanco en estado normal */
 .table-cell {
-    -fx-text-fill: #000000;
+    -fx-text-fill: white !important;
     -fx-alignment: CENTER;
+    -fx-padding: 6 10;
 }
 
-/* encabezado */
+/* ✅ Texto en hover — sin !important, selector explícito */
+.table-row-cell:hover .table-cell {
+    -fx-text-fill: white;
+}
+
+/* ✅ Texto en seleccionado — tabla sin foco (window desenfocada) */
+.table-row-cell:selected .table-cell {
+    -fx-text-fill: white;
+}
+
+/* ✅ Texto en seleccionado — tabla con foco activo (Modena lo distingue) */
+.table-view:focused .table-row-cell:selected .table-cell {
+    -fx-text-fill: white;
+}
+
+/* Estados de Hover y Selección blindados */
+.table-view .table-row-cell:hover .table-cell,
+.table-view .table-row-cell:filled:hover .table-cell {
+    -fx-text-fill: white !important;
+}
+
+.table-view .table-row-cell:selected .table-cell,
+.table-view .table-row-cell:filled:selected .table-cell,
+.table-view:focused .table-row-cell:filled:selected .table-cell {
+    -fx-text-fill: white !important;
+}
+
+/* Encabezado */
 .column-header-background {
     -fx-background-color: transparent;
+    -fx-background-radius: 10 10 0 0;
 }
 
 .column-header {
     -fx-background-color: transparent;
-    -fx-border-color: #ffffff;
+    -fx-border-color: rgba(124, 58, 237, 0.4);
+    -fx-border-width: 0 1 1 0;
 }
 
 .column-header .label {
-    -fx-text-fill: #ffffff;
+    -fx-text-fill: white;
     -fx-font-weight: bold;
+    -fx-font-size: 11px;
 }
 
-/* líneas entre columnas */
-.table-view .column-header,
-.table-view .filler {
-    -fx-size: 40px;
+.column-header-background .filler {
+    -fx-background-color: transparent;
 }
 
-/* scrollbar opcional neon */
 .scroll-bar:vertical .thumb {
-    -fx-background-color: #00ffff;
+    -fx-background-color: rgba(124, 58, 237, 0.7);
+    -fx-background-radius: 5;
+}
+.scroll-bar:vertical .track {
+    -fx-background-color: rgba(11, 15, 42, 0.5);
+    -fx-background-radius: 5;
+}
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: rgba(6, 182, 212, 0.7);
     -fx-background-radius: 5;
 }
 
@@ -343,7 +400,9 @@
 .button.jfx-btn-agregar,
 .jfx-btn-agregar {
     
-    -fx-background-color: #0099cc; 
+    -fx-background-color: transparent;    
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-width: 1.5;
     
     -fx-background-radius: 10;
     -fx-border-radius: 10;
@@ -363,14 +422,16 @@
 
 .jfx-btn-agregar > ImageView {
     -fx-image: url(../resource/Agregar.png);
-    -fx-fit-width: 50px; 
-    -fx-fit-height: 50px;
+    -fx-fit-width: 45px; 
+    -fx-fit-height: 45px;
 }
 
 .button.jfx-btn-editar,
 .jfx-btn-editar {
     
-    -fx-background-color: #949292; 
+    -fx-background-color: transparent;    
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-width: 1.5;
     
     -fx-background-radius: 10;
     -fx-border-radius: 10;
@@ -397,7 +458,9 @@
 .button.jfx-btn-eliminar,
 .jfx-btn-eliminar {
     
-    -fx-background-color: #ff0080; 
+    -fx-background-color: transparent;    
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-width: 1.5;
     
     -fx-background-radius: 10;
     -fx-border-radius: 10;
@@ -450,4 +513,272 @@
 .mfx-text-field-neon .mfx-label {
     -fx-text-fill: #000000;
     -fx-background-color: transparent;
+}
+
+/******************TextField PRO******************/
+.mfx-text-field.custom-field {
+    -fx-font-size: 14px;
+    -mfx-float-mode: INLINE;
+    -fx-pref-width: 300px;
+    -fx-pref-height: 40px;
+
+    -fx-background-color: rgba(255,255,255,0.05);
+    -fx-background-radius: 15;
+
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-radius: 15;
+    -fx-border-width: 1.5;
+
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: rgba(255,255,255,0.6);
+
+    -fx-padding: 0 12;
+
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 15, 0.3, 0, 5);
+}
+
+/* Texto interno */
+.mfx-text-field.custom-field .text {
+    -fx-fill: white;
+}
+
+/* Línea inferior fuera */
+.mfx-text-field.custom-field .line {
+    -fx-stroke: transparent;
+}
+
+/* Focus elegante */
+.mfx-text-field.custom-field:focused {
+    -fx-border-color: linear-gradient(to right, #d946ef, #6366f1);
+    -fx-effect: dropshadow(gaussian, rgba(124,58,237,0.6), 20, 0.4, 0, 0);
+}
+
+/* 1. Color del floating label en estado normal */
+.mfx-text-field.custom-field .floating-text {
+    /* 1. Fondo totalmente transparente */
+    -fx-background-color: transparent; 
+
+    /* 2. Color del texto flotante (blanco para que combine con tu diseño) */
+    -fx-text-fill: white; 
+    -fx-fill: white;
+
+    /* 3. Restaurar la visibilidad del texto */
+    -fx-opacity: 1.0; 
+}
+
+/* 2. Color del floating label cuando el campo está seleccionado (Focus) */
+.mfx-text-field.custom-field:focused .floating-text,
+.mfx-text-field.custom-field:focus-within .floating-text {
+    /* Aquí utilizo el color de tu borde inferior (#d946ef) para que haga juego */
+    -fx-background-color: transparent;
+    -fx-text-fill: #d946ef; 
+    -fx-fill: #d946ef;
+}
+
+/******************DatePicker PRO******************/
+
+/* ===== BASE ===== */
+.mfx-date-picker.custom-date-picker {
+    -fx-font-size: 14px;
+    -mfx-float-mode: INLINE;
+    -fx-pref-width: 300px;
+    -fx-pref-height: 40px;
+    -fx-background-color: rgba(255,255,255,0.05);
+    -fx-background-radius: 15;
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-radius: 15;
+    -fx-border-width: 1.5;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: rgba(255,255,255,0.6);
+    -fx-padding: 0 12;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 15, 0.3, 0, 5);
+}
+
+/* ===== TEXTO INTERNO ===== */
+.mfx-date-picker.custom-date-picker .text {
+    -fx-fill: white;
+}
+
+/* ===== LÍNEA INFERIOR ===== */
+.mfx-date-picker.custom-date-picker .line {
+    -fx-stroke: transparent;
+}
+
+/* ===== ÍCONO DEL CALENDARIO - estado normal ===== */
+.mfx-date-picker.custom-date-picker .mfx-font-icon {
+    -mfx-color: linear-gradient(to bottom, #7c3aed, #d946ef);
+}
+
+/* Fallback por si el selector varía según versión de MaterialFX */
+.mfx-date-picker.custom-date-picker .calendar-button .mfx-font-icon,
+.mfx-date-picker.custom-date-picker .trailing-icon {
+    -fx-fill: linear-gradient(to bottom, #7c3aed, #d946ef);
+}
+
+/* ===== FLOATING LABEL normal ===== */
+.mfx-date-picker.custom-date-picker .floating-text {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-fill: white;
+    -fx-opacity: 1.0;
+}
+
+/* ===== FOCUS ===== */
+.mfx-date-picker.custom-date-picker:focused {
+    -fx-border-color: linear-gradient(to right, #d946ef, #6366f1);
+    -fx-effect: dropshadow(gaussian, rgba(124,58,237,0.6), 20, 0.4, 0, 0);
+}
+
+/* ===== ÍCONO DEL CALENDARIO - estado focus ===== */
+.mfx-date-picker.custom-date-picker:focused .mfx-font-icon,
+.mfx-date-picker.custom-date-picker:focus-within .mfx-font-icon {
+    -mfx-color: linear-gradient(to bottom, #7c3aed, #06b6d4);
+}
+
+/* ===== FLOATING LABEL en focus ===== */
+.mfx-date-picker.custom-date-picker:focused .floating-text,
+.mfx-date-picker.custom-date-picker:focus-within .floating-text {
+    -fx-background-color: transparent;
+    -fx-text-fill: #d946ef;
+    -fx-fill: #d946ef;
+}
+
+/******************Password Field PRO******************/
+
+/* ===== BASE ===== */
+.mfx-password-field.custom-password-field {
+    -fx-font-size: 14px;
+    -mfx-float-mode: INLINE;
+    -fx-pref-width: 300px;
+    -fx-pref-height: 40px;
+    -fx-background-color: rgba(255,255,255,0.05);
+    -fx-background-radius: 15;
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-radius: 15;
+    -fx-border-width: 1.5;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: rgba(255,255,255,0.6);
+    -fx-padding: 0 12;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 15, 0.3, 0, 5);
+}
+
+/* ===== TEXTO INTERNO ===== */
+.mfx-password-field.custom-password-field .text {
+    -fx-fill: white;
+}
+
+/* ===== LÍNEA INFERIOR ===== */
+.mfx-password-field.custom-password-field .line {
+    -fx-stroke: transparent;
+}
+
+/* ===== ÍCONO DEL OJITO - estado normal ===== */
+.mfx-password-field.custom-password-field .mfx-font-icon {
+    -mfx-color: linear-gradient(to bottom, #7c3aed, #d946ef);
+}
+
+/* Fallback por si el selector varía según versión de MaterialFX */
+.mfx-password-field.custom-password-field .eye-button .mfx-font-icon,
+.mfx-password-field.custom-password-field .trailing-icon {
+    -fx-fill: linear-gradient(to bottom, #7c3aed, #d946ef);
+}
+
+/* ===== FLOATING LABEL normal ===== */
+.mfx-password-field.custom-password-field .floating-text {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-fill: white;
+    -fx-opacity: 1.0;
+}
+
+/* ===== FOCUS ===== */
+.mfx-password-field.custom-password-field:focused {
+    -fx-border-color: linear-gradient(to right, #d946ef, #6366f1);
+    -fx-effect: dropshadow(gaussian, rgba(124,58,237,0.6), 20, 0.4, 0, 0);
+}
+
+/* ===== ÍCONO DEL OJITO - estado focus ===== */
+.mfx-password-field.custom-password-field:focused .mfx-font-icon,
+.mfx-password-field.custom-password-field:focus-within .mfx-font-icon {
+    -mfx-color: linear-gradient(to bottom, #7c3aed, #06b6d4);
+}
+
+/* ===== FLOATING LABEL en focus ===== */
+.mfx-password-field.custom-password-field:focused .floating-text,
+.mfx-password-field.custom-password-field:focus-within .floating-text {
+    -fx-background-color: transparent;
+    -fx-text-fill: #d946ef;
+    -fx-fill: #d946ef;
+}
+
+/***********************Tab Pane - FIXED**************************/
+.tab-pane {
+    -fx-background-color: transparent;
+}
+
+.tab-pane .tab-header-area {
+    -fx-background-color: rgba(11, 15, 42, 0.85);
+    -fx-padding: 4 8 0 8;
+}
+
+.tab-pane .tab-header-background {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(124, 58, 237, 0.5);
+    -fx-border-width: 0 0 1.5 0;
+}
+
+/* Pestaña base — sin efecto dropshadow para no contaminar el radius */
+.tab-pane .tab {
+    -fx-background-color: rgba(20, 25, 60, 0.5);
+    -fx-background-radius: 10 10 0 0;
+    -fx-border-color: rgba(124, 58, 237, 0.35);
+    -fx-border-width: 1 1 0 1;
+    -fx-border-radius: 10 10 0 0;
+    -fx-padding: 6 16;
+}
+
+.tab-pane .tab .tab-label {
+    -fx-text-fill: rgba(200, 210, 255, 0.55);
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+/* Hover */
+.tab-pane .tab:hover {
+    -fx-background-color: rgba(99, 102, 241, 0.22);
+    -fx-border-color: rgba(99, 102, 241, 0.6);
+}
+
+.tab-pane .tab:hover .tab-label {
+    -fx-text-fill: rgba(255, 255, 255, 0.85);
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: rgba(124, 58, 237, 0.38);
+    -fx-background-radius: 10 10 0 0;
+    -fx-border-radius: 10 10 0 0;
+    -fx-border-color: #06b6d4 #7c3aed transparent #7c3aed;
+    -fx-border-width: 2 1 0 1;
+}
+
+.tab-pane .tab:selected .tab-label {
+    -fx-text-fill: #00d9ff;
+}
+
+/* Área de contenido */
+.tab-pane .tab-content-area {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(124, 58, 237, 0.35);
+    -fx-border-width: 0 1 1 1;
+    -fx-border-radius: 0 0 12 12;
+    -fx-background-radius: 0 0 12 12;
+    -fx-padding: 10;
+}
+
+.tab-pane .tab-header-area .control-buttons-tab {
+    -fx-background-color: transparent;
+}
+
+.tab-pane .tab-header-area .control-buttons-tab .tab-down-button .arrow {
+    -fx-background-color: #00d9ff;
 }
