@@ -25,12 +25,12 @@
                         <Label fx:id="nombreEmpresa" styleClass="jfx-label-titulo" text="Nombre Empresa" />
                      </children>
                   </HBox>
-                  <VBox alignment="TOP_CENTER" prefHeight="32.0" prefWidth="243.0" VBox.vgrow="ALWAYS">
+                  <HBox alignment="TOP_CENTER" prefHeight="13.0" prefWidth="243.0" spacing="30.0" VBox.vgrow="ALWAYS">
                      <children>
                         <Label fx:id="lblSucursal" styleClass="jfx-label-subtitulo" text="Sucursal" />
                         <Label fx:id="lblEstacion" styleClass="jfx-label-subtitulo" text="Estación" />
                      </children>
-                  </VBox>
+                  </HBox>
                   <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" styleClass="jfx-panelcontenedor" stylesheets="@Styles.css" VBox.vgrow="ALWAYS">
                      <children>
                         <Label styleClass="jfx-label-titulo" text="Atendiendo" VBox.vgrow="ALWAYS" />
@@ -136,8 +136,14 @@
                   <MFXButton fx:id="btnRegistroClientes" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onRegistroClientes" prefHeight="27.0" prefWidth="229.0" styleClass="jfx-btn-principal" stylesheets="@Styles.css" text="Registro de Clientes" VBox.vgrow="ALWAYS" />
                   <HBox alignment="CENTER" prefHeight="0.0" prefWidth="213.0" spacing="10.0" VBox.vgrow="ALWAYS">
                      <children>
-                        <Label styleClass="jfx-label-subtitulo" text="Clientes esperando:" HBox.hgrow="ALWAYS" />
+                        <Label styleClass="jfx-label-subtitulo" text="Esperando:" HBox.hgrow="ALWAYS" />
                         <Label fx:id="fichasEnEspera" styleClass="jfx-label-subtitulo" text="Numero" HBox.hgrow="ALWAYS" />
+                     </children>
+                  </HBox>
+                  <HBox alignment="CENTER" prefHeight="0.0" prefWidth="213.0" spacing="10.0">
+                     <children>
+                        <Label styleClass="jfx-label-subtitulo" text="Total Clientes Sucursal:" HBox.hgrow="ALWAYS" />
+                        <Label fx:id="fichasTotalesEnEspera" styleClass="jfx-label-subtitulo" text="Numero" HBox.hgrow="ALWAYS" />
                      </children>
                   </HBox>
                   <MFXButton maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onCerrarSesion" styleClass="jfx-btn-secundario" text="Cerrar Sesión" VBox.vgrow="ALWAYS" />

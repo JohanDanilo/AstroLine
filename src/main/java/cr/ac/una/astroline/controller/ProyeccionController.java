@@ -1,15 +1,22 @@
 package cr.ac.una.astroline.controller;
 
 import cr.ac.una.astroline.model.Empresa;
+import cr.ac.una.astroline.model.Estacion;
+import cr.ac.una.astroline.model.Ficha;
 import cr.ac.una.astroline.model.Sucursal;
 import cr.ac.una.astroline.service.ConfiguracionService;
 import cr.ac.una.astroline.service.EmpresaService;
+import cr.ac.una.astroline.service.FichaService;
 import cr.ac.una.astroline.service.SucursalService;
+import cr.ac.una.astroline.util.Respuesta;
 import java.net.URL;
 import javafx.util.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
@@ -66,15 +73,20 @@ public class ProyeccionController extends Controller implements Initializable {
     private Label lblEstacionFichaAnterior4;
     @FXML
     private Label lblMensajeDeProyeccion;
-    
-    private Empresa empresa = EmpresaService.getInstancia().getEmpresa();;
-    
+
+    private Empresa empresa = EmpresaService.getInstancia().getEmpresa();
+    ;
+    private final FichaService fichaService = new FichaService();
+    private javafx.animation.Timeline pollerFichas;
+    private static final DateTimeFormatter FORMATO_LLAMADO
+            = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+
     @Override
     public void initialize() {
         setNombreVista("Proyeccion");
         actualizarReloj();
         cargarEmpresa();
-       
+        iniciarPollerFichas();
     }
 
     @Override
@@ -84,7 +96,9 @@ public class ProyeccionController extends Controller implements Initializable {
 
     private void cargarEmpresa() {
 
-        if (empresa == null) return;
+        if (empresa == null) {
+            return;
+        }
 
         lblNombreEmpresa.setText(empresa.getNombre());
 
@@ -99,7 +113,7 @@ public class ProyeccionController extends Controller implements Initializable {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        
+
         }
     }
 
@@ -119,30 +133,68 @@ public class ProyeccionController extends Controller implements Initializable {
         reloj.setCycleCount(Timeline.INDEFINITE);
         reloj.play();
     }
-}
 
-//    private void iniciarTextoCorrente() {
-//    // Esperar a que el label tenga tamaño real antes de animar
-//    lblMensajeDeProyeccion.sceneProperty().addListener((obs, oldScene, newScene) -> {
-//        if (newScene != null) {
-//            newScene.widthProperty().addListener((o, ov, nv) -> correrTexto(nv.doubleValue()));
-//            correrTexto(newScene.getWidth());
-//        }
-//    });
-//}
-//private void correrTexto(double anchoEscena) {
-//    // Empieza fuera de pantalla a la derecha y termina fuera a la izquierda
-//    lblMensajeDeProyeccion.setTranslateX(anchoEscena);
-//
-//    Timeline timeline = new Timeline(
-//        new KeyFrame(Duration.ZERO,
-//            new KeyValue(lblMensajeDeProyeccion.translateXProperty(), anchoEscena)
-//        ),
-//        new KeyFrame(Duration.seconds(18),
-//            new KeyValue(lblMensajeDeProyeccion.translateXProperty(), -anchoEscena)
-//        )
-//    );
-//    timeline.setCycleCount(Timeline.INDEFINITE);
-//    timeline.play();
-//}
-//}
+    private void iniciarPollerFichas() {
+        pollerFichas = new javafx.animation.Timeline(
+                new KeyFrame(Duration.seconds(1), e -> actualizarFichasEnPantalla())
+        );
+        pollerFichas.setCycleCount(Timeline.INDEFINITE);
+        pollerFichas.play();
+    }
+
+    private void actualizarFichasEnPantalla() {
+        Respuesta respuesta = fichaService.obtenerFichasActivas();
+        if (!respuesta.getEstado()) {
+            return;
+        }
+
+        List<Ficha> activas = (List<Ficha>) respuesta.getResultado("lista");
+
+        List<Ficha> llamadas = activas.stream()
+                .filter(f -> f.getEstado() == Ficha.Estado.LLAMADA
+                && f.getFechaHoraLlamado() != null)
+                .sorted(Comparator.comparing(
+                        f -> LocalDateTime.parse(f.getFechaHoraLlamado(), FORMATO_LLAMADO),
+                        Comparator.reverseOrder()
+                ))
+                .collect(Collectors.toList());
+
+        mostrarFichaActual(llamadas.size() > 0 ? llamadas.get(0) : null);
+        mostrarFichaAnterior(lblLetraFichaAnterior1, lblNumeroFichaAnterior1, lblEstacionFichaAnterior1, llamadas.size() > 1 ? llamadas.get(1) : null);
+        mostrarFichaAnterior(lblLetraFichaAnterior2, lblNumeroFichaAnterior2, lblEstacionFichaAnterior2, llamadas.size() > 2 ? llamadas.get(2) : null);
+        mostrarFichaAnterior(lblLetraFichaAnterior3, lblNumeroFichaAnterior3, lblEstacionFichaAnterior3, llamadas.size() > 3 ? llamadas.get(3) : null);
+        mostrarFichaAnterior(lblLetraFichaAnterior4, lblNumeroFichaAnterior4, lblEstacionFichaAnterior4, llamadas.size() > 4 ? llamadas.get(4) : null);
+    }
+
+    private void mostrarFichaActual(Ficha ficha) {
+        if (ficha == null) {
+            lblLetraFichaLlamando.setText("-");
+            lblNumeroFichaLlamando.setText("-");
+            lblEstacionLlamando.setText("-");
+            return;
+        }
+        lblLetraFichaLlamando.setText(fichaService.getCodigoLetra(ficha));
+        lblNumeroFichaLlamando.setText(ficha.getNumeroFormateado());
+        lblEstacionLlamando.setText(resolverNombreEstacion(ficha.getEstacionId()));
+    }
+
+    private void mostrarFichaAnterior(Label lblLetra, Label lblNumero, Label lblEstacion, Ficha ficha) {
+        if (ficha == null) {
+            lblLetra.setText("-");
+            lblNumero.setText("-");
+            lblEstacion.setText("-");
+            return;
+        }
+        lblLetra.setText(fichaService.getCodigoLetra(ficha));
+        lblNumero.setText(ficha.getNumeroFormateado());
+        lblEstacion.setText(resolverNombreEstacion(ficha.getEstacionId()));
+    }
+
+    private String resolverNombreEstacion(String estacionId) {
+        if (estacionId == null) {
+            return "-";
+        }
+        Estacion estacion = SucursalService.getInstancia().buscarEstacion(estacionId);
+        return estacion != null ? estacion.getNombre() : estacionId;
+    }
+}
