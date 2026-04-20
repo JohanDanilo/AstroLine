@@ -78,6 +78,25 @@ public class ProyeccionController extends Controller implements Initializable {
 
     // ── Inicialización ───────────────────────────────────────────────────────
 
+
+    // ── Marquee ──────────────────────────────────────────────────────────────
+    /**
+     * Dirección del texto en movimiento.
+     * DERECHA_A_IZQUIERDA: texto entra por la derecha y sale por la izquierda (estándar).
+     * IZQUIERDA_A_DERECHA: ticker inverso.
+     */
+    public enum DireccionMarquee {
+        DERECHA_A_IZQUIERDA,
+        IZQUIERDA_A_DERECHA
+    }
+
+    private DireccionMarquee direccionMarquee = DireccionMarquee.DERECHA_A_IZQUIERDA;
+    private double velocidadPixelesPorSegundo = 80.0; // ajustable
+    private Timeline timelineMarquee;
+
+    // ── Inicialización ───────────────────────────────────────────────────────
+
+
     @Override
     public void initialize() {
         setNombreVista("Proyeccion");
@@ -90,7 +109,6 @@ public class ProyeccionController extends Controller implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Gestionado por el método initialize() sin parámetros (patrón AstroLine)
     }
 
     // ── Empresa ──────────────────────────────────────────────────────────────
