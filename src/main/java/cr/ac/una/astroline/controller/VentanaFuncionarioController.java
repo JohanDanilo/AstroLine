@@ -83,7 +83,7 @@ public class VentanaFuncionarioController extends Controller implements Initiali
     private Label lblNombreTramiteCliente;
 
     private Ficha fichaActual;
-    private final FichaService fichaService = new FichaService();
+    private final FichaService fichaService = FichaService.getInstancia();
     private Empresa empresa = EmpresaService.getInstancia().getEmpresa();
     ;
     private javafx.animation.Timeline actualizarContadorDeFichasEsperando;
@@ -160,10 +160,7 @@ public class VentanaFuncionarioController extends Controller implements Initiali
             return;
         }
 
-//        fichaActual.registrarLlamado(fichaActual.getEstacionId() != null
-//                ? fichaActual.getEstacionId() : ConfiguracionService.getInstancia().getEstacionId());
-//        fichaService.actualizarEstado(fichaActual.getId(), Ficha.Estado.LLAMADA);
-fichaService.registrarLlamado(fichaActual.getId(),
+        fichaService.registrarLlamado(fichaActual.getId(),
         fichaActual.getEstacionId() != null
         ? fichaActual.getEstacionId() : ConfiguracionService.getInstancia().getEstacionId());
 
@@ -254,8 +251,6 @@ fichaService.registrarLlamado(fichaActual.getId(),
             return;
         }
 
-//        siguiente.registrarLlamado(ConfiguracionService.getInstancia().getEstacionId());
-//        fichaService.actualizarEstado(siguiente.getId(), Ficha.Estado.LLAMADA);
         fichaService.registrarLlamado(siguiente.getId(), ConfiguracionService.getInstancia().getEstacionId());
 
         cargarFicha(siguiente);
@@ -289,12 +284,9 @@ fichaService.registrarLlamado(fichaActual.getId(),
             return;
         }
 
-//        siguiente.registrarLlamado(siguiente.getEstacionId() != null ? siguiente.getEstacionId() : ConfiguracionService.getInstancia().getEstacionId());
-//        fichaService.actualizarEstado(siguiente.getId(), Ficha.Estado.LLAMADA);
-fichaService.registrarLlamado(siguiente.getId(),
+        fichaService.registrarLlamado(siguiente.getId(),
         siguiente.getEstacionId() != null
         ? siguiente.getEstacionId() : ConfiguracionService.getInstancia().getEstacionId());
-
         cargarFicha(siguiente);
         actualizarContadorDeFichasEnEspera();
     }

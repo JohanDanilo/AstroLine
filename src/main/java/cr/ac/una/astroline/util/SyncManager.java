@@ -36,7 +36,7 @@ public class SyncManager {
      * Punto de entrada. Llamar desde App.java al arrancar.
      * 1. Inicia listener UDP
      * 2. Inicia servidor HTTP
-     * 3. Descubre peers y sincroniza archivos
+     * 3. Descubre peers y sincroniza archivos e imágenes
      * 4. Lanza polling periódico cada 15 segundos
      */
     public void iniciar() {
@@ -52,7 +52,13 @@ public class SyncManager {
             System.out.println("[SyncManager] Sin peers. Modo standalone.");
         } else {
             System.out.println("[SyncManager] " + peers.size() + " peer(s). Sincronizando...");
-            peers.forEach(this::syncDesde);
+            peers.forEach(peer -> {
+                // Primero imágenes, luego JSON.
+                // Así, cuando el JSON llegue y la UI se refresque,
+                // los bytes de la imagen ya están en disco.
+                syncImagenesDesde(peer);
+                syncDesde(peer);
+            });
         }
 
         scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
@@ -64,15 +70,16 @@ public class SyncManager {
             this::pollPeers,
             POLL_INTERVAL_SECONDS, POLL_INTERVAL_SECONDS, TimeUnit.SECONDS
         );
-        
-            scheduler.scheduleAtFixedRate(
+        scheduler.scheduleAtFixedRate(
             this::redescubrirPeers,
             60, 60, TimeUnit.SECONDS
         );
     }
 
+    // ── Propagación hacia peers ──────────────────────────────────────────────
+
     /**
-     * Propaga un archivo a todos los peers conocidos.
+     * Propaga un archivo JSON a todos los peers conocidos.
      * GsonUtil lo llama automáticamente después de cada guardarYPropagar().
      */
     public void propagar(String nombreArchivo) {
@@ -89,11 +96,44 @@ public class SyncManager {
             System.err.println("[SyncManager] Error propagando " + nombreArchivo + ": " + e.getMessage());
         }
     }
-    
-    private void redescubrirPeers() {
-        List<String> descubiertos = NetworkPeer.discoverPeers();
-        for (String ip : descubiertos) {
-            registrarPeer(ip);
+
+    /**
+     * Propaga una imagen a todos los peers conocidos.
+     *
+     * Se llama desde los controladores después de guardar un cliente o la empresa:
+     *   SyncManager.getInstancia().propagarImagen("fotos/Cliente_123.png");
+     *   SyncManager.getInstancia().propagarImagen("logoEmpresa/logo_empresa.png");
+     *
+     * @param relPath ruta relativa al dataDir con separador '/',
+     *                ej. "fotos/Cliente_123.png".
+     *                Si es una URL de recurso interno (file:, jar:) se ignora.
+     */
+    public void propagarImagen(String relPath) {
+        if (peers.isEmpty() || relPath == null || relPath.isEmpty()) return;
+        // Ignorar imágenes embebidas en el JAR
+        if (relPath.startsWith("file:") || relPath.startsWith("jar:")) return;
+
+        Path filePath = Paths.get(GsonUtil.getDataDir(), relPath.split("/"));
+        if (!Files.exists(filePath)) {
+            System.err.println("[SyncManager] Imagen no encontrada para propagar: " + relPath);
+            return;
+        }
+        try {
+            byte[] content = Files.readAllBytes(filePath);
+            for (String peer : peers) {
+                boolean ok = SyncClient.postImage(peer, relPath, content);
+                System.out.println("[SyncManager] img:" + relPath + " → " + peer + ": " + (ok ? "OK" : "FALLO"));
+            }
+        } catch (IOException e) {
+            System.err.println("[SyncManager] Error propagando imagen " + relPath + ": " + e.getMessage());
+        }
+    }
+
+    public void propagarContenido(String contenido, String nombreArchivo) {
+        if (peers.isEmpty()) return;
+        for (String peer : peers) {
+            boolean ok = SyncClient.postFile(peer, nombreArchivo, contenido);
+            System.out.println("[SyncManager] " + nombreArchivo + " → " + peer + ": " + (ok ? "OK" : "FALLO"));
         }
     }
 
@@ -102,6 +142,10 @@ public class SyncManager {
     private void pollPeers() {
         for (String peer : peers) {
             try {
+                // Imágenes primero → cuando la UI refresque por el JSON,
+                // la foto ya existe localmente.
+                syncImagenesDesde(peer);
+
                 for (Map<String, Object> info : SyncClient.getFileList(peer)) {
                     String name           = (String) info.get("name");
                     long   remoteModified = ((Number) info.get("lastModified")).longValue();
@@ -110,7 +154,7 @@ public class SyncManager {
                     if (deberiaActualizar(localPath, remoteModified)) {
                         System.out.println("[SyncManager] Archivo nuevo: " + name + " desde " + peer);
                         String content = SyncClient.getFile(peer, name);
-                        if (content != null) escribirLocal(name, content, remoteModified);
+                        if (content != null) escribirJsonLocal(name, content, remoteModified);
                     }
                 }
             } catch (Exception e) {
@@ -119,8 +163,16 @@ public class SyncManager {
         }
     }
 
+    private void redescubrirPeers() {
+        List<String> descubiertos = NetworkPeer.discoverPeers();
+        for (String ip : descubiertos) {
+            registrarPeer(ip);
+        }
+    }
+
     // ── Sincronización inicial ───────────────────────────────────────────────
 
+    /** Sincroniza archivos JSON desde un peer. */
     private void syncDesde(String peer) {
         for (Map<String, Object> info : SyncClient.getFileList(peer)) {
             String name           = (String) info.get("name");
@@ -129,13 +181,92 @@ public class SyncManager {
 
             if (deberiaActualizar(localPath, remoteModified)) {
                 String content = SyncClient.getFile(peer, name);
-                if (content != null) escribirLocal(name, content, remoteModified);
+                if (content != null) escribirJsonLocal(name, content, remoteModified);
             }
         }
     }
 
     /**
-     * Decide si se debe descargar el archivo remoto.
+     * Sincroniza imágenes desde un peer.
+     * Compara por lastModified; si el remoto es más nuevo (o no existe local),
+     * descarga los bytes y los escribe en el subdirectorio correspondiente.
+     */
+    private void syncImagenesDesde(String peer) {
+        for (Map<String, Object> info : SyncClient.getImageList(peer)) {
+            String relPath        = (String) info.get("name"); // "fotos/Cliente_123.png"
+            long   remoteModified = ((Number) info.get("lastModified")).longValue();
+
+            // Construir ruta local segura segmento a segmento
+            String[] segmentos = relPath.split("/");
+            Path localPath = Paths.get(GsonUtil.getDataDir(), segmentos);
+
+            boolean necesitaActualizar = !Files.exists(localPath)
+                || localPath.toFile().lastModified() < remoteModified;
+
+            if (necesitaActualizar) {
+                System.out.println("[SyncManager] Imagen nueva: " + relPath + " desde " + peer);
+                byte[] bytes = SyncClient.getImage(peer, relPath);
+                if (bytes != null) escribirImagenLocal(relPath, bytes, remoteModified);
+            }
+        }
+    }
+
+    // ── Escritura local ──────────────────────────────────────────────────────
+
+    /**
+     * Escribe un JSON recibido de un peer en disco y notifica a la UI.
+     */
+    private void escribirJsonLocal(String nombre, String content, long remoteLastModified) {
+        try {
+            Path dataDir = Paths.get(GsonUtil.getDataDir());
+            if (!Files.exists(dataDir)) Files.createDirectories(dataDir);
+
+            synchronized (this) {
+                Path destino = dataDir.resolve(nombre);
+                Files.writeString(destino, content, StandardCharsets.UTF_8);
+                Files.setLastModifiedTime(destino, FileTime.fromMillis(remoteLastModified));
+            }
+
+            System.out.println("[SyncManager] JSON guardado: " + nombre);
+            DataNotifier.notifyChange(nombre);
+
+        } catch (IOException e) {
+            System.err.println("[SyncManager] Error guardando JSON " + nombre + ": " + e.getMessage());
+        }
+    }
+
+    /**
+     * Escribe los bytes de una imagen recibida de un peer.
+     * Preserva el timestamp remoto para evitar re-descargas infinitas.
+     * Notifica a DataNotifier con la ruta relativa para que los controladores
+     * suscritos puedan refrescar la UI en tiempo real.
+     *
+     * @param relPath ruta relativa al dataDir, ej. "fotos/Cliente_123.png"
+     */
+    private void escribirImagenLocal(String relPath, byte[] content, long remoteLastModified) {
+        try {
+            String[] segmentos = relPath.split("/");
+            Path destino = Paths.get(GsonUtil.getDataDir(), segmentos);
+            Files.createDirectories(destino.getParent());
+
+            synchronized (this) {
+                Files.write(destino, content);
+                Files.setLastModifiedTime(destino, FileTime.fromMillis(remoteLastModified));
+            }
+
+            System.out.println("[SyncManager] Imagen guardada: " + relPath);
+            // Notificar a los controladores suscritos para que refresquen la UI
+            DataNotifier.notifyChange(relPath);
+
+        } catch (IOException e) {
+            System.err.println("[SyncManager] Error guardando imagen " + relPath + ": " + e.getMessage());
+        }
+    }
+
+    // ── Lógica de decisión ───────────────────────────────────────────────────
+
+    /**
+     * Decide si se debe descargar el archivo JSON remoto.
      *
      * Reglas:
      * 1. Si no existe local → sí descargar
@@ -149,49 +280,15 @@ public class SyncManager {
         long localModified = localPath.toFile().lastModified();
         if (remoteModified > localModified) return true;
 
-        // El local es igual o más nuevo — verificar si está vacío
         try {
             String contenido = Files.readString(localPath, StandardCharsets.UTF_8).trim();
-            boolean estaVacio = contenido.equals("[]")
-                             || contenido.equals("{}")
-                             || contenido.isEmpty();
-            return estaVacio;
+            return contenido.equals("[]") || contenido.equals("{}") || contenido.isEmpty();
         } catch (IOException e) {
             return false;
         }
     }
 
-    /**
-     * Escribe un archivo recibido de un peer en el disco local.
-     * Preserva el timestamp remoto para evitar re-descargas por
-     * diferencias de reloj entre máquinas.
-     */
-    private void escribirLocal(String nombre, String content, long remoteLastModified) {
-        try {
-            Path dataDir = Paths.get(GsonUtil.getDataDir());
-            if (!Files.exists(dataDir)) Files.createDirectories(dataDir);
-
-            synchronized (this) {
-                Path destino = dataDir.resolve(nombre);
-                Files.writeString(destino, content, StandardCharsets.UTF_8);
-                // Preservar timestamp remoto — sin esto hay re-descargas infinitas
-                // cuando los relojes de las máquinas no están perfectamente sincronizados
-                Files.setLastModifiedTime(destino, FileTime.fromMillis(remoteLastModified));
-            }
-
-            System.out.println("[SyncManager] Guardado local: " + nombre);
-            DataNotifier.notifyChange(nombre);
-
-        } catch (IOException e) {
-            System.err.println("[SyncManager] Error guardando " + nombre + ": " + e.getMessage());
-        }
-    }
-
-    public void detener() {
-        if (scheduler != null) scheduler.shutdown();
-        SyncServer.stop();
-        NetworkPeer.stop();
-    }
+    // ── Gestión de peers ─────────────────────────────────────────────────────
 
     public void registrarPeer(String ip) {
         String ownIp = NetworkPeer.getOwnIp();
@@ -200,12 +297,10 @@ public class SyncManager {
             System.out.println("[SyncManager] Nuevo peer registrado: " + ip);
         }
     }
-    
-    public void propagarContenido(String contenido, String nombreArchivo) {
-        if (peers.isEmpty()) return;
-        for (String peer : peers) {
-            boolean ok = SyncClient.postFile(peer, nombreArchivo, contenido);
-            System.out.println("[SyncManager] " + nombreArchivo + " → " + peer + ": " + (ok ? "OK" : "FALLO"));
-        }
+
+    public void detener() {
+        if (scheduler != null) scheduler.shutdown();
+        SyncServer.stop();
+        NetworkPeer.stop();
     }
 }

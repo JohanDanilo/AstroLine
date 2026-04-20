@@ -69,8 +69,6 @@ public class FuncionarioSeleccionarFichaController extends Controller implements
             .filter(f -> !soloPreferencial || f.isPreferencial())
             .collect(Collectors.toList());
 
-//    System.out.println("[DEBUG] Fichas tras filtro: " + enEspera.size());
-
     cmbFichas.setItems(FXCollections.observableArrayList(enEspera));
 
     cmbFichas.setConverter(new javafx.util.StringConverter<Ficha>() {

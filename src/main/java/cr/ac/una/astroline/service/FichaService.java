@@ -27,9 +27,11 @@ public class FichaService {
 
     private static final String ARCHIVO_FICHAS = "fichas.json";
     private static final String ARCHIVO_HISTORIAL = "historial.json";
-    private static final ZoneId ZONA_CR = ZoneId.of("America/Costa_Rica");
-    private static final DateTimeFormatter FORMATO_FECHA
-            = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    private static final ZoneId ZONA_CR           = ZoneId.of("America/Costa_Rica");
+    private static final DateTimeFormatter FORMATO_FECHA =
+            DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    
+    public static FichaService instancia;
 
     /**
      * Letras disponibles en orden. Deben ser exactamente 5.
@@ -45,7 +47,14 @@ public class FichaService {
      * Tamaño total del ciclo: 5 letras × 10 números = 50 fichas.
      */
     private static final int CICLO = LETRAS.length * NUMEROS_POR_LETRA;
-
+    
+    
+    public static FichaService getInstancia(){
+        if (instancia == null) {
+            instancia = new FichaService();
+        }
+        return instancia;
+    }
     // -------------------------------------------------------------------------
     // GENERACIÓN DE FICHA
     // -------------------------------------------------------------------------
