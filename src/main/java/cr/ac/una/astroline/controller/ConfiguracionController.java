@@ -6,7 +6,6 @@ import cr.ac.una.astroline.model.Sucursal;
 import cr.ac.una.astroline.service.ConfiguracionService;
 import cr.ac.una.astroline.service.SucursalService;
 import cr.ac.una.astroline.util.FlowController;
-import cr.ac.una.astroline.util.GsonUtil;
 import cr.ac.una.astroline.util.Respuesta;
 import io.github.palexdev.materialfx.controls.MFXCheckbox;
 import io.github.palexdev.materialfx.controls.MFXComboBox;

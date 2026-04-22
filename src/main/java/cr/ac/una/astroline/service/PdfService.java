@@ -4,7 +4,6 @@ import cr.ac.una.astroline.model.Cliente;
 import cr.ac.una.astroline.model.Empresa;
 import cr.ac.una.astroline.model.Ficha;
 import cr.ac.una.astroline.util.Respuesta;
-
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.*;

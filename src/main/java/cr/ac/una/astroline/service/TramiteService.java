@@ -1,16 +1,14 @@
 package cr.ac.una.astroline.service;
 
 import cr.ac.una.astroline.model.Tramite;
-import cr.ac.una.astroline.util.DataNotifier;
 import cr.ac.una.astroline.util.GsonUtil;
 import cr.ac.una.astroline.util.Respuesta;
 import java.util.ArrayList;
 import java.util.List;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-public class TramiteService implements DataNotifier.Listener {
+public class TramiteService{
 
     private static final String ARCHIVO_JSON = "tramites.json";
     private final ObservableList<Tramite> listaDeTramites;
@@ -19,7 +17,6 @@ public class TramiteService implements DataNotifier.Listener {
     private TramiteService() {
         listaDeTramites = FXCollections.observableArrayList();
         cargarTramites();
-        DataNotifier.subscribe(this);
     }
 
     public static TramiteService getInstancia() {
@@ -153,42 +150,7 @@ public class TramiteService implements DataNotifier.Listener {
         listaDeTramites.setAll(lista);
     }
 
-    @Override
-    public void onDataChanged(String fileName) {
-        if (!ARCHIVO_JSON.equals(fileName)) {
-            return;
-        }
-
-        System.out.println("[TramiteService] Detectado cambio externo, sincronizando...");
-
-        Platform.runLater(() -> {
-            List<Tramite> remotos = GsonUtil.leerLista(ARCHIVO_JSON, Tramite.class);
-            if (remotos != null) {
-                mergeTramites(remotos);
-            }
-        });
-    }
-
-    private void mergeTramites(List<Tramite> remotos) {
-
-        java.util.Map<String, Tramite> mapaRemoto = new java.util.LinkedHashMap<>();
-        for (Tramite r : remotos) {
-            mapaRemoto.put(r.getId(), r);
-        }
-
-        java.util.Map<String, Tramite> mapaLocal = new java.util.LinkedHashMap<>();
-        for (Tramite t : listaDeTramites) {
-            mapaLocal.put(t.getId(), t);
-        }
-
-        mapaLocal.putAll(mapaRemoto);
-
-        mapaLocal.keySet().retainAll(mapaRemoto.keySet());
-
-        listaDeTramites.setAll(mapaLocal.values());
-    }
-
     private void guardar() {
-        GsonUtil.guardarYPropagar(new ArrayList<>(listaDeTramites), ARCHIVO_JSON);
+        GsonUtil.guardar(new ArrayList<>(listaDeTramites), ARCHIVO_JSON);
     }
 }

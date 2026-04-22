@@ -2,13 +2,11 @@ package cr.ac.una.astroline.service;
 
 import cr.ac.una.astroline.model.Empresa;
 import cr.ac.una.astroline.model.EmpresaDTO;
-import cr.ac.una.astroline.util.DataNotifier;
 import cr.ac.una.astroline.util.GsonUtil;
-import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
-public class EmpresaService implements DataNotifier.Listener {
+public class EmpresaService{
 
     private Empresa empresa;
 
@@ -20,7 +18,6 @@ public class EmpresaService implements DataNotifier.Listener {
 
     private EmpresaService() {
         cargarEmpresa();
-        DataNotifier.subscribe(this);
     }
 
     public static EmpresaService getInstancia() {
@@ -52,6 +49,7 @@ public class EmpresaService implements DataNotifier.Listener {
     }
 
     public Empresa dtoAEmpresa(EmpresaDTO dto) {
+        
         if (dto == null) {
             return null;
         }
@@ -63,11 +61,10 @@ public class EmpresaService implements DataNotifier.Listener {
         if (empresaActualizada == null) {
             return false;
         }
-
         empresaActualizada.setLastModified(System.currentTimeMillis());
         this.empresa = empresaActualizada;
         empresaProperty.set(this.empresa);
-        GsonUtil.guardarYPropagar(this.empresa, ARCHIVO_JSON);
+        GsonUtil.guardar(this.empresa, ARCHIVO_JSON);
         return true;
     }
 
@@ -78,27 +75,4 @@ public class EmpresaService implements DataNotifier.Listener {
         empresaProperty.set(this.empresa);
     }
 
-    @Override
-    public void onDataChanged(String fileName) {
-        if (!ARCHIVO_JSON.equals(fileName)) {
-            return;
-        }
-
-        System.out.println("[EmpresaService] Detectado cambio externo, sincronizando...");
-
-        Platform.runLater(() -> {
-            Empresa remota = GsonUtil.leer(ARCHIVO_JSON, Empresa.class);
-            if (remota != null) {
-                mergeEmpresa(remota);
-            }
-        });
-    }
-
-    private void mergeEmpresa(Empresa remota) {
-        if (empresa == null || remota.getLastModified() >= empresa.getLastModified()) {
-            this.empresa = remota;
-            empresaProperty.set(this.empresa);
-            System.out.println("[EmpresaService] Empresa actualizada desde peer.");
-        }
-    }
 }

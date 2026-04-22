@@ -3,13 +3,8 @@ package cr.ac.una.astroline;
 import cr.ac.una.astroline.util.DataInitializer;
 import cr.ac.una.astroline.util.FlowController;
 import cr.ac.una.astroline.util.SessionManager;
-import cr.ac.una.astroline.util.SyncManager;
-import javafx.scene.Scene;
 import static javafx.application.Application.launch;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import javafx.application.Application;
@@ -21,8 +16,6 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-        SyncManager.getInstancia().iniciar();
-
         DataInitializer.inicializar();
 
         FlowController.getInstance().InitializeFlow(stage, null);
@@ -52,12 +45,6 @@ public class App extends Application {
                 FlowController.getInstance().goViewInWindow("PrincipalView");
                 break;
         }
-    }
-
-    @Override
-    public void stop() throws Exception {
-        SyncManager.getInstancia().detener();
-        super.stop();
     }
 
     public static void main(String[] args) {

@@ -2,6 +2,7 @@
 
 <?import io.github.palexdev.materialfx.controls.MFXButton?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
@@ -79,9 +80,9 @@
                   <VBox alignment="TOP_CENTER" spacing="10.0" styleClass="panel" VBox.vgrow="ALWAYS">
                      <children>
                         <Label styleClass="jfx-label-titulo" stylesheets="@Styles.css" text="Siguiente llamado" VBox.vgrow="ALWAYS" />
-                        <HBox alignment="TOP_CENTER" spacing="3.0" styleClass="jfx-panelcontenedor" VBox.vgrow="ALWAYS">
+                        <HBox alignment="TOP_CENTER" spacing="10.0" styleClass="jfx-panelcontenedor" VBox.vgrow="ALWAYS">
                            <children>
-                              <MFXButton fx:id="btnRepetirFicha" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onRepetirFicha" prefHeight="34.0" styleClass="jfx-btn-repetirficha" stylesheets="@Styles.css" text="-" HBox.hgrow="ALWAYS">
+                              <Button fx:id="btnRepetirFicha" mnemonicParsing="false" onAction="#onRepetirFicha" styleClass="jfx-btn-repetirficha">
                                  <graphic>
                                     <ImageView fitHeight="26.0" fitWidth="31.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
@@ -89,11 +90,8 @@
                                        </image>
                                     </ImageView>
                                  </graphic>
-                                 <padding>
-                                    <Insets left="10.0" />
-                                 </padding>
-                              </MFXButton>
-                              <MFXButton fx:id="btnSiguienteFicha" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onSiguienteFicha" prefHeight="34.0" styleClass="jfx-btn-siguienteficha" text="-" HBox.hgrow="ALWAYS">
+                              </Button>
+                              <Button fx:id="btnSiguienteFicha" mnemonicParsing="false" onAction="#onSiguienteFicha" styleClass="jfx-btn-siguienteficha">
                                  <graphic>
                                     <ImageView fitHeight="26.0" fitWidth="31.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
@@ -101,8 +99,8 @@
                                        </image>
                                     </ImageView>
                                  </graphic>
-                              </MFXButton>
-                              <MFXButton fx:id="btnSiguientePreferencial" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onSiguientePreferencial" prefHeight="34.0" styleClass="jfx-btn-preferencialficha" text="-" HBox.hgrow="ALWAYS">
+                              </Button>
+                              <Button fx:id="btnSiguientePreferencial" layoutX="62.0" layoutY="17.0" mnemonicParsing="false" onAction="#onSiguientePreferencial" styleClass="jfx-btn-preferencialficha">
                                  <graphic>
                                     <ImageView fitHeight="26.0" fitWidth="31.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
@@ -110,8 +108,8 @@
                                        </image>
                                     </ImageView>
                                  </graphic>
-                              </MFXButton>
-                              <MFXButton fx:id="btnSeleccionarFicha" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onAction="#onSeleccionarFicha" prefHeight="34.0" prefWidth="52.0" styleClass="jfx-btn-seleccionarficha" text="-" HBox.hgrow="ALWAYS">
+                              </Button>
+                              <Button fx:id="btnSeleccionarFicha" layoutX="243.0" layoutY="17.0" mnemonicParsing="false" onAction="#onSeleccionarFicha" prefHeight="34.0" styleClass="jfx-btn-seleccionarficha">
                                  <graphic>
                                     <ImageView fitHeight="26.0" fitWidth="34.0" pickOnBounds="true" preserveRatio="true">
                                        <image>
@@ -119,17 +117,11 @@
                                        </image>
                                     </ImageView>
                                  </graphic>
-                                 <padding>
-                                    <Insets right="10.0" />
-                                 </padding>
-                              </MFXButton>
+                              </Button>
                            </children>
                            <VBox.margin>
                               <Insets />
                            </VBox.margin>
-                           <padding>
-                              <Insets left="10.0" right="10.0" />
-                           </padding>
                         </HBox>
                      </children>
                   </VBox>

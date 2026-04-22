@@ -14,8 +14,8 @@
       <VBox alignment="CENTER" layoutX="0.0" layoutY="0.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="400.0" prefWidth="400.0" spacing="25.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
             <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" styleClass="jfx-label-titulo" text="Configuración de Estación para este equipo" />
-            <MFXComboBox fx:id="cmbSucursal" floatingText="Sucursal" maxWidth="1.7976931348623157E308" onAction="#onCmbSucursal" prefWidth="320.0" styleClass="mfx-text-field-neon" />
-            <MFXComboBox fx:id="cmbEstacion" floatingText="Estación" maxWidth="1.7976931348623157E308" prefWidth="320.0" styleClass="mfx-text-field-neon" />
+            <MFXComboBox fx:id="cmbSucursal" floatingText="Sucursal" maxWidth="1.7976931348623157E308" onAction="#onCmbSucursal" prefWidth="320.0" styleClass="custom-combo" />
+            <MFXComboBox fx:id="cmbEstacion" floatingText="Estación" maxWidth="1.7976931348623157E308" prefWidth="320.0" styleClass="custom-combo" />
             <MFXCheckbox fx:id="checkPreferencial" onAction="#onCheckPreferencial" prefHeight="40.0" prefWidth="211.0" styleClass="mfx-checkbox-seleccion" text="Estación preferencial" textFill="WHITE" />
             <HBox spacing="10.0">
                <children>

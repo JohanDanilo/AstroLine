@@ -7,7 +7,6 @@ import cr.ac.una.astroline.model.ClienteDTO;
 import cr.ac.una.astroline.service.ClienteService;
 import cr.ac.una.astroline.util.FlowController;
 import cr.ac.una.astroline.util.GsonUtil;
-import cr.ac.una.astroline.util.SyncManager;
 import io.github.palexdev.materialfx.controls.*;
 import io.github.palexdev.materialfx.utils.SwingFXUtils;
 import java.awt.image.BufferedImage;
@@ -328,7 +327,6 @@ public class RegistroClienteController extends Controller implements Initializab
     private void registrarCliente(Cliente cliente) {
         boolean guardado = clienteService.agregar(cliente);
         if (guardado) {
-            propagarFotoSiCorresponde();
             mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Cliente registrado correctamente.");
             limpiarFormulario();
             navegarALista();
@@ -340,20 +338,12 @@ public class RegistroClienteController extends Controller implements Initializab
     private void actualizarCliente(Cliente cliente) {
         boolean actualizado = clienteService.actualizar(cliente);
         if (actualizado) {
-            propagarFotoSiCorresponde();
             mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Modificación realizada correctamente.");
             limpiarFormulario();
             navegarALista();
         } else {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo modificar el cliente.");
         }
-    }
-
-    private void propagarFotoSiCorresponde() {
-        if (fotoPathSeleccionado == null || fotoPathSeleccionado.isEmpty() || fotoPathSeleccionado.startsWith("file:") || fotoPathSeleccionado.startsWith("jar:")) {
-            return;
-        }
-        SyncManager.getInstancia().propagarImagen(fotoPathSeleccionado);
     }
 
     private boolean camposValidos() {

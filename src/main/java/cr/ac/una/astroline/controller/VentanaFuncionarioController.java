@@ -16,7 +16,6 @@ import cr.ac.una.astroline.service.SucursalService;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.css.themes.MFXThemeManager;
 import io.github.palexdev.materialfx.css.themes.Themes;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
@@ -28,6 +27,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -48,15 +48,15 @@ public class VentanaFuncionarioController extends Controller implements Initiali
     @FXML
     private MFXButton btnRegistroClientes;
     @FXML
-    private MFXButton btnSiguienteFicha;
+    private Button btnSiguienteFicha;
     @FXML
-    private MFXButton btnRepetirFicha;
+    private Button btnRepetirFicha;
     @FXML
-    private MFXButton btnSiguientePreferencial;
+    private Button btnSiguientePreferencial;
     @FXML
     private MFXButton btnAusente;
     @FXML
-    private MFXButton btnSeleccionarFicha;
+    private Button btnSeleccionarFicha;
     @FXML
     private Label nombreEmpresa;
     @FXML

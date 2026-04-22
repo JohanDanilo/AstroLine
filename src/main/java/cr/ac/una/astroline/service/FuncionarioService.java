@@ -2,17 +2,13 @@ package cr.ac.una.astroline.service;
 
 import cr.ac.una.astroline.model.Funcionario;
 import cr.ac.una.astroline.model.FuncionarioDTO;
-import cr.ac.una.astroline.util.DataNotifier;
 import cr.ac.una.astroline.util.GsonUtil;
-import cr.ac.una.astroline.util.SyncManager;
-
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-public class FuncionarioService implements DataNotifier.Listener {
+public class FuncionarioService{
 
     private final ObservableList<Funcionario> listaDeFuncionarios;
     private static FuncionarioService instancia;
@@ -23,7 +19,6 @@ public class FuncionarioService implements DataNotifier.Listener {
     private FuncionarioService() {
         listaDeFuncionarios = FXCollections.observableArrayList();
         cargarFuncionarios();
-        DataNotifier.subscribe(this);
     }
 
     public static FuncionarioService getInstancia() {
@@ -112,7 +107,7 @@ public class FuncionarioService implements DataNotifier.Listener {
         }
         nuevoFuncionario.setLastModified(System.currentTimeMillis());
         listaDeFuncionarios.add(nuevoFuncionario);
-        GsonUtil.guardarYPropagar(listaDeFuncionarios, ARCHIVO_JSON);
+        GsonUtil.guardar(listaDeFuncionarios, ARCHIVO_JSON);
         return true;
     }
 
@@ -127,9 +122,6 @@ public class FuncionarioService implements DataNotifier.Listener {
                 f.setEliminado(true);
                 f.setLastModified(System.currentTimeMillis());
                 listaDeFuncionarios.set(i, f);
-                SyncManager.getInstancia().propagarContenido(
-                        GsonUtil.toJson(listaDeFuncionarios), ARCHIVO_JSON);
-
                 listaDeFuncionarios.remove(i);
                 GsonUtil.guardar(listaDeFuncionarios, ARCHIVO_JSON);
                 return true;
@@ -146,7 +138,7 @@ public class FuncionarioService implements DataNotifier.Listener {
             if (listaDeFuncionarios.get(i).getCedula().equals(funcionarioActualizado.getCedula())) {
                 funcionarioActualizado.setLastModified(System.currentTimeMillis());
                 listaDeFuncionarios.set(i, funcionarioActualizado);
-                GsonUtil.guardarYPropagar(listaDeFuncionarios, ARCHIVO_JSON);
+                GsonUtil.guardar(listaDeFuncionarios, ARCHIVO_JSON);
                 return true;
             }
         }
@@ -156,48 +148,6 @@ public class FuncionarioService implements DataNotifier.Listener {
     private void cargarFuncionarios() {
         List<Funcionario> lista = GsonUtil.leerLista(ARCHIVO_JSON, Funcionario.class);
         listaDeFuncionarios.setAll(lista);
-    }
-
-    @Override
-    public void onDataChanged(String fileName) {
-        if (!ARCHIVO_JSON.equals(fileName)) {
-            return;
-        }
-
-        System.out.println("[FuncionarioService] Detectado cambio externo, sincronizando...");
-
-        Platform.runLater(() -> {
-            List<Funcionario> nuevos = GsonUtil.leerLista(ARCHIVO_JSON, Funcionario.class);
-            if (nuevos != null) {
-                mergeFuncionarios(nuevos);
-            }
-        });
-    }
-
-    private void mergeFuncionarios(List<Funcionario> remotos) {
-        Map<String, Funcionario> mapa = new LinkedHashMap<>();
-        for (Funcionario f : listaDeFuncionarios) {
-            mapa.put(f.getCedula(), f);
-        }
-
-        boolean hayTombstones = false;
-        for (Funcionario r : remotos) {
-            if (r.isEliminado()) {
-                mapa.remove(r.getCedula());
-                hayTombstones = true;
-            } else {
-                Funcionario local = mapa.get(r.getCedula());
-                if (local == null || r.getLastModified() >= local.getLastModified()) {
-                    mapa.put(r.getCedula(), r);
-                }
-            }
-        }
-
-        listaDeFuncionarios.setAll(mapa.values());
-
-        if (hayTombstones) {
-            GsonUtil.guardar(listaDeFuncionarios, ARCHIVO_JSON);
-        }
     }
 
     public Funcionario login(String username, String password) {

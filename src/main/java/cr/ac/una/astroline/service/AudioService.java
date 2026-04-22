@@ -1,4 +1,3 @@
-
 package cr.ac.una.astroline.service;
 
 import java.util.concurrent.BlockingQueue;

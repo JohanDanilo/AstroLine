@@ -7,7 +7,7 @@
     -fx-base-color-exito:      #00ff88;
     -fx-base-color-texto:     #fcfcfc;
     -fx-base-color-subtitulo:     #dfe2e7;
-    /*-fx-base-color-textoboton: #06b6d4;*/
+    fx-base-color-textoboton: #06b6d4;
     -mfx-main:-fx-base-color-focus;
     -mfx-purple:-fx-base-color-focus;
 }
@@ -41,9 +41,21 @@
     -fx-font-size: 15px;
     -fx-font-weight: bold;
 }
+
+.jfx-label-titulo-grande{
+    -fx-text-fill: white;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
 .jfx-label-subtitulo {
     -fx-text-fill: -fx-base-color-subtitulo;
     -fx-font-size: 11px;
+}
+
+.jfx-label-subtitulo-grande{
+    -fx-text-fill: -fx-base-color-subtitulo;
+    -fx-font-size: 15px;
 }
 .jfx-label-texto {
     -fx-text-fill: -fx-base-color-texto;
@@ -167,7 +179,6 @@
     -fx-font-size: 10px;
     -fx-font-weight: bold;
 
-    -fx-background-radius: 12;
     -fx-padding: 3,3;
 
     -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
@@ -190,8 +201,6 @@
 .jfx-btn-repetirficha, .jfx-btn-repetirficha:armed, .jfx-btn-repetirficha:focused{
     -fx-background-color:#06b6d4;
     -fx-effect: dropshadow(gaussian, #06b6d4, 15, 0.4, 0, 0);
-    -fx-text-fill: -fx-base-color-textoboton;
-    
 }
 
 .jfx-btn-repetirficha > ImageView{
@@ -200,7 +209,6 @@
 .jfx-btn-siguienteficha, .jfx-btn-siguienteficha:armed, .jfx-btn-siguienteficha:focused{
     -fx-background-color:#06b6d4;
     -fx-effect: dropshadow(gaussian, #06b6d4, 15, 0.4, 0, 0); 
-    -fx-text-fill: -fx-base-color-textoboton;
 }
 
 .jfx-btn-siguienteficha > ImageView{
@@ -210,7 +218,6 @@
 .jfx-btn-preferencialficha, .jfx-btn-preferencialficha:armed, .jfx-btn-preferencialficha:focused{
     -fx-background-color:#06b6d4;
     -fx-effect: dropshadow(gaussian, #06b6d4, 15, 0.4, 0, 0); 
-    -fx-text-fill: -fx-base-color-textoboton;
 }
 
 .jfx-btn-preferencialficha > ImageView{
@@ -219,7 +226,6 @@
 .jfx-btn-seleccionarficha, .jfx-btn-seleccionarficha:armed, .jfx-btn-seleccionarficha:focused{
     -fx-background-color:#06b6d4;
     -fx-effect: dropshadow(gaussian, #06b6d4, 15, 0.4, 0, 0);
-    -fx-text-fill: -fx-base-color-textoboton;
 }
 
 .jfx-btn-seleccionarficha > ImageView{
@@ -482,29 +488,6 @@
     -fx-padding: 0;
 }
 
-.button.jfx-btn-agregar,
-.jfx-btn-agregar {
-    
-    -fx-background-color: transparent;    
-    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
-    -fx-border-width: 1.5;
-    
-    -fx-background-radius: 10;
-    -fx-border-radius: 10;
-    
-    /* Dimensiones fijas */
-    -fx-min-width: 50px; -fx-min-height: 50px;
-    -fx-pref-width: 50px; -fx-pref-height: 50px;
-    -fx-max-width: 50px; -fx-max-height: 50px;
-
-    /* Ocultar texto */
-    -fx-text-fill: transparent;
-    -fx-font-size: 0px;
-    
-    -fx-cursor: hand;
-    -fx-padding: 0;
-}
-
 .button.jfx-btn-crear,
 .jfx-btn-crear {
     
@@ -598,6 +581,54 @@
     -fx-fit-height: 50px;
 }
 
+.button.jfx-btn-examinar,
+.jfx-btn-examinar {
+    
+    -fx-background-color: transparent;    
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-width: 1.5;
+    
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    
+    -fx-min-width: 60px; -fx-min-height: 54px;
+    -fx-pref-width: 60px; -fx-pref-height: 54px;
+    -fx-max-width: 60px; -fx-max-height: 54px;
+    
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+
+.jfx-btn-examinar > ImageView {
+    -fx-image: url(../resource/Examinar.png);
+    -fx-fit-width: 50px; 
+    -fx-fit-height: 50px;
+}
+
+.button.jfx-btn-guardar,
+.jfx-btn-guardar {
+    
+    -fx-background-color: transparent;    
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-width: 1.5;
+    
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    
+    -fx-min-width: 60px; -fx-min-height: 54px;
+    -fx-pref-width: 60px; -fx-pref-height: 54px;
+    -fx-max-width: 60px; -fx-max-height: 54px;
+    
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+
+.jfx-btn-guardar > ImageView {
+    -fx-image: url(../resource/Guardar.png);
+    -fx-fit-width: 50px; 
+    -fx-fit-height: 50px;
+}
+
 /* Inputs estándar JavaFX */
 .text-field,
 .password-field,
@@ -627,14 +658,13 @@
     -fx-background-color: transparent;
 }
 
-/******************TextField PRO******************/
+/******************TextField******************/
 .mfx-text-field.custom-field {
     -fx-font-size: 14px;
     -mfx-float-mode: INLINE;
     -fx-pref-width: 300px;
     -fx-pref-height: 40px;
-
-    -fx-background-color: rgba(255,255,255,0.05);
+    -fx-background-color: transparent;
     -fx-background-radius: 15;
 
     -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
@@ -687,7 +717,145 @@
     -fx-fill: #d946ef;
 }
 
-/******************DatePicker PRO******************/
+/******************TextField tamaño editable******************/
+.mfx-text-field.custom-field-2{
+    -fx-font-size: 14px;
+    -mfx-float-mode: INLINE;
+    -fx-pref-width: 400px;
+    -fx-pref-height: 40px;
+    -fx-background-color: transparent;
+    -fx-background-radius: 15;
+
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-radius: 15;
+    -fx-border-width: 1.5;
+
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: rgba(255,255,255,0.6);
+
+    -fx-padding: 0 12;
+
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 15, 0.3, 0, 5);
+}
+
+/* Texto interno */
+.mfx-text-field.custom-field-2 .text {
+    -fx-fill: white;
+}
+
+/* Línea inferior fuera */
+.mfx-text-field.custom-field-2 .line {
+    -fx-stroke: transparent;
+}
+
+/* Focus elegante */
+.mfx-text-field.custom-field-2:focused {
+    -fx-border-color: linear-gradient(to right, #d946ef, #6366f1);
+    -fx-effect: dropshadow(gaussian, rgba(124,58,237,0.6), 20, 0.4, 0, 0);
+}
+
+/* 1. Color del floating label en estado normal */
+.mfx-text-field.custom-field-2 .floating-text {
+    /* 1. Fondo totalmente transparente */
+    -fx-background-color: transparent; 
+
+    /* 2. Color del texto flotante (blanco para que combine con tu diseño) */
+    -fx-text-fill: white; 
+    -fx-fill: white;
+
+    /* 3. Restaurar la visibilidad del texto */
+    -fx-opacity: 1.0; 
+}
+
+/* 2. Color del floating label cuando el campo está seleccionado (Focus) */
+.mfx-text-field.custom-field-2:focused .floating-text,
+.mfx-text-field.custom-field-2:focus-within .floating-text {
+    /* Aquí utilizo el color de tu borde inferior (#d946ef) para que haga juego */
+    -fx-background-color: transparent;
+    -fx-text-fill: #d946ef; 
+    -fx-fill: #d946ef;
+}
+
+/******************Combo box customizado******************/
+.mfx-combo-box.custom-combo {
+    -fx-font-size: 14px;
+    -mfx-float-mode: INLINE;
+    -fx-pref-width: 300px;
+    -fx-pref-height: 40px;
+    -fx-background-color: transparent;
+    -fx-background-radius: 15;
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-radius: 15;
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 15, 0.3, 0, 5);
+    -fx-text-fill: white;
+    -fx-fill: white;
+}
+
+/* 2. Texto del valor seleccionado */
+.mfx-combo-box.custom-combo .text {
+    -fx-fill: white;
+}
+
+/* 3. Línea inferior (oculta, igual que en tu text field) */
+.mfx-combo-box.custom-combo .line {
+    -fx-stroke: transparent;
+}
+
+/* 4. Ícono de la flecha desplegable */
+.mfx-combo-box.custom-combo .mfx-font-icon {
+    -mfx-color: linear-gradient(to bottom, #7c3aed, #d946ef);
+}
+
+/* 5. Focus elegante */
+.mfx-combo-box.custom-combo:focused,
+.mfx-combo-box.custom-combo:focus-within {
+    -fx-border-color: linear-gradient(to right, #d946ef, #6366f1);
+    -fx-effect: dropshadow(gaussian, rgba(124,58,237,0.6), 20, 0.4, 0, 0);
+}
+
+/* 6. Floating label — estado normal */
+.mfx-combo-box.custom-combo .floating-text {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-fill: white;
+    -fx-opacity: 1.0;
+}
+
+/* 7. Floating label — estado focus */
+.mfx-combo-box.custom-combo:focused .floating-text,
+.mfx-combo-box.custom-combo:focus-within .floating-text {
+    -fx-background-color: transparent;
+    -fx-text-fill: #ffffff;
+    -fx-fill: radial-gradient(center 50% 50%, radius 100%,
+            rgba(11, 15, 42, 0.95),
+            rgba(2, 6, 23, 0.95));
+}
+
+/* 1. Estado Normal (Cuando la celda no está seleccionada y no tiene hover) */
+.mfx-combo-box.custom-combo .combo-popup .virtual-flow .mfx-combo-box-cell {
+    -fx-background-color: radial-gradient(center 50% 50%, radius 100%, #0b0f2a, #020617);
+    -fx-text-fill: white;
+    -fx-fill: white;
+    
+}
+
+/* 2. Estado Hover (Cuando pasas el cursor por encima de la celda) */
+.mfx-combo-box.custom-combo .combo-popup .virtual-flow .mfx-combo-box-cell:hover {
+    -fx-background-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-text-fill: white;
+    -fx-fill: white;
+}
+
+/* 3. Estado Seleccionado (Cuando haces clic y la celda queda activa) */
+.mfx-combo-box.custom-combo .combo-popup .virtual-flow .mfx-combo-box-cell:selected {
+    -fx-background-color: #666666;
+    -fx-text-fill: white;
+    -fx-fill: transparent;
+}
+
+
+/******************DatePicker Customizado******************/
 
 /* ===== BASE ===== */
 .mfx-date-picker.custom-date-picker {
@@ -695,7 +863,7 @@
     -mfx-float-mode: INLINE;
     -fx-pref-width: 300px;
     -fx-pref-height: 40px;
-    -fx-background-color: rgba(255,255,255,0.05);
+    -fx-background-color: transparent;
     -fx-background-radius: 15;
     -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
     -fx-border-radius: 15;
@@ -755,6 +923,181 @@
     -fx-fill: #d946ef;
 }
 
+/****************** POPUP CALENDARIO ******************/
+
+/* Fondo general del popup */
+.mfx-date-picker.custom-date-picker {
+    -fx-background-color: transparent;
+}
+
+/* Contenedor interno */
+.mfx-date-picker.custom-date-picker .content {
+    -fx-background-color: radial-gradient(center 50% 50%, radius 100%, #0b0f2a, #020617); /* oscuro con transparencia */
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-width: 1.5;
+}
+
+/* Header (mes y año) */
+.mfx-date-picker.custom-date-picker .header {
+    -fx-background-color: radial-gradient(center 50% 50%, radius 100%, #0b0f2a, #020617);
+}
+
+.mfx-date-picker.custom-date-picker .header-label {
+    -fx-text-fill: white;
+}
+
+/****************** DatePicker Customizado ******************/
+
+/* ===== BASE ===== */
+.mfx-date-picker.custom-date-picker {
+    -fx-font-size: 14px;
+    -mfx-float-mode: INLINE;
+    -fx-pref-width: 300px;
+    -fx-pref-height: 40px;
+    -fx-background-color: transparent;
+    -fx-background-radius: 15;
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-radius: 15;
+    -fx-border-width: 1.5;
+    -fx-text-fill: white;
+    -fx-prompt-text-fill: rgba(255,255,255,0.6);
+    -fx-padding: 0 12;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 15, 0.3, 0, 5);
+}
+
+.mfx-date-picker.custom-date-picker .text {
+    -fx-fill: white;
+}
+
+.mfx-date-picker.custom-date-picker .line {
+    -fx-stroke: transparent;
+}
+
+/* ===== ÍCONO DEL CALENDARIO ===== */
+.mfx-date-picker.custom-date-picker .mfx-icon-wrapper .mfx-font-icon {
+    -mfx-color: linear-gradient(to right, #7c3aed, #06b6d4);
+}
+
+/* ===== FLOATING LABEL ===== */
+.mfx-date-picker.custom-date-picker .floating-text {
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-fill: white;
+    -fx-opacity: 1.0;
+}
+
+/* ===== FOCUS ===== */
+.mfx-date-picker.custom-date-picker:focused {
+    -fx-border-color: linear-gradient(to right, #d946ef, #6366f1);
+    -fx-effect: dropshadow(gaussian, rgba(124,58,237,0.6), 20, 0.4, 0, 0);
+}
+
+.mfx-date-picker.custom-date-picker:focused .floating-text,
+.mfx-date-picker.custom-date-picker:focus-within .floating-text {
+    -fx-background-color: transparent;
+    -fx-text-fill: #d946ef;
+    -fx-fill: #d946ef;
+}
+
+/* ============================================================
+   POPUP — usando selectores OFICIALES de la documentación
+   ============================================================ */
+
+/* Contenedor principal del popup */
+.mfx-date-picker.custom-date-picker .date-picker-popup {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+/* Contenedor interno (fondo real) */
+.mfx-date-picker.custom-date-picker .date-picker-popup .content {
+    -fx-background-color: radial-gradient(center 50% 50%, radius 100%,
+        rgba(11, 15, 42, 0.98), rgba(2, 6, 23, 0.98));
+    -fx-background-radius: 20;
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-width: 1.5;
+    -fx-border-radius: 20;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.85), 24, 0.5, 0, 8);
+}
+
+/* Flechas izquierda / derecha */
+.mfx-date-picker.custom-date-picker .date-picker-popup .left-arrow .mfx-font-icon,
+.mfx-date-picker.custom-date-picker .date-picker-popup .right-arrow .mfx-font-icon {
+    -mfx-color: #d946ef;
+}
+
+.mfx-date-picker.custom-date-picker .date-picker-popup .left-arrow:hover .mfx-font-icon,
+.mfx-date-picker.custom-date-picker .date-picker-popup .right-arrow:hover .mfx-font-icon {
+    -mfx-color: #06b6d4;
+}
+
+/* ===== COMBO DE MES ===== */
+.mfx-date-picker.custom-date-picker .date-picker-popup .months-combo {
+    -fx-background-color: rgba(124, 58, 237, 0.15);
+    -fx-border-color: #7c3aed;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-text-fill: white;
+}
+
+.mfx-date-picker.custom-date-picker .date-picker-popup .months-combo .text {
+    -fx-fill: #7c3aed;
+}
+
+/* ===== COMBO DE AÑO ===== */
+.mfx-date-picker.custom-date-picker .date-picker-popup .years-combo {
+    -fx-background-color: rgba(6, 182, 212, 0.15);
+    -fx-border-color: #06b6d4;
+    -fx-border-width: 1;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-text-fill: white;
+}
+
+.mfx-date-picker.custom-date-picker .date-picker-popup .years-combo .text {
+    -fx-fill: #7c3aed;
+}
+
+/* ===== DÍAS DE LA SEMANA: lun, mar, mié... ===== */
+.mfx-date-picker.custom-date-picker .date-picker-popup .week-day {
+    -fx-text-fill: rgba(255, 255, 255, 0.5);
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+/* ===== CELDAS DE DÍAS (nombre correcto: mfx-date-cell) ===== */
+.mfx-date-picker.custom-date-picker .date-picker-popup .mfx-date-cell {
+    -fx-text-fill: white;
+    -fx-background-color: transparent;
+    -fx-background-radius: 50;
+    -fx-font-size: 13px;
+}
+
+.mfx-date-picker.custom-date-picker .date-picker-popup .mfx-date-cell:hover {
+    -fx-background-color: rgba(124, 58, 237, 0.4);
+    -fx-text-fill: white;
+    -fx-background-radius: 50;
+}
+
+.mfx-date-picker.custom-date-picker .date-picker-popup .mfx-date-cell:selected {
+    -fx-background-color: #7c3aed;
+    -fx-text-fill: white;
+    -fx-background-radius: 50;
+}
+
+/* Hoy */
+.mfx-date-picker.custom-date-picker .date-picker-popup .mfx-date-cell:current{
+    -fx-background-color: transparent;
+    -fx-text-fill: white;
+    -fx-border-color: #06b6d4;
+    -fx-border-radius: 50;
+    -fx-border-width: 1;
+}
+
+
 /******************Password Field PRO******************/
 
 /* ===== BASE ===== */
@@ -763,7 +1106,7 @@
     -mfx-float-mode: INLINE;
     -fx-pref-width: 300px;
     -fx-pref-height: 40px;
-    -fx-background-color: rgba(255,255,255,0.05);
+    -fx-background-color: transparent;
     -fx-background-radius: 15;
     -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
     -fx-border-radius: 15;
@@ -823,7 +1166,7 @@
     -fx-fill: #d946ef;
 }
 
-/***********************Tab Pane - FIXED**************************/
+/***********************Tab Pane**************************/
 .tab-pane {
     -fx-background-color: transparent;
 }

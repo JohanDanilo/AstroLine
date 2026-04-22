@@ -2,17 +2,13 @@ package cr.ac.una.astroline.service;
 
 import cr.ac.una.astroline.model.Cliente;
 import cr.ac.una.astroline.model.ClienteDTO;
-import cr.ac.una.astroline.util.DataNotifier;
 import cr.ac.una.astroline.util.GsonUtil;
-import cr.ac.una.astroline.util.SyncManager;
-
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-public class ClienteService implements DataNotifier.Listener {
+public class ClienteService{
 
     private final ObservableList<Cliente> listaDeClientes;
     private static ClienteService instancia;
@@ -24,7 +20,6 @@ public class ClienteService implements DataNotifier.Listener {
     private ClienteService() {
         listaDeClientes = FXCollections.observableArrayList();
         cargarClientes();
-        DataNotifier.subscribe(this);
     }
 
     public static ClienteService getInstancia() {
@@ -93,7 +88,7 @@ public class ClienteService implements DataNotifier.Listener {
         }
         nuevoCliente.setLastModified(System.currentTimeMillis());
         listaDeClientes.add(nuevoCliente);
-        GsonUtil.guardarYPropagar(listaDeClientes, ARCHIVO_JSON);
+        GsonUtil.guardar(listaDeClientes, ARCHIVO_JSON);
         return true;
     }
 
@@ -104,12 +99,9 @@ public class ClienteService implements DataNotifier.Listener {
         for (int i = 0; i < listaDeClientes.size(); i++) {
             Cliente c = listaDeClientes.get(i);
             if (c.getCedula().equals(clienteARemover.getCedula())) {
-
                 c.setEliminado(true);
                 c.setLastModified(System.currentTimeMillis());
                 listaDeClientes.set(i, c);
-                SyncManager.getInstancia().propagarContenido(GsonUtil.toJson(listaDeClientes), ARCHIVO_JSON);
-
                 listaDeClientes.remove(i);
                 GsonUtil.guardar(listaDeClientes, ARCHIVO_JSON);
                 return true;
@@ -126,7 +118,7 @@ public class ClienteService implements DataNotifier.Listener {
             if (listaDeClientes.get(i).getCedula().equals(clienteActualizado.getCedula())) {
                 clienteActualizado.setLastModified(System.currentTimeMillis());
                 listaDeClientes.set(i, clienteActualizado);
-                GsonUtil.guardarYPropagar(listaDeClientes, ARCHIVO_JSON);
+                GsonUtil.guardar(listaDeClientes, ARCHIVO_JSON);
                 return true;
             }
         }
@@ -137,46 +129,5 @@ public class ClienteService implements DataNotifier.Listener {
         List<Cliente> lista = GsonUtil.leerLista(ARCHIVO_JSON, Cliente.class);
         listaDeClientes.setAll(lista);
     }
-
-    @Override
-    public void onDataChanged(String fileName) {
-        if (!ARCHIVO_JSON.equals(fileName)) {
-            return;
-        }
-
-        System.out.println("[ClienteService] Detectado cambio externo, sincronizando...");
-
-        Platform.runLater(() -> {
-            List<Cliente> nuevos = GsonUtil.leerLista(ARCHIVO_JSON, Cliente.class);
-            if (nuevos != null) {
-                mergeClientes(nuevos);
-            }
-        });
-    }
-
-    private void mergeClientes(List<Cliente> remotos) {
-        Map<String, Cliente> mapa = new LinkedHashMap<>();
-        for (Cliente c : listaDeClientes) {
-            mapa.put(c.getCedula(), c);
-        }
-
-        boolean hayTombstones = false;
-        for (Cliente r : remotos) {
-            if (r.isEliminado()) {
-                mapa.remove(r.getCedula());
-                hayTombstones = true;
-            } else {
-                Cliente local = mapa.get(r.getCedula());
-                if (local == null || r.getLastModified() >= local.getLastModified()) {
-                    mapa.put(r.getCedula(), r);
-                }
-            }
-        }
-
-        listaDeClientes.setAll(mapa.values());
-
-        if (hayTombstones) {
-            GsonUtil.guardar(listaDeClientes, ARCHIVO_JSON);
-        }
-    }
+   
 }

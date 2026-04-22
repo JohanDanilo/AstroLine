@@ -3,7 +3,6 @@ package cr.ac.una.astroline.util;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-
 import java.io.*;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
@@ -72,11 +71,6 @@ public class GsonUtil {
 
     public static String getDataDir() {
         return DATA_DIR;
-    }
-
-    public static void guardarYPropagar(Object objeto, String nombreArchivo) {
-        guardar(objeto, nombreArchivo);
-        SyncManager.getInstancia().propagar(nombreArchivo);
     }
 
     public static String toJson(Object objeto) {

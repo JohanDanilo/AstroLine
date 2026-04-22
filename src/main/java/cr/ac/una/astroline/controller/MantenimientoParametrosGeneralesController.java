@@ -6,9 +6,8 @@ import cr.ac.una.astroline.model.Funcionario;
 import cr.ac.una.astroline.model.FuncionarioDTO;
 import cr.ac.una.astroline.service.EmpresaService;
 import cr.ac.una.astroline.service.FuncionarioService;
-import cr.ac.una.astroline.util.DataNotifier;
 import cr.ac.una.astroline.util.GsonUtil;
-import cr.ac.una.astroline.util.SyncManager;
+import cr.ac.una.astroline.util.PathManager;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXCheckbox;
 import io.github.palexdev.materialfx.controls.MFXDatePicker;
@@ -30,16 +29,17 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
 public class MantenimientoParametrosGeneralesController extends Controller implements Initializable {
-//Empresa
 
     @FXML
     private AnchorPane root;
@@ -61,8 +61,6 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
     private MFXPasswordField txtPinAdminEmpresa;
     @FXML
     private MFXButton btnGuardarEmpresa;
-
-//Funcionario
     @FXML
     private MFXTextField txtBusquedaFuncionario;
     @FXML
@@ -122,6 +120,12 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
 
     private String logoPathSeleccionado = "";
     private static final String LOGO_SUBDIR = "logoEmpresa";
+    @FXML
+    private MFXTextField txtRutaDatos;
+    @FXML
+    private Button btnExaminarRuta;
+    @FXML
+    private Button btnGuardarRuta;
 
     @Override
     public void initialize() {
@@ -130,19 +134,14 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        //Funcionarios
         configurarTablaFuncionarios();
         cargarTablaFuncionarios();
         configurarBusquedaFuncionario();
         configurarSeleccionTabla();
-
-        //Administradores
         configurarTablaAdmins();
         cargarTablaAdmins();
-
-        //Pestaña Empresa
         cargarDatosEmpresa();
-
+        cargarRutaActual();
         empresaService.getEmpresaProperty().addListener(
                 (ObservableValue<? extends Empresa> obs, Empresa vieja, Empresa nueva) -> {
                     if (nueva != null) {
@@ -151,14 +150,6 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
                 }
         );
 
-        DataNotifier.subscribe(fileName -> {
-            if (fileName.startsWith("logoEmpresa/")) {
-                javafx.application.Platform.runLater(() -> {
-                    logoPathSeleccionado = fileName;
-                    mostrarImagenLocal(fileName);
-                });
-            }
-        });
     }
 
     //Empresa
@@ -194,7 +185,6 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
         boolean guardado = empresaService.actualizar(empresa);
 
         if (guardado) {
-            propagarLogoSiCorresponde();
             mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Parámetros de empresa guardados.");
         } else {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudieron guardar los parámetros.");
@@ -227,9 +217,7 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
         }
 
         try {
-            String ext = archivo.getName().contains(".")
-                    ? archivo.getName().substring(archivo.getName().lastIndexOf('.'))
-                    : ".png";
+            String ext = archivo.getName().contains(".") ? archivo.getName().substring(archivo.getName().lastIndexOf('.')) : ".png";
             String nombreDestino = "logo_empresa" + ext;
             String relPath = copiarImagenADataDir(archivo.toPath(), nombreDestino);
             logoPathSeleccionado = relPath;
@@ -262,7 +250,6 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
         mostrarImagenLocal(DEFAULT_LOGO_PATH);
     }
 
-    // ── Funcionarios
     private void configurarTablaFuncionarios() {
         colCedula.setCellValueFactory(new PropertyValueFactory<>("cedula"));
         colNombreFuncionario.setCellValueFactory(new PropertyValueFactory<>("nombre"));
@@ -518,21 +505,59 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
         }
     }
 
-    private void propagarLogoSiCorresponde() {
-        if (logoPathSeleccionado == null
-                || logoPathSeleccionado.isEmpty()
-                || logoPathSeleccionado.startsWith("file:")
-                || logoPathSeleccionado.startsWith("jar:")) {
-            return;
-        }
-        SyncManager.getInstancia().propagarImagen(logoPathSeleccionado);
-    }
-
     private void mostrarAlerta(Alert.AlertType tipo, String titulo, String mensaje) {
         Alert alerta = new Alert(tipo);
         alerta.setTitle(titulo);
         alerta.setHeaderText(null);
         alerta.setContentText(mensaje);
         alerta.showAndWait();
+    }
+
+    private void cargarRutaActual(){
+        txtRutaDatos.setText(PathManager.getDataPath().toString());
+    }
+
+    @FXML
+    private void onBtnExaminarRuta(ActionEvent event) {
+        DirectoryChooser chooser = new DirectoryChooser();
+        chooser.setTitle("Seleccionar carpeta de datos de AstroLine");
+
+        File actual = PathManager.getDataPath().toFile();
+        if (actual.exists()) {
+            chooser.setInitialDirectory(actual);
+        }
+
+        File seleccionada = chooser.showDialog(txtRutaDatos.getScene().getWindow());
+        if (seleccionada != null) {
+            txtRutaDatos.setText(seleccionada.getAbsolutePath());
+        }
+    }
+
+    @FXML
+    private void onBtnGuardarRuta(ActionEvent event){
+        String texto = txtRutaDatos.getText();
+        if (texto == null || texto.isBlank()) {
+            mostrarAlerta("Campo vacío", "Debes ingresar o seleccionar una ruta válida.");
+            return;
+        }
+
+        Path nueva = Path.of(texto.trim());
+
+        try {
+            Files.createDirectories(nueva);
+            PathManager.setDataPath(nueva);
+            mostrarAlerta("Listo", 
+                "Ruta guardada correctamente.\n\nReinicia la aplicación para que todas las instancias usen la nueva ubicación.");
+        } catch (IOException e) {
+            mostrarAlerta("Error", "No se pudo guardar la ruta: " + e.getMessage());
+        }
+    }
+
+    private void mostrarAlerta(String titulo, String mensaje) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(titulo);
+        alert.setHeaderText(null);
+        alert.setContentText(mensaje);
+        alert.showAndWait();
     }
 }
