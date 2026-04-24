@@ -13,8 +13,8 @@
 [![AtlantaFX](https://img.shields.io/badge/AtlantaFX-2.1.0-teal?style=flat-square)](https://github.com/mkpaz/atlantafx)
 [![License](https://img.shields.io/badge/Licencia-Académica-green?style=flat-square)]()
 
-*Tarea Programada — Programación II · Universidad Nacional de Costa Rica*
-*Sede Regional Brunca, Campus Pérez Zeledón*
+*Tarea Programada — Programación II · Universidad Nacional de Costa Rica*  
+*Sede Regional Brunca, Campus Pérez Zeledón · 2026*
 
 </div>
 
@@ -22,7 +22,7 @@
 
 ## 📋 Descripción
 
-AstroLine es una aplicación de escritorio desarrollada en JavaFX que permite la **asignación y control de fichas de atención** para empresas con múltiples sucursales y estaciones de servicio. El sistema cuenta con 4 módulos de acceso diferenciados según el rol del usuario.
+AstroLine es una aplicación de escritorio desarrollada en JavaFX que permite la **asignación y control de fichas de atención** para empresas con múltiples sucursales y estaciones de servicio. El sistema cuenta con 4 módulos de acceso diferenciados según el rol del usuario, con soporte para sincronización en tiempo real entre equipos en una misma red local.
 
 ---
 
@@ -39,14 +39,17 @@ AstroLine es una aplicación de escritorio desarrollada en JavaFX que permite la
 
 ## 🛠️ Tecnologías
 
-- **Java 25** — lenguaje principal
-- **JavaFX 25.0.2** — interfaz gráfica
-- **Maven** — gestión de dependencias y build
-- **Gson 2.10.1** — persistencia de datos en JSON
-- **MaterialFX 11.16.1** — componentes UI modernos
-- **AtlantaFX 2.1.0** — sistema de temas visuales
-- **SceneBuilder** — diseño de vistas FXML
-- **NetBeans** — entorno de desarrollo
+| Tecnología | Versión | Uso |
+|---|---|---|
+| Java | 25 | Lenguaje principal |
+| JavaFX | 25.0.2 | Interfaz gráfica |
+| Maven | 3.8+ | Gestión de dependencias y build |
+| Gson | 2.10.1 | Persistencia de datos en JSON |
+| MaterialFX | 11.16.1 | Componentes UI modernos |
+| AtlantaFX | 2.1.0 | Sistema de temas visuales |
+| Apache PDFBox | 3.x | Generación de fichas en PDF |
+| SceneBuilder | — | Diseño de vistas FXML |
+| NetBeans | — | Entorno de desarrollo |
 
 ---
 
@@ -60,66 +63,103 @@ src/
     ├── java/cr/ac/una/astroline/
     │   ├── controller/     ← Controllers de cada vista
     │   ├── model/          ← Clases de datos (Ficha, Cliente, Tramite...)
-    │   ├── service/        ← Lógica de negocio
-    │   └── util/           ← FlowController, GsonUtil, AppContext...
+    │   ├── service/        ← Lógica de negocio (singletons)
+    │   └── util/           ← FlowController, GsonUtil, PathManager, AppContext...
     └── resources/cr/ac/una/astroline/
         ├── view/           ← Archivos FXML
         ├── resource/       ← Imágenes, audio, íconos
         └── styles/         ← Hojas de estilo CSS
 ```
 
-Toda la información del sistema se persiste en archivos **JSON** dentro de la carpeta `data/` en el directorio raíz del proyecto.
+### Convenciones arquitectónicas
+
+- Todos los controllers extienden la clase base `Controller`.
+- `initialize(URL, ResourceBundle)` solo realiza configuración estática (bindings, listeners).
+- El hook de FlowController es `initialize()` sin argumentos, donde se lee `AppContext`.
+- Las claves de `AppContext` siguen el patrón `"entidadParaEditar"` (entrada) y `"ultimaEntidadId"` (salida).
+- Los servicios son singletons accesibles únicamente vía `getInstancia()`.
+- Sin estilos inline; toda la presentación va en clases CSS.
 
 ---
 
-## 👥 Equipo de desarrollo
+## 📁 Gestión de archivos y rutas
 
-| Desarrollador | Módulo |
-|---|---|
-| **Johan Danilo** | Líder · Kiosko · Proyección |
-| **José** | Administrador |
-| **Jessica** | Funcionario |
+El sistema maneja dos ubicaciones distintas para sus archivos, resolviendo el problema de múltiples módulos ejecutándose en la misma máquina:
 
----
+### Bootstrap (único por equipo)
 
-## 📦 Requisitos
+```
+Windows  →  C:\Users\<usuario>\.astroline\properties.json
+macOS    →  /Users/<usuario>/.astroline/properties.json
+Linux    →  /home/<usuario>/.astroline/properties.json
+```
 
-- JDK 25
-- Apache NetBeans (recomendado)
-- Maven 3.8+
-- SceneBuilder (para edición de vistas FXML)
+Este archivo se crea automáticamente en el primer arranque y define la ruta donde viven los datos compartidos. Al ser una ruta absoluta y fija, todos los módulos (Admin, Kiosko, Funcionario, Proyección) convergen al mismo archivo sin importar desde qué carpeta se ejecuten.
+
+### Datos compartidos
+
+Por defecto en `~/Documents/AstroLine/`. Puede cambiarse desde el módulo Admin para apuntar a una carpeta de red.
+
+```
+AstroLine/
+├── configuracion.json   — sucursal y estación asignadas al equipo
+├── empresa.json         — datos y logo de la empresa
+├── sucursales.json      — sucursales y estaciones registradas
+├── tramites.json        — tipos de trámite disponibles
+├── clientes.json        — registro de clientes
+├── funcionarios.json    — cuentas de funcionarios
+├── fichas.json          — fichas activas del día
+├── historial.json       — fichas archivadas
+├── fotos/               — fotografías de clientes
+└── logoEmpresa/         — logo cargado desde Admin
+```
 
 ---
 
 ## 🚀 Ejecución
 
+### Desde el IDE (desarrollo)
+
 ```bash
 # Clonar el repositorio
 git clone https://github.com/JohanDanilo/AstroLine.git
-
-# Entrar al directorio
 cd AstroLine
 
-# Ejecutar el proyecto
+# Ejecutar desde Maven (Vista de Eleccion de modo por defecto)
 mvn javafx:run
 ```
 
-> **Nota:** El proyecto puede ejecutarse con `mvn javafx:run` desde el panel de Maven en NetBeans o desde la terminal. También se puede usar el botón Run de NetBeans o el IDE de su preferencia directamente.
+### Desde JAR (distribución)
+
+Cada módulo cuenta con un launcher `.lnk` (Windows):
+
+```
+Astroline-admin.lnk
+Astroline-kiosko.lnk
+Astroline-funcionario.lnk
+Astroline-proyeccion.lnk
+```
+
+En Windows, ejecute `setup.bat` con el Archivo AstroLine-1.0-SNAPSHOT.jar al lado, dentro de la carpeta del módulo para generar los accesos directos `.lnk` adaptados a la ruta del JDK instalado en ese equipo. No borre el archivo AstroLine-1.0-SNAPSHOT.jar ya que cada lnk lo busca la misma carpeta en la que se encuentre.
 
 ---
 
-## 📁 Datos del sistema
+## 🔐 Credenciales por defecto
 
-Al ejecutarse por primera vez, el sistema crea automáticamente la carpeta `data/` con los archivos JSON necesarios:
+| Dato | Valor |
+|---|---|
+| Usuario Admin | `admin` |
+| Contraseña | `1234` |
+| PIN de Kiosko | `1234` |
 
-```
-data/
-├── empresa.json
-├── tramites.json
-├── sucursales.json
-├── clientes.json
-└── fichas.json
-```
+---
+
+## 👥 Equipo de desarrollo
+
+| Desarrollador | Módulos |
+|---|---|
+| **Johan Danilo** (`@JohanDanilo`) | Líder · Kiosko · Proyección · Admin ·Infraestructura |
+| **Jessica** (`@JekaCordero`) | Funcionario · Proyección |
 
 ---
 
@@ -127,17 +167,19 @@ data/
 
 | Issue | Descripción | Estado |
 |---|---|---|
-| #1 | Arquitectura base del profesor adaptada | ✅ Completado |
-| #2 | Pull Request — arquitectura base | ✅ Mergeado |
-| #3 | Modelos de datos base y GsonUtil | 🔄 En progreso |
-| #4 | Navegación principal y selección de rol | ⏳ Pendiente |
-| #5 | CSS base del sistema | ⏳ Pendiente |
+| #1 | Arquitectura base y estructura MVC | ✅ Completado |
+| #2 | Modelos de datos y persistencia JSON | ✅ Completado |
+| #3 | Módulo Kiosko con generación de PDF | ✅ Completado |
+| #4 | Módulo Funcionario | ✅ Completado |
+| #5 | Módulo Administrador | ✅ Completado |
+| #6 | Módulo Proyección | ✅ Completado |
+| #7 | Gestión de rutas multi-módulo (`PathManager`) | ✅ Completado |
 
 ---
 
 <div align="center">
 
-*Desarrollado con ☕ en Costa Rica*
+*Desarrollado con ☕ en Costa Rica*  
 *Universidad Nacional · Sede Brunca · 2026*
 
 </div>

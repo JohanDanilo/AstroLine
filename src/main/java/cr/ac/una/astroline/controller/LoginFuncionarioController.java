@@ -5,6 +5,7 @@ import cr.ac.una.astroline.model.Funcionario;
 import cr.ac.una.astroline.service.ConfiguracionService;
 import cr.ac.una.astroline.service.FuncionarioService;
 import cr.ac.una.astroline.util.FlowController;
+import cr.ac.una.astroline.util.PathManager;
 import cr.ac.una.astroline.util.SessionManager;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXPasswordField;
@@ -56,9 +57,11 @@ public class LoginFuncionarioController extends Controller implements Initializa
 
         if (!"admin".equals(modo) && !hayConfiguracionValida()) {
             mostrarAviso(
-                "Este equipo no tiene una estación configurada.\n"
-                + "Debe configurarlo mediante el modulo admin\n"
-                + " o en la ruta: data/configuracion.json"
+                "Este equipo no tiene una estación configurada.\n\n"
+                + "Debe configurarlo mediante el módulo Admin o edite\n\n"
+                + "manualmente el archivo configuracion.json en la ruta:\n\n"
+                + PathManager.getGlobalConfigPath().toAbsolutePath()
+                + "\n\nY reinicie todas las instancias de la app, para que tome efecto.\n"
             );
             return;
         }
@@ -82,10 +85,8 @@ public class LoginFuncionarioController extends Controller implements Initializa
     }
     
     private boolean hayConfiguracionValida() {
-        ConfiguracionLocal config = ConfiguracionService.getInstancia().getConfiguracion();
-        return config != null
-                && config.getSucursalId() != null
-                && !config.getSucursalId().isBlank();
+        String modo = SessionManager.getInstancia().getModoAcceso();
+        return ConfiguracionService.getInstancia().estaConfiguradoParaModo(modo);
     }
 
     private void mostrarAviso(String mensaje) {

@@ -6,6 +6,7 @@ import cr.ac.una.astroline.model.Funcionario;
 import cr.ac.una.astroline.model.FuncionarioDTO;
 import cr.ac.una.astroline.service.EmpresaService;
 import cr.ac.una.astroline.service.FuncionarioService;
+import cr.ac.una.astroline.util.FlowController;
 import cr.ac.una.astroline.util.GsonUtil;
 import cr.ac.una.astroline.util.PathManager;
 import io.github.palexdev.materialfx.controls.MFXButton;
@@ -94,7 +95,6 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
     @FXML
     private MFXButton btnEliminarFuncionario;
 
-// Administradores 
     @FXML
     private TableView<Funcionario> tblAdmins;
     @FXML
@@ -120,6 +120,7 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
 
     private String logoPathSeleccionado = "";
     private static final String LOGO_SUBDIR = "logoEmpresa";
+
     @FXML
     private MFXTextField txtRutaDatos;
     @FXML
@@ -149,10 +150,8 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
                     }
                 }
         );
-
     }
 
-    //Empresa
     private void cargarDatosEmpresa() {
         Empresa empresa = empresaService.getEmpresa();
         if (empresa == null) {
@@ -202,7 +201,6 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
         return empresaService.dtoAEmpresa(dto);
     }
 
-    // ── Logo
     @FXML
     private void onBtnSeleccionarLogo(ActionEvent event) {
         FileChooser chooser = new FileChooser();
@@ -246,7 +244,7 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
         }
         logoPathSeleccionado = DEFAULT_LOGO_PATH;
         mostrarImagenLocal(DEFAULT_LOGO_PATH);
-    }       
+    }
 
     private void configurarTablaFuncionarios() {
         colCedula.setCellValueFactory(new PropertyValueFactory<>("cedula"));
@@ -508,51 +506,126 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
         alerta.showAndWait();
     }
 
-    private void cargarRutaActual(){
+    private void cargarRutaActual() {
         txtRutaDatos.setText(PathManager.getDataPath().toString());
     }
 
     @FXML
-    private void onBtnExaminarRuta(ActionEvent event) {
-        DirectoryChooser chooser = new DirectoryChooser();
-        chooser.setTitle("Seleccionar carpeta de datos de AstroLine");
+private void onBtnExaminarRuta(ActionEvent event) {
+    DirectoryChooser chooser = new DirectoryChooser();
+    chooser.setTitle("Seleccionar carpeta de datos de AstroLine");
 
-        File actual = PathManager.getDataPath().toFile();
-        if (actual.exists()) {
-            chooser.setInitialDirectory(actual);
-        }
-
-        File seleccionada = chooser.showDialog(txtRutaDatos.getScene().getWindow());
-        if (seleccionada != null) {
-            txtRutaDatos.setText(seleccionada.getAbsolutePath());
-        }
+    // getParent() para que el usuario elija el contenedor, no AstroLine mismo
+    Path padre = PathManager.getDataPath().getParent();
+    if (padre != null && padre.toFile().exists()) {
+        chooser.setInitialDirectory(padre.toFile());
     }
 
+    File seleccionada = chooser.showDialog(txtRutaDatos.getScene().getWindow());
+    if (seleccionada != null) {
+        txtRutaDatos.setText(seleccionada.getAbsolutePath());
+    }
+}
+
     @FXML
-    private void onBtnGuardarRuta(ActionEvent event){
+    private void onBtnGuardarRuta(ActionEvent event) {
         String texto = txtRutaDatos.getText();
         if (texto == null || texto.isBlank()) {
-            mostrarAlerta("Campo vacío", "Debes ingresar o seleccionar una ruta válida.");
+            mostrarAviso("Debes ingresar o seleccionar una ruta válida.");
             return;
         }
 
-        Path nueva = Path.of(texto.trim());
+        Path antigua = PathManager.getDataPath();
+        Path nueva   = Path.of(texto.trim()).resolve(antigua.getFileName());
+
+        if (nueva.toAbsolutePath().equals(antigua.toAbsolutePath())) {
+            mostrarAviso("La ruta seleccionada ya es la ruta actual de datos.");
+            return;
+        }
+
+        if (nueva.toAbsolutePath().startsWith(antigua.toAbsolutePath())) {
+            mostrarAviso("La nueva ruta no puede estar dentro de la carpeta actual de datos.\n\n"
+                       + "Seleccioná una carpeta fuera de:\n" + antigua);
+            return;
+        }
 
         try {
             Files.createDirectories(nueva);
+
+            if (Files.exists(antigua)) {
+                copiarCarpetaRecursiva(antigua, nueva);
+                eliminarCarpetaRecursiva(antigua);
+            }
+
             PathManager.setDataPath(nueva);
-            mostrarAlerta("Listo", 
-                "Ruta guardada correctamente.\n\nReinicia la aplicación para que todas las instancias usen la nueva ubicación.");
+            txtRutaDatos.setText(nueva.toString());
+
+            mostrarAviso("Ruta actualizada correctamente.\n\n"
+                    + "Los datos han sido movidos a:\n\n"
+                    + nueva
+                    + "\n\nReiniciá la aplicación para aplicar el cambio.");
+
         } catch (IOException e) {
-            mostrarAlerta("Error", "No se pudo guardar la ruta: " + e.getMessage());
+            mostrarAviso("No se pudo cambiar la ruta:\n" + e.getMessage());
         }
     }
 
-    private void mostrarAlerta(String titulo, String mensaje) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(titulo);
-        alert.setHeaderText(null);
-        alert.setContentText(mensaje);
-        alert.showAndWait();
+    private void mostrarAviso(String mensaje) {
+        Controller controller = FlowController.getInstance().getController("AvisoView");
+        if (controller instanceof AvisoController avisoController) {
+            avisoController.cambiarInformacionDeAviso(mensaje);
+        }
+        FlowController.getInstance().goViewInWindowModal(
+                "AvisoView",
+                FlowController.getInstance().getMainStage(),
+                false
+        );
+    }
+
+    private void copiarCarpetaRecursiva(Path origen, Path destino) throws IOException {
+        try (var stream = Files.walk(origen)) {
+            stream.forEach(src -> {
+                try {
+                    Path relativa = origen.relativize(src);
+                    Path dst      = destino.resolve(relativa);
+
+                    if (Files.isDirectory(src)) {
+                        Files.createDirectories(dst);
+                    } else {
+                        Files.createDirectories(dst.getParent());
+                        Files.copy(src, dst, StandardCopyOption.REPLACE_EXISTING);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } catch (RuntimeException e) {
+            if (e.getCause() instanceof IOException ioe) {
+                throw ioe;
+            }
+            throw e;
+        }
+    }
+    
+    /**
+ * Elimina recursivamente {@code carpeta} y todo su contenido.
+ * Recorre en orden inverso para borrar archivos antes que sus directorios padre.
+ */
+    private void eliminarCarpetaRecursiva(Path carpeta) throws IOException {
+        try (var stream = Files.walk(carpeta)) {
+            stream.sorted(java.util.Comparator.reverseOrder())
+                  .forEach(src -> {
+                      try {
+                          Files.delete(src);
+                      } catch (IOException e) {
+                          throw new RuntimeException(e);
+                      }
+                  });
+        } catch (RuntimeException e) {
+            if (e.getCause() instanceof IOException ioe) {
+                throw ioe;
+            }
+            throw e;
+        }
     }
 }
