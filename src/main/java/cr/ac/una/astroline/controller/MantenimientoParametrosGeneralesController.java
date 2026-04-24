@@ -235,10 +235,8 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
                 && !logoPathSeleccionado.startsWith("file:")
                 && !logoPathSeleccionado.startsWith("jar:")) {
             try {
-                Path logoPath = Paths.get(GsonUtil.getDataDir(),
-                        logoPathSeleccionado.split("/")).toAbsolutePath();
-                Path logoDir = Paths.get(GsonUtil.getDataDir(),
-                        LOGO_SUBDIR).toAbsolutePath();
+                Path logoPath = GsonUtil.getDataDir().resolve(logoPathSeleccionado).toAbsolutePath();
+                Path logoDir  = GsonUtil.getDataDir().resolve(LOGO_SUBDIR).toAbsolutePath();
                 if (logoPath.startsWith(logoDir)) {
                     Files.deleteIfExists(logoPath);
                 }
@@ -248,7 +246,7 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
         }
         logoPathSeleccionado = DEFAULT_LOGO_PATH;
         mostrarImagenLocal(DEFAULT_LOGO_PATH);
-    }
+    }       
 
     private void configurarTablaFuncionarios() {
         colCedula.setCellValueFactory(new PropertyValueFactory<>("cedula"));
@@ -474,7 +472,7 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
     }
 
     private String copiarImagenADataDir(Path origen, String nombreDestino) throws IOException {
-        Path dir = Paths.get(GsonUtil.getDataDir(), LOGO_SUBDIR);
+        Path dir = GsonUtil.getDataDir().resolve(LOGO_SUBDIR);
         Files.createDirectories(dir);
         Path destino = dir.resolve(nombreDestino);
         Files.copy(origen, destino, StandardCopyOption.REPLACE_EXISTING);
@@ -482,16 +480,13 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
     }
 
     private void mostrarImagenLocal(String path) {
-        if (path == null || path.isEmpty()) {
-            return;
-        }
+        if (path == null || path.isEmpty()) return;
         try {
             if (path.startsWith("file:") || path.startsWith("jar:")) {
                 imgLogoEmpresa.setImage(new Image(path));
                 return;
             }
-            File archivo = Paths.get(GsonUtil.getDataDir(),
-                    path.split("/")).toAbsolutePath().toFile();
+            File archivo = GsonUtil.getDataDir().resolve(path).toAbsolutePath().toFile();
             if (archivo.exists()) {
                 imgLogoEmpresa.setImage(new Image(archivo.toURI().toString()));
                 return;

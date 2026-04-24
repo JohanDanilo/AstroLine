@@ -9,6 +9,7 @@ import cr.ac.una.astroline.service.ConfiguracionService;
 import cr.ac.una.astroline.service.EmpresaService;
 import cr.ac.una.astroline.service.FichaService;
 import cr.ac.una.astroline.service.SucursalService;
+import cr.ac.una.astroline.util.PathManager;
 import cr.ac.una.astroline.util.Respuesta;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -57,10 +58,6 @@ public class ProyeccionController extends Controller implements Initializable {
     private final FichaService fichaService = FichaService.getInstancia();
     private final AudioService audioService = AudioService.getInstancia();
 
-    @Override
-    public void initialize() {
-    }
-
     public enum DireccionMarquee {
         DERECHA_A_IZQUIERDA,
         IZQUIERDA_A_DERECHA
@@ -73,7 +70,12 @@ public class ProyeccionController extends Controller implements Initializable {
     private String ultimaFichaAnunciadaId = null;
     private String ultimoTimestampAnunciado = null;
 
-    private static final DateTimeFormatter FORMATO_LLAMADO = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+    private static final DateTimeFormatter FORMATO_LLAMADO =
+            DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+
+    @Override
+    public void initialize() {
+    }
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -85,6 +87,10 @@ public class ProyeccionController extends Controller implements Initializable {
         iniciarProyeccionMensaje();
     }
 
+    // -------------------------------------------------------------------------
+    // EMPRESA / LOGO
+    // -------------------------------------------------------------------------
+
     private void cargarEmpresa() {
         if (empresa == null) return;
 
@@ -93,7 +99,8 @@ public class ProyeccionController extends Controller implements Initializable {
         if (empresa.getLogoPath() != null && !empresa.getLogoPath().isBlank()) {
             try {
                 String nombreSolo = new java.io.File(empresa.getLogoPath()).getName();
-                java.io.File archivoLogo = new java.io.File("data/logoEmpresa/" + nombreSolo);
+                java.io.File archivoLogo = PathManager.getDataPath()
+                        .resolve("logoEmpresa").resolve(nombreSolo).toFile();
                 if (archivoLogo.exists()) {
                     logoEmpresa.setImage(new Image(archivoLogo.toURI().toString()));
                 }
@@ -102,6 +109,10 @@ public class ProyeccionController extends Controller implements Initializable {
             }
         }
     }
+
+    // -------------------------------------------------------------------------
+    // RELOJ
+    // -------------------------------------------------------------------------
 
     private void actualizarReloj() {
         DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -119,6 +130,10 @@ public class ProyeccionController extends Controller implements Initializable {
         reloj.play();
     }
 
+    // -------------------------------------------------------------------------
+    // POLLER DE FICHAS
+    // -------------------------------------------------------------------------
+
     private void iniciarPollerFichas() {
         Timeline pollerFichas = new Timeline(
                 new KeyFrame(Duration.seconds(1), e -> actualizarFichasEnPantalla()));
@@ -126,8 +141,16 @@ public class ProyeccionController extends Controller implements Initializable {
         pollerFichas.play();
     }
 
+    /**
+     * Actualiza la pantalla con las fichas en estado LLAMADA.
+     *
+     * CORRECCIÓN: usa obtenerFichasActivasPorSucursal() en lugar de
+     * obtenerFichasActivas(), para mostrar únicamente los llamados de la
+     * sucursal configurada en este kiosco y no los de otras sucursales.
+     */
     private void actualizarFichasEnPantalla() {
-        Respuesta respuesta = fichaService.obtenerFichasActivas();
+        String sucursalId = ConfiguracionService.getInstancia().getSucursalId();
+        Respuesta respuesta = fichaService.obtenerFichasActivasPorSucursal(sucursalId);
         if (!respuesta.getEstado()) return;
 
         List<Ficha> activas = (List<Ficha>) respuesta.getResultado("lista");
@@ -140,15 +163,27 @@ public class ProyeccionController extends Controller implements Initializable {
                         Comparator.reverseOrder()))
                 .collect(Collectors.toList());
 
-        Ficha fichaActual = llamadas.size() > 0 ? llamadas.get(0) : null;
+        Ficha fichaActual = llamadas.isEmpty() ? null : llamadas.get(0);
+
+        List<Ficha> atendidas = activas.stream()
+                .filter(f -> f.getEstado() == Ficha.Estado.ATENDIDA
+                          && f.getFechaHoraLlamado() != null)
+                .sorted(Comparator.comparing(
+                        f -> LocalDateTime.parse(f.getFechaHoraLlamado(), FORMATO_LLAMADO),
+                        Comparator.reverseOrder()))
+                .collect(Collectors.toList());
 
         anunciarSiEsNueva(fichaActual);
 
         mostrarFichaActual(fichaActual);
-        mostrarFichaAnterior(lblLetraFichaAnterior1, lblNumeroFichaAnterior1, lblEstacionFichaAnterior1, llamadas.size() > 1 ? llamadas.get(1) : null);
-        mostrarFichaAnterior(lblLetraFichaAnterior2, lblNumeroFichaAnterior2, lblEstacionFichaAnterior2, llamadas.size() > 2 ? llamadas.get(2) : null);
-        mostrarFichaAnterior(lblLetraFichaAnterior3, lblNumeroFichaAnterior3, lblEstacionFichaAnterior3, llamadas.size() > 3 ? llamadas.get(3) : null);
-        mostrarFichaAnterior(lblLetraFichaAnterior4, lblNumeroFichaAnterior4, lblEstacionFichaAnterior4, llamadas.size() > 4 ? llamadas.get(4) : null);
+        mostrarFichaAnterior(lblLetraFichaAnterior1, lblNumeroFichaAnterior1, lblEstacionFichaAnterior1,
+                atendidas.size() > 0 ? atendidas.get(0) : null);
+        mostrarFichaAnterior(lblLetraFichaAnterior2, lblNumeroFichaAnterior2, lblEstacionFichaAnterior2,
+                atendidas.size() > 1 ? atendidas.get(1) : null);
+        mostrarFichaAnterior(lblLetraFichaAnterior3, lblNumeroFichaAnterior3, lblEstacionFichaAnterior3,
+                atendidas.size() > 2 ? atendidas.get(2) : null);
+        mostrarFichaAnterior(lblLetraFichaAnterior4, lblNumeroFichaAnterior4, lblEstacionFichaAnterior4,
+                atendidas.size() > 3 ? atendidas.get(3) : null);
     }
 
     private void anunciarSiEsNueva(Ficha ficha) {
@@ -161,7 +196,6 @@ public class ProyeccionController extends Controller implements Initializable {
         String idActual = ficha.getId();
         String timestampActual = ficha.getFechaHoraLlamado();
 
-        // Si es la misma ficha Y el mismo timestamp → ya fue anunciada, no repetir
         if (idActual.equals(ultimaFichaAnunciadaId)
                 && timestampActual != null
                 && timestampActual.equals(ultimoTimestampAnunciado)) {
@@ -202,25 +236,49 @@ public class ProyeccionController extends Controller implements Initializable {
         lblEstacion.setText(resolverNombreEstacion(ficha.getEstacionId()));
     }
 
+    /**
+     * Resuelve el nombre legible de una estación a partir de su ID.
+     *
+     * CORRECCIÓN 1: la condición era (estacion == null || estacionId.isBlank()),
+     * lo cual era incorrecto — si se encontraba la estación pero el ID llegaba
+     * en blanco, igualmente entraba al fallback. La condición correcta es solo
+     * (estacion == null).
+     *
+     * CORRECCIÓN 2: si estacionId es null, el substring del fallback
+     * lanzaba NullPointerException, bloqueando el Timeline completo.
+     * Ahora se verifica null antes de intentar parsear el número.
+     */
     private String resolverNombreEstacion(String estacionId) {
+        if (estacionId == null || estacionId.isBlank()) {
+            return "Estación desconocida";
+        }
 
         Estacion estacion = SucursalService.getInstancia().buscarEstacion(estacionId);
-        if (estacion == null || estacionId.isBlank()) {
-            String numero = estacionId.substring(estacionId.lastIndexOf("-") + 1);
-            return "Estacion " + numero;
+        if (estacion != null) {
+            return estacion.getNombre();
         }
-        return estacion.getNombre();
+
+        // Fallback: extraer el número al final del ID (ej: "suc-01-est-3" → "3")
+        String numero = estacionId.substring(estacionId.lastIndexOf("-") + 1);
+        return "Estación " + numero;
     }
+
+    // -------------------------------------------------------------------------
+    // MENSAJE MARQUEE
+    // -------------------------------------------------------------------------
 
     private void cargarMensajeProyeccion() {
         String mensaje = "";
 
         var config = ConfiguracionService.getInstancia().getConfiguracion();
 
-        if (config != null && config.getSucursalId() != null&& !config.getSucursalId().isBlank()) {
-            Sucursal sucursal = SucursalService.getInstancia().buscarSucursal(config.getSucursalId());
+        if (config != null && config.getSucursalId() != null
+                && !config.getSucursalId().isBlank()) {
+            Sucursal sucursal = SucursalService.getInstancia()
+                    .buscarSucursal(config.getSucursalId());
 
-            if (sucursal != null && sucursal.getTextoAviso() != null && !sucursal.getTextoAviso().isBlank()) {
+            if (sucursal != null && sucursal.getTextoAviso() != null
+                    && !sucursal.getTextoAviso().isBlank()) {
                 mensaje = sucursal.getTextoAviso();
             }
         }
@@ -233,7 +291,10 @@ public class ProyeccionController extends Controller implements Initializable {
     }
 
     private void iniciarProyeccionMensaje() {
-        lblMensajeDeProyeccion.layoutYProperty().bind( paneMensaje.heightProperty().subtract(lblMensajeDeProyeccion.heightProperty()).divide(2) );
+        lblMensajeDeProyeccion.layoutYProperty().bind(
+                paneMensaje.heightProperty()
+                        .subtract(lblMensajeDeProyeccion.heightProperty())
+                        .divide(2));
 
         Rectangle clip = new Rectangle();
         clip.widthProperty().bind(paneMensaje.widthProperty());
@@ -257,28 +318,34 @@ public class ProyeccionController extends Controller implements Initializable {
         lblMensajeDeProyeccion.applyCss();
         lblMensajeDeProyeccion.layout();
 
-        double anchoLabel = lblMensajeDeProyeccion.getLayoutBounds().getWidth();
-        double anchoContenedor = paneMensaje.getWidth();
+        double anchoLabel       = lblMensajeDeProyeccion.getLayoutBounds().getWidth();
+        double anchoContenedor  = paneMensaje.getWidth();
 
         double posInicio, posFin;
 
         if (direccionMensaje == DireccionMarquee.DERECHA_A_IZQUIERDA) {
             posInicio = anchoContenedor;
-            posFin = -anchoLabel;
+            posFin    = -anchoLabel;
         } else {
             posInicio = -anchoLabel;
-            posFin = anchoContenedor;
+            posFin    = anchoContenedor;
         }
 
         double distancia        = Math.abs(posFin - posInicio);
         double duracionSegundos = distancia / velocidadPixelesPorSegundo;
 
         tiempoMensaje = new Timeline(
-                new KeyFrame(Duration.ZERO, new KeyValue(lblMensajeDeProyeccion.translateXProperty(), posInicio)),
-                new KeyFrame(Duration.seconds(duracionSegundos),new KeyValue(lblMensajeDeProyeccion.translateXProperty(), posFin)));
+                new KeyFrame(Duration.ZERO,
+                        new KeyValue(lblMensajeDeProyeccion.translateXProperty(), posInicio)),
+                new KeyFrame(Duration.seconds(duracionSegundos),
+                        new KeyValue(lblMensajeDeProyeccion.translateXProperty(), posFin)));
         tiempoMensaje.setCycleCount(Timeline.INDEFINITE);
         tiempoMensaje.play();
     }
+
+    // -------------------------------------------------------------------------
+    // API PÚBLICA
+    // -------------------------------------------------------------------------
 
     public void setVelocidadMensaje(double pixelesPorSegundo) {
         this.velocidadPixelesPorSegundo = pixelesPorSegundo;

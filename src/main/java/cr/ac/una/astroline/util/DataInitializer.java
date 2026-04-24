@@ -1,11 +1,15 @@
 package cr.ac.una.astroline.util;
 
+import com.google.gson.JsonObject;
 import cr.ac.una.astroline.model.ConfiguracionLocal;
 import cr.ac.una.astroline.model.Empresa;
 import cr.ac.una.astroline.model.Estacion;
 import cr.ac.una.astroline.model.Funcionario;
 import cr.ac.una.astroline.model.Sucursal;
 import cr.ac.una.astroline.model.Tramite;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +19,8 @@ public class DataInitializer {
     }
 
     public static void inicializar() {
+        inicializarProperties();
+        inicializarConfiguracion();
         inicializarEmpresa();
         inicializarTramites();
         inicializarFichas();
@@ -22,16 +28,41 @@ public class DataInitializer {
         inicializarClientes();
         inicializarFuncionarios();
         inicializarSucursales();
-        inicializarConfiguracion();
+    }
+    
+
+    private static void inicializarProperties() {
+        Path path = PathManager.getPropertiesPath();
+        if (Files.exists(path)) {
+            return;
+        }
+        try {
+            JsonObject obj = new JsonObject();
+            obj.addProperty("rutaDatos",
+                    Path.of(System.getProperty("user.home"), "Documents", "AstroLine").toString());
+            Files.writeString(path, GsonUtil.getGson().toJson(obj));
+            System.out.println("[DataInitializer] properties.json creado en: "
+                    + path.toAbsolutePath());
+        } catch (IOException e) {
+            System.err.println("[DataInitializer] No se pudo crear properties.json: "
+                    + e.getMessage());
+        }
     }
 
     private static void inicializarConfiguracion() {
-        if (GsonUtil.existe("configuracion.json")) {
+        Path path = PathManager.getGlobalConfigPath();
+        if (Files.exists(path)) {
             return;
         }
-        ConfiguracionLocal config = new ConfiguracionLocal();
-        GsonUtil.guardar(config, "configuracion.json");
-        System.out.println("[DataInitializer] configuracion.json creado vacío.");
+        try {
+            ConfiguracionLocal config = new ConfiguracionLocal();
+            Files.writeString(path, GsonUtil.getGson().toJson(config));
+            System.out.println("[DataInitializer] configuracion.json creado en: "
+                    + path.toAbsolutePath());
+        } catch (IOException e) {
+            System.err.println("[DataInitializer] No se pudo crear configuracion.json: "
+                    + e.getMessage());
+        }
     }
 
     private static void inicializarSucursales() {

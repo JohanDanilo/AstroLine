@@ -7,7 +7,7 @@
     -fx-base-color-exito:      #00ff88;
     -fx-base-color-texto:     #fcfcfc;
     -fx-base-color-subtitulo:     #dfe2e7;
-    fx-base-color-textoboton: #06b6d4;
+    -fx-base-color-textoboton: #06b6d4;
     -mfx-main:-fx-base-color-focus;
     -mfx-purple:-fx-base-color-focus;
 }
@@ -60,6 +60,16 @@
 .jfx-label-texto {
     -fx-text-fill: -fx-base-color-texto;
     -fx-font-size: 10px;
+}
+
+/******************Contenedor Panel Dialogo******************/
+
+.jfx-root-paneldialogo{
+    -fx-background-color: radial-gradient(center 50% 50%, radius 100%, #0b0f2a, #020617);
+    -fx-border-color: linear-gradient(to right, #7c3aed, #06b6d4);
+    -fx-border-width: 1.5;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.6), 15, 0.3, 0, 5);
+    -fx-padding: 5;
 }
 
 /******************Opcion 1: Contenedor******************/
@@ -387,6 +397,7 @@
     -fx-alignment:TOP_LEFT;
     
     -fx-background-color: white;
+    -fx-font-size: 14px;
     
     -fx-prompt-text-fill: rgba(0, 204, 204, 1);
     -fx-text-fill: #000000; /* color del texto */

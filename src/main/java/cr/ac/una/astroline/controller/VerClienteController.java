@@ -116,7 +116,7 @@ public class VerClienteController extends Controller implements Initializable {
                 return new Image(path);
             }
 
-            File archivo = Paths.get(GsonUtil.getDataDir(), path.split("/")).toAbsolutePath().toFile();
+            File archivo = GsonUtil.getDataDir().resolve(path).toAbsolutePath().toFile();
             if (archivo.exists()) {
                 return new Image(archivo.toURI().toString());
             }
@@ -129,7 +129,6 @@ public class VerClienteController extends Controller implements Initializable {
         } catch (Exception e) {
             System.err.println("[VerCliente] No se pudo cargar imagen: " + e.getMessage());
         }
-
         return new Image(DEFAULT_FOTO_PATH);
     }
 

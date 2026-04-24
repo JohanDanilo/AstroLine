@@ -112,7 +112,7 @@ public class MantenimientoSucursalController extends Controller implements Initi
 
     @Override
     public void initialize() {
-        setNombreVista("Mantenimiento de sucursales");
+        setNombreVista("Mantenimiento de Sucursales y Estaciones");
         configurarComboSucursales();
         configurarColumnasTablas();
         configurarTableEstaciones();

@@ -1,10 +1,9 @@
 package cr.ac.una.astroline.controller;
 
-import cr.ac.una.astroline.App;
 import cr.ac.una.astroline.model.Empresa;
 import cr.ac.una.astroline.service.EmpresaService;
 import cr.ac.una.astroline.util.FlowController;
-import cr.ac.una.astroline.util.GsonUtil;
+import cr.ac.una.astroline.util.PathManager;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -37,10 +36,11 @@ public class AdminController extends Controller implements Initializable {
     private MFXButton btnClientes;
     @FXML
     private MFXButton btnConfigEstacion;
-    private Empresa empresa;
+    
+    private Empresa empresa = empresaService.getEmpresa();;
     @FXML
     private MFXButton btnSucursales;
-
+    
     @Override
     public void initialize() {
         setNombreVista("Administrador");
@@ -97,7 +97,7 @@ public class AdminController extends Controller implements Initializable {
             if (empresa.getLogoPath() != null && !empresa.getLogoPath().isBlank()) {
 
                 String nombreSolo = new java.io.File(empresa.getLogoPath()).getName();
-                java.io.File archivoLogo = new java.io.File("data/logoEmpresa/" + nombreSolo);
+                java.io.File archivoLogo = PathManager.getDataPath().resolve("logoEmpresa").resolve(nombreSolo).toFile();
 
                 if (archivoLogo.exists()) {
                     image = new Image(archivoLogo.toURI().toString(), true);
@@ -119,5 +119,5 @@ public class AdminController extends Controller implements Initializable {
             e.printStackTrace();
         }
     }
-
+    
 }
