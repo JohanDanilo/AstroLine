@@ -1,17 +1,17 @@
 package cr.ac.una.astroline.controller;
 
-import cr.ac.una.astroline.App;
 import cr.ac.una.astroline.model.Cliente;
 import cr.ac.una.astroline.model.Empresa;
 import cr.ac.una.astroline.model.Ficha;
 import cr.ac.una.astroline.model.Tramite;
 import cr.ac.una.astroline.service.ClienteService;
+import cr.ac.una.astroline.service.ConfiguracionService;
 import cr.ac.una.astroline.service.EmpresaService;
 import cr.ac.una.astroline.service.FichaService;
 import cr.ac.una.astroline.service.PdfService;
 import cr.ac.una.astroline.service.TramiteService;
-import cr.ac.una.astroline.util.GsonUtil;
 import cr.ac.una.astroline.util.Mensaje;
+import cr.ac.una.astroline.util.PathManager;
 import cr.ac.una.astroline.util.Respuesta;
 import io.github.palexdev.materialfx.controls.MFXButton;
 import io.github.palexdev.materialfx.controls.MFXComboBox;
@@ -29,7 +29,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -62,10 +61,10 @@ public class KioskoController extends Controller implements Initializable {
     @FXML
     private Label lblMensaje;
 
-    private final FichaService fichaService = new FichaService();
+    private final FichaService fichaService = FichaService.getInstancia();
     private final Mensaje utilMensaje = new Mensaje();
-    private Empresa empresa = EmpresaService.getInstancia().getEmpresa();
-    ;
+    private final Empresa empresa = EmpresaService.getInstancia().getEmpresa();
+    
     private String pinAdminCorrecto;
     private boolean preferencialPorPin = false;
 
@@ -117,12 +116,13 @@ public class KioskoController extends Controller implements Initializable {
         }
 
         boolean preferencial = preferencialPorPin || detectarPreferencial(cedula);
+        String sucursalId = ConfiguracionService.getInstancia().getSucursalId();
 
         Respuesta respuesta = fichaService.generarFicha(
-                tramiteSeleccionado.getId(),
-                "sucursal-1",
-                cedula.isEmpty() ? null : cedula,
-                preferencial
+            tramiteSeleccionado.getId(),
+            sucursalId,
+            cedula.isEmpty() ? null : cedula,
+            preferencial
         );
 
         if (!respuesta.getEstado()) {
@@ -196,7 +196,7 @@ public class KioskoController extends Controller implements Initializable {
         if (empresa.getLogoPath() != null && !empresa.getLogoPath().isBlank()) {
             try {
                 String nombreSolo = new java.io.File(empresa.getLogoPath()).getName();
-                java.io.File archivoLogo = new java.io.File("data/logoEmpresa/" + nombreSolo);
+                java.io.File archivoLogo = PathManager.getDataPath().resolve("logoEmpresa").resolve(nombreSolo).toFile();
 
                 if (archivoLogo.exists()) {
                     imgLogo.setImage(new Image(archivoLogo.toURI().toString()));

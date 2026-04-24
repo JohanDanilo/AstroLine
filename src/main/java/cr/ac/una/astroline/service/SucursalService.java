@@ -3,18 +3,14 @@ package cr.ac.una.astroline.service;
 import cr.ac.una.astroline.model.Estacion;
 import cr.ac.una.astroline.model.Sucursal;
 import cr.ac.una.astroline.model.Tramite;
-import cr.ac.una.astroline.util.DataNotifier;
 import cr.ac.una.astroline.util.GsonUtil;
 import cr.ac.una.astroline.util.Respuesta;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-public class SucursalService implements DataNotifier.Listener {
+public class SucursalService{
 
     private static final String ARCHIVO_JSON = "sucursales.json";
     private final ObservableList<Sucursal> listaDeSucursales;
@@ -23,7 +19,6 @@ public class SucursalService implements DataNotifier.Listener {
     private SucursalService() {
         listaDeSucursales = FXCollections.observableArrayList();
         cargarSucursales();
-        DataNotifier.subscribe(this);
     }
 
     public static SucursalService getInstancia() {
@@ -247,54 +242,8 @@ public class SucursalService implements DataNotifier.Listener {
         listaDeSucursales.setAll(lista);
     }
 
-    @Override
-    public void onDataChanged(String fileName) {
-        if (!ARCHIVO_JSON.equals(fileName)) {
-            return;
-        }
-
-        System.out.println("[SucursalService] Detectado cambio externo, sincronizando...");
-
-        Platform.runLater(() -> {
-            List<Sucursal> remotas = GsonUtil.leerLista(ARCHIVO_JSON, Sucursal.class);
-            if (remotas != null) {
-                mergeSucursales(remotas);
-            }
-        });
-    }
-
-    private void mergeSucursales(List<Sucursal> remotas) {
-        Map<String, Sucursal> mapaRemoto = new LinkedHashMap<>();
-        for (Sucursal r : remotas) {
-            mapaRemoto.put(r.getId(), r);
-        }
-
-        Map<String, Sucursal> mapaLocal = new LinkedHashMap<>();
-        for (Sucursal s : listaDeSucursales) {
-            mapaLocal.put(s.getId(), s);
-        }
-
-        Map<String, Sucursal> resultado = new LinkedHashMap<>(mapaRemoto);
-
-        for (Map.Entry<String, Sucursal> entradaLocal : mapaLocal.entrySet()) {
-            String id = entradaLocal.getKey();
-            Sucursal local = entradaLocal.getValue();
-            Sucursal remota = mapaRemoto.get(id);
-
-            if (remota == null) {
-                resultado.put(id, local);
-            } else {
-                if (local.getLastModified() > remota.getLastModified()) {
-                    resultado.put(id, local);
-                }
-            }
-        }
-
-        listaDeSucursales.setAll(resultado.values());
-    }
-
     private void guardar() {
-        GsonUtil.guardarYPropagar(new ArrayList<>(listaDeSucursales), ARCHIVO_JSON);
+        GsonUtil.guardar(new ArrayList<>(listaDeSucursales), ARCHIVO_JSON);
     }
 
     private int extraerConsecutivo(String id, String prefijo) {

@@ -35,6 +35,7 @@ desktop.ini
 data/
 files/
 *.lnk
+*.json
 
 # ─── Config sensible ────────────────────
 *.env

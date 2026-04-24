@@ -17,12 +17,10 @@ import javafx.fxml.Initializable;
 
 public class FuncionarioSeleccionarFichaController extends Controller implements Initializable {
 
-    @FXML
-    private MFXComboBox<Ficha> cmbFichas;
-    @FXML
-    private MFXButton btnLlamarFichaSeleccionada;
+    @FXML private MFXComboBox<Ficha> cmbFichas;
+    @FXML private MFXButton btnLlamarFichaSeleccionada;
 
-    private final FichaService fichaService = new FichaService();
+    private final FichaService fichaService = FichaService.getInstancia();
     private VentanaFuncionarioController controllerPadre;
 
     @Override
@@ -40,30 +38,33 @@ public class FuncionarioSeleccionarFichaController extends Controller implements
     }
 
     private void cargarFichasEnEspera() {
-        Respuesta respuesta = fichaService.obtenerFichasActivas();
-        if (!respuesta.getEstado()) {
-            return;
-        }
-
         ConfiguracionService configuracion = ConfiguracionService.getInstancia();
         configuracion.recargarConfiguracion();
+        String sucursalId = configuracion.getSucursalId();
+
+        Respuesta respuesta = fichaService.obtenerFichasActivasPorSucursal(sucursalId);
+        if (!respuesta.getEstado()) return;
+
         List<String> tramitesConfigurados = configuracion.getTramitesConfigurados();
         boolean soloPreferencial = configuracion.isPreferencial();
 
         List<Ficha> activas = (List<Ficha>) respuesta.getResultado("lista");
-
-        List<Ficha> enEspera = activas.stream().filter(Ficha::estaEsperando).filter(f -> tramitesConfigurados.isEmpty() || tramitesConfigurados.contains(f.getTramiteId())).filter(f -> !soloPreferencial || f.isPreferencial()).collect(Collectors.toList());
+        List<Ficha> enEspera = activas.stream()
+                .filter(Ficha::estaEsperando)
+                .filter(f -> tramitesConfigurados.isEmpty()
+                        || tramitesConfigurados.contains(f.getTramiteId()))
+                .filter(f -> !soloPreferencial || f.isPreferencial())
+                .collect(Collectors.toList());
 
         cmbFichas.setItems(FXCollections.observableArrayList(enEspera));
 
         cmbFichas.setConverter(new javafx.util.StringConverter<Ficha>() {
             @Override
             public String toString(Ficha ficha) {
-                if (ficha == null) {
-                    return "";
-                }
+                if (ficha == null) return "";
+                String nombreTramite = fichaService.getNombreTramite(ficha);
                 String tipo = ficha.isPreferencial() ? " | Preferencial" : "";
-                return ficha.getCodigo() + " | " + ficha.getTramiteId() + tipo;
+                return ficha.getCodigo() + " | " + nombreTramite + tipo;
             }
 
             @Override
@@ -75,17 +76,22 @@ public class FuncionarioSeleccionarFichaController extends Controller implements
 
     @FXML
     private void OnLlamarFichaSeleccionada(ActionEvent event) {
+        
         Ficha seleccionada = cmbFichas.getValue();
-
-        if (seleccionada == null) {
-            return;
+        if (seleccionada == null) return;
+        
+        Respuesta rLlamado = fichaService.registrarLlamado(
+                seleccionada.getId(),
+                seleccionada.getEstacionId() != null
+                        ? seleccionada.getEstacionId()
+                        : ConfiguracionService.getInstancia().getEstacionId());
+        if (rLlamado.getEstado()) {
+            Ficha actualizada = (Ficha) rLlamado.getResultado("ficha");
+            if (actualizada != null) seleccionada = actualizada;
         }
 
-        fichaService.registrarLlamado(seleccionada.getId(),
-                seleccionada.getEstacionId() != null
-                ? seleccionada.getEstacionId() : ConfiguracionService.getInstancia().getEstacionId());
-
         if (controllerPadre != null) {
+            controllerPadre.marcarFichaActualAtendida();
             controllerPadre.cargarFicha(seleccionada);
         }
 

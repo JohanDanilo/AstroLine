@@ -26,7 +26,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.DragEvent;
@@ -108,6 +107,12 @@ public class MantenimientoSucursalController extends Controller implements Initi
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        
+    }
+
+    @Override
+    public void initialize() {
+        setNombreVista("Mantenimiento de Sucursales y Estaciones");
         configurarComboSucursales();
         configurarColumnasTablas();
         configurarTableEstaciones();
@@ -115,11 +120,6 @@ public class MantenimientoSucursalController extends Controller implements Initi
         configurarDragOver(tableTramitesAsignados);
         configurarDragOver(tableTramitesDiponibles);
         actualizarEstadoControles();
-    }
-
-    @Override
-    public void initialize() {
-        setNombreVista("Mantenimiento de sucursales");
         refrescarSucursales();
     }
 
@@ -544,8 +544,13 @@ public class MantenimientoSucursalController extends Controller implements Initi
     }
 
     private void seleccionarSucursal(Sucursal sucursal) {
-        if (cmbSucursal.getValue() != sucursal) {
-            cmbSucursal.setValue(sucursal);
+        if (sucursal == null) {
+            cmbSucursal.getSelectionModel().clearSelection();
+        } else {
+            int index = cmbSucursal.getItems().indexOf(sucursal);
+            if (index >= 0) {
+                cmbSucursal.getSelectionModel().selectIndex(index);
+            }
         }
         aplicarSucursalSeleccionada(sucursal);
     }

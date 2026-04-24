@@ -3,8 +3,8 @@ package cr.ac.una.astroline.service;
 import cr.ac.una.astroline.model.Cliente;
 import cr.ac.una.astroline.model.Empresa;
 import cr.ac.una.astroline.model.Ficha;
+import cr.ac.una.astroline.util.PathManager;
 import cr.ac.una.astroline.util.Respuesta;
-
 import org.apache.pdfbox.pdmodel.*;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.*;
@@ -12,8 +12,11 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 
 import java.awt.Color;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -61,13 +64,12 @@ public class PdfService {
     private static final Color GRAY_LIGHT = new Color(210, 210, 225);
     private static final Color PURPLE = new Color(110, 40, 190);
 
-    private static final String CARPETA = "files/fichas/";
-
     public Respuesta generarFichaPDF(Ficha ficha, Cliente cliente) {
         Respuesta r = new Respuesta();
         try {
-            asegurarDir();
-            File file = new File(CARPETA + buildName(ficha));
+            Path basePath = PathManager.getDataPath().resolve("fichas");
+            Files.createDirectories(basePath);
+            File file = basePath.resolve(buildName(ficha)).toFile();
 
             try (PDDocument doc = new PDDocument()) {
                 PDPage page = new PDPage(PAGE_SIZE);
@@ -136,28 +138,48 @@ public class PdfService {
 
         boolean hasLogo = false;
 
-        try {
-            InputStream logoStream = null;
+        InputStream logoStream = null;
 
-            File logoExterno = new File("data/logoEmpresa/logo_empresa.png");
-            if (logoExterno.exists() && logoExterno.isFile()) {
-                logoStream = new java.io.FileInputStream(logoExterno);
+        try {
+            if (emp.getLogoPath() != null && !emp.getLogoPath().isBlank()) {
+                File original = new File(emp.getLogoPath());
+                if (original.exists()) {
+                    logoStream = new FileInputStream(original);
+                }
+            }
+
+            if (logoStream == null && emp.getLogoPath() != null) {
+                String nombreSolo = new File(emp.getLogoPath()).getName();
+                File logoExterno = PathManager.getDataPath()
+                        .resolve("logoEmpresa")
+                        .resolve(nombreSolo)
+                        .toFile();
+
+                if (logoExterno.exists()) {
+                    logoStream = new FileInputStream(logoExterno);
+                }
             }
 
             if (logoStream == null) {
-                logoStream = getClass().getResourceAsStream("/cr/ac/una/astroline/resource/LogoEmpresa.png");
+                logoStream = getClass().getResourceAsStream(
+                    "/cr/ac/una/astroline/resource/LogoEmpresa.png"
+                );
             }
 
             if (logoStream != null) {
-                PDImageXObject img = PDImageXObject.createFromByteArray(doc, logoStream.readAllBytes(), "logo");
+                PDImageXObject img = PDImageXObject.createFromByteArray(
+                        doc,
+                        logoStream.readAllBytes(),
+                        "logo"
+                );
                 logoStream.close();
+
                 cs.drawImage(img, logoX, logoY, LOGO_SZ, LOGO_SZ);
                 xText = logoX + LOGO_SZ + 12f;
-                hasLogo = true;
             }
 
         } catch (Exception e) {
-            System.err.println("PdfService: no se pudo cargar el logo: " + e.getMessage());
+            System.err.println("PdfService: error cargando logo: " + e.getMessage());
         }
 
         String nombre = nvl(emp != null ? emp.getNombre() : "AstroLine");
@@ -402,13 +424,6 @@ public class PdfService {
         cs.curveTo(cx - k * r, cy - r, cx - r, cy - k * r, cx - r, cy);
         cs.closePath();
         cs.fill();
-    }
-
-    private void asegurarDir() {
-        File d = new File(CARPETA);
-        if (!d.exists()) {
-            d.mkdirs();
-        }
     }
 
     private String buildName(Ficha f) {

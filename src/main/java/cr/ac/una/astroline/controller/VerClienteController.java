@@ -2,7 +2,6 @@ package cr.ac.una.astroline.controller;
 
 import cr.ac.una.astroline.model.Cliente;
 import cr.ac.una.astroline.service.ClienteService;
-import cr.ac.una.astroline.util.DataNotifier;
 import cr.ac.una.astroline.util.FlowController;
 import cr.ac.una.astroline.util.GsonUtil;
 import io.github.palexdev.materialfx.controls.MFXButton;
@@ -10,7 +9,6 @@ import java.net.URL;
 import java.nio.file.Paths;
 import java.io.File;
 import java.util.ResourceBundle;
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -58,13 +56,6 @@ public class VerClienteController extends Controller implements Initializable {
 
     private final ClienteService clienteService = ClienteService.getInstancia();
 
-    private final DataNotifier.Listener dataListener = fileName -> {
-
-        if (fileName.startsWith("fotos/") || fileName.equals("clientes.json")) {
-            Platform.runLater(() -> TbMostrarClientes.refresh());
-        }
-    };
-
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         if (TbMostrarClientes != null) {
@@ -72,8 +63,6 @@ public class VerClienteController extends Controller implements Initializable {
         }
         configurarColumnas();
         cargarTabla();
-
-        DataNotifier.subscribe(dataListener);
     }
 
     @Override
@@ -126,8 +115,7 @@ public class VerClienteController extends Controller implements Initializable {
             if (path.startsWith("file:") || path.startsWith("jar:")) {
                 return new Image(path);
             }
-
-            File archivo = Paths.get(GsonUtil.getDataDir(), path.split("/")).toAbsolutePath().toFile();
+            File archivo = GsonUtil.getDataDir().resolve(path).toAbsolutePath().toFile();
             if (archivo.exists()) {
                 return new Image(archivo.toURI().toString());
             }
@@ -140,7 +128,6 @@ public class VerClienteController extends Controller implements Initializable {
         } catch (Exception e) {
             System.err.println("[VerCliente] No se pudo cargar imagen: " + e.getMessage());
         }
-
         return new Image(DEFAULT_FOTO_PATH);
     }
 

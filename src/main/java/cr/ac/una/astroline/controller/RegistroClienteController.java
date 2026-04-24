@@ -7,7 +7,6 @@ import cr.ac.una.astroline.model.ClienteDTO;
 import cr.ac.una.astroline.service.ClienteService;
 import cr.ac.una.astroline.util.FlowController;
 import cr.ac.una.astroline.util.GsonUtil;
-import cr.ac.una.astroline.util.SyncManager;
 import io.github.palexdev.materialfx.controls.*;
 import io.github.palexdev.materialfx.utils.SwingFXUtils;
 import java.awt.image.BufferedImage;
@@ -193,7 +192,7 @@ public class RegistroClienteController extends Controller implements Initializab
         try {
             String nombre = "foto_" + System.currentTimeMillis() + ".png";
 
-            Path destino = Paths.get(GsonUtil.getDataDir(), FOTOS_SUBDIR, nombre);
+            Path destino = GsonUtil.getDataDir().resolve(FOTOS_SUBDIR).resolve(nombre);
             Files.createDirectories(destino.getParent());
             ImageIO.write(frame, "png", destino.toFile());
 
@@ -210,11 +209,13 @@ public class RegistroClienteController extends Controller implements Initializab
 
     @FXML
     private void onBtnDescartar(ActionEvent event) {
-        if (fotoPathSeleccionado != null && !fotoPathSeleccionado.isEmpty() && !fotoPathSeleccionado.equals(DEFAULT_FOTO_PATH)
-                && !fotoPathSeleccionado.startsWith("file:") && !fotoPathSeleccionado.startsWith("jar:")) {
+        if (fotoPathSeleccionado != null && !fotoPathSeleccionado.isEmpty()
+                && !fotoPathSeleccionado.equals(DEFAULT_FOTO_PATH)
+                && !fotoPathSeleccionado.startsWith("file:")
+                && !fotoPathSeleccionado.startsWith("jar:")) {
             try {
-                Path fotoPath = Paths.get(GsonUtil.getDataDir(), fotoPathSeleccionado.split("/")).toAbsolutePath();
-                Path fotoDir = Paths.get(GsonUtil.getDataDir(), FOTOS_SUBDIR).toAbsolutePath();
+                Path fotoPath = GsonUtil.getDataDir().resolve(fotoPathSeleccionado).toAbsolutePath();
+                Path fotoDir  = GsonUtil.getDataDir().resolve(FOTOS_SUBDIR).toAbsolutePath();
                 if (fotoPath.startsWith(fotoDir)) {
                     Files.deleteIfExists(fotoPath);
                 }
@@ -273,11 +274,10 @@ public class RegistroClienteController extends Controller implements Initializab
     }
 
     private String copiarFotoADataDir(Path origen, String nombreDestino) throws IOException {
-        Path dirFotos = Paths.get(GsonUtil.getDataDir(), FOTOS_SUBDIR);
+        Path dirFotos = GsonUtil.getDataDir().resolve(FOTOS_SUBDIR);
         Files.createDirectories(dirFotos);
         Path destino = dirFotos.resolve(nombreDestino);
         Files.copy(origen, destino, StandardCopyOption.REPLACE_EXISTING);
-
         return FOTOS_SUBDIR + "/" + nombreDestino;
     }
 
@@ -288,30 +288,28 @@ public class RegistroClienteController extends Controller implements Initializab
     }
 
     private void mostrarImagenLocal(String path) {
-        if (path == null || path.isEmpty()) {
+        
+    if (path == null || path.isEmpty()) return;
+    try {
+        if (path.startsWith("file:") || path.startsWith("jar:")) {
+            fotoCliente.setImage(new Image(path));
             return;
         }
-        try {
-            if (path.startsWith("file:") || path.startsWith("jar:")) {
-                fotoCliente.setImage(new Image(path));
-                return;
-            }
-            File archivo = Paths.get(GsonUtil.getDataDir(),
-                    path.split("/")).toAbsolutePath().toFile();
-            if (archivo.exists()) {
-                fotoCliente.setImage(new Image(archivo.toURI().toString()));
-                return;
-            }
-            archivo = Paths.get(path).toAbsolutePath().toFile();
-            if (archivo.exists()) {
-                fotoCliente.setImage(new Image(archivo.toURI().toString()));
-                return;
-            }
-            fotoCliente.setImage(new Image(DEFAULT_FOTO_PATH));
-        } catch (Exception e) {
-            System.err.println("[RegistroCliente] No se pudo cargar imagen: " + e.getMessage());
+        File archivo = GsonUtil.getDataDir().resolve(path).toAbsolutePath().toFile();
+        if (archivo.exists()) {
+            fotoCliente.setImage(new Image(archivo.toURI().toString()));
+            return;
         }
+        archivo = Paths.get(path).toAbsolutePath().toFile();
+        if (archivo.exists()) {
+            fotoCliente.setImage(new Image(archivo.toURI().toString()));
+            return;
+        }
+        fotoCliente.setImage(new Image(DEFAULT_FOTO_PATH));
+    } catch (Exception e) {
+        System.err.println("[RegistroCliente] No se pudo cargar imagen: " + e.getMessage());
     }
+}
 
     private Cliente construirClienteDesdeFormulario() {
         ClienteDTO dto = new ClienteDTO();
@@ -328,7 +326,6 @@ public class RegistroClienteController extends Controller implements Initializab
     private void registrarCliente(Cliente cliente) {
         boolean guardado = clienteService.agregar(cliente);
         if (guardado) {
-            propagarFotoSiCorresponde();
             mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Cliente registrado correctamente.");
             limpiarFormulario();
             navegarALista();
@@ -340,20 +337,12 @@ public class RegistroClienteController extends Controller implements Initializab
     private void actualizarCliente(Cliente cliente) {
         boolean actualizado = clienteService.actualizar(cliente);
         if (actualizado) {
-            propagarFotoSiCorresponde();
             mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Modificación realizada correctamente.");
             limpiarFormulario();
             navegarALista();
         } else {
             mostrarAlerta(Alert.AlertType.ERROR, "Error", "No se pudo modificar el cliente.");
         }
-    }
-
-    private void propagarFotoSiCorresponde() {
-        if (fotoPathSeleccionado == null || fotoPathSeleccionado.isEmpty() || fotoPathSeleccionado.startsWith("file:") || fotoPathSeleccionado.startsWith("jar:")) {
-            return;
-        }
-        SyncManager.getInstancia().propagarImagen(fotoPathSeleccionado);
     }
 
     private boolean camposValidos() {

@@ -1,6 +1,7 @@
 package cr.ac.una.astroline.controller;
 
 import cr.ac.una.astroline.model.Empresa;
+import cr.ac.una.astroline.service.ConfiguracionService;
 import cr.ac.una.astroline.util.AppContext;
 import cr.ac.una.astroline.util.FlowController;
 import cr.ac.una.astroline.util.GsonUtil;
@@ -63,13 +64,23 @@ public class PrincipalController extends Controller {
 
     @FXML
     private void irKiosko() {
-        FlowController.getInstance().goMain("Kiosko");
+        SessionManager.getInstancia().setModoAcceso("kiosko");
+        if (!ConfiguracionService.getInstancia().estaConfiguradoParaModo("kiosko")) {
+            FlowController.getInstance().goViewInWindow("SeleccionSucursalView");
+        } else {
+            FlowController.getInstance().goMain("Kiosko");
+        }
         getStage().close();
     }
 
     @FXML
     private void irProyeccion() {
-        FlowController.getInstance().goMain("Proyeccion");
+        SessionManager.getInstancia().setModoAcceso("proyeccion");
+        if (!ConfiguracionService.getInstancia().estaConfiguradoParaModo("proyeccion")) {
+            FlowController.getInstance().goViewInWindow("SeleccionSucursalView");
+        } else {
+            FlowController.getInstance().goMain("Proyeccion");
+        }
         getStage().close();
     }
 }

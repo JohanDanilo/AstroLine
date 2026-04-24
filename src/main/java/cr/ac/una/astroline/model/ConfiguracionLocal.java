@@ -21,6 +21,10 @@ public class ConfiguracionLocal {
         this.tramiteIds = tramiteIds != null ? tramiteIds : new ArrayList<>();
         this.preferencial = preferencial;
     }
+    
+    public ConfiguracionLocal(String sucursalId){
+        this.sucursalId = sucursalId;
+    }
 
     public boolean esEstacionFuncionario() {
         return estacionId != null && !estacionId.isBlank();

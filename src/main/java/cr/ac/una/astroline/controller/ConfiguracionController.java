@@ -6,7 +6,6 @@ import cr.ac.una.astroline.model.Sucursal;
 import cr.ac.una.astroline.service.ConfiguracionService;
 import cr.ac.una.astroline.service.SucursalService;
 import cr.ac.una.astroline.util.FlowController;
-import cr.ac.una.astroline.util.GsonUtil;
 import cr.ac.una.astroline.util.Respuesta;
 import io.github.palexdev.materialfx.controls.MFXCheckbox;
 import io.github.palexdev.materialfx.controls.MFXComboBox;
@@ -14,6 +13,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -23,7 +23,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.util.StringConverter;
 
 public class ConfiguracionController extends Controller implements Initializable {
-
     @FXML
     private AnchorPane root;
     @FXML
@@ -35,23 +34,38 @@ public class ConfiguracionController extends Controller implements Initializable
 
     private boolean cargandoConfig = false;
 
+    private ChangeListener<Estacion> listenerEstacion;
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         configurarConverters();
-        configurarListeners();
     }
 
     @Override
     public void initialize() {
         setNombreVista("Configuración local");
+        limpiarEstadoInterno();
         cargarSucursales();
-
+        configurarListeners();
         javafx.application.Platform.runLater(this::cargarConfiguracionActual);
+    }
+
+    private void limpiarEstadoInterno() {
+        if (listenerEstacion != null) {
+            cmbEstacion.valueProperty().removeListener(listenerEstacion);
+            listenerEstacion = null;
+        }
+
+        cmbSucursal.getSelectionModel().clearSelection();
+        cmbSucursal.getItems().clear();
+        cmbEstacion.getSelectionModel().clearSelection();
+        cmbEstacion.getItems().clear();
+        checkPreferencial.setSelected(false);
+        cargandoConfig = false;
     }
 
     @FXML
     private void onCmbSucursal(ActionEvent event) {
-
         if (cargandoConfig) {
             return;
         }
@@ -60,7 +74,6 @@ public class ConfiguracionController extends Controller implements Initializable
 
     @FXML
     private void onBtnGuardar(ActionEvent event) {
-
         Sucursal sucursal = cmbSucursal.getValue();
         if (sucursal == null) {
             mostrarAviso("Selecciona una sucursal antes de guardar.");
@@ -96,10 +109,9 @@ public class ConfiguracionController extends Controller implements Initializable
         if (!pedirConfirmacion(titulo, mensaje)) {
             return;
         }
-
-        boolean prefencialNuevo = checkPreferencial.isSelected();
-        if (estacion.isPreferencial() != prefencialNuevo) {
-            estacion.setPreferencial(prefencialNuevo);
+        boolean preferencialNuevo = checkPreferencial.isSelected();
+        if (estacion.isPreferencial() != preferencialNuevo) {
+            estacion.setPreferencial(preferencialNuevo);
             Respuesta respuestaEstacion = SucursalService.getInstancia()
                     .actualizarEstacion(sucursal.getId(), estacion);
 
@@ -141,7 +153,7 @@ public class ConfiguracionController extends Controller implements Initializable
     @FXML
     private void onCheckPreferencial(ActionEvent event) {
     }
-
+    
     private void configurarConverters() {
         cmbSucursal.setConverter(new StringConverter<>() {
             @Override
@@ -169,22 +181,24 @@ public class ConfiguracionController extends Controller implements Initializable
     }
 
     private void configurarListeners() {
-        cmbEstacion.valueProperty().addListener((obs, vieja, nueva) -> {
+        listenerEstacion = (obs, vieja, nueva) -> {
             if (nueva != null) {
                 checkPreferencial.setSelected(nueva.isPreferencial());
             } else {
                 checkPreferencial.setSelected(false);
             }
-        });
+        };
+        cmbEstacion.valueProperty().addListener(listenerEstacion);
     }
+
 
     private void cargarSucursales() {
         cmbSucursal.getItems().setAll(SucursalService.getInstancia().getListaDeSucursales());
     }
 
     private void cargarEstacionesDeSucursal(Sucursal sucursal) {
+        cmbEstacion.getSelectionModel().clearSelection();
         cmbEstacion.getItems().clear();
-        cmbEstacion.setValue(null);
         if (sucursal != null) {
             cmbEstacion.getItems().addAll(sucursal.getEstaciones());
         }
@@ -196,20 +210,21 @@ public class ConfiguracionController extends Controller implements Initializable
             ConfiguracionLocal configuracion = ConfiguracionService.getInstancia().getConfiguracion();
 
             if (configuracion == null || configuracion.getSucursalId() == null) {
-                cmbSucursal.setValue(null);
-                cmbEstacion.getItems().clear();
-                cmbEstacion.setValue(null);
+                seleccionarSucursal(null);
+                cargarEstacionesDeSucursal(null);
                 checkPreferencial.setSelected(false);
                 return;
             }
 
-            Sucursal sucursal = SucursalService.getInstancia()
-                    .buscarSucursal(configuracion.getSucursalId());
+            Sucursal sucursal = SucursalService.getInstancia().buscarSucursal(configuracion.getSucursalId());
             if (sucursal == null) {
+                seleccionarSucursal(null);
+                cargarEstacionesDeSucursal(null);
+                checkPreferencial.setSelected(false);
                 return;
             }
 
-            cmbSucursal.setValue(sucursal);
+            seleccionarSucursal(sucursal);
             cargarEstacionesDeSucursal(sucursal);
 
             if (configuracion.getEstacionId() != null) {
@@ -217,19 +232,41 @@ public class ConfiguracionController extends Controller implements Initializable
                 if (estacion != null) {
                     cmbEstacion.setValue(estacion);
                 }
+                seleccionarEstacion(estacion);
             }
         } finally {
             cargandoConfig = false;
         }
     }
 
+    private void seleccionarSucursal(Sucursal sucursal) {
+        if (sucursal == null) {
+            cmbSucursal.getSelectionModel().clearSelection();
+            return;
+        }
+        int index = cmbSucursal.getItems().indexOf(sucursal);
+        if (index >= 0) {
+            cmbSucursal.getSelectionModel().selectIndex(index);
+        }
+    }
+    
+    private void seleccionarEstacion(Estacion estacion) {
+        if (estacion == null) {
+            cmbEstacion.getSelectionModel().clearSelection();
+            return;
+        }
+        int index = cmbEstacion.getItems().indexOf(estacion);
+        if (index >= 0) {
+            cmbEstacion.getSelectionModel().selectIndex(index);
+        }
+    }
     private boolean pedirConfirmacion(String titulo, String mensaje) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(titulo);
         alert.setHeaderText(null);
         alert.setContentText(mensaje);
         alert.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
-        alert.initOwner(getStage()); // bloquea esta ventana, no el mainStage
+        alert.initOwner(getStage());
 
         Optional<ButtonType> resultado = alert.showAndWait();
         return resultado.isPresent() && resultado.get() == ButtonType.YES;

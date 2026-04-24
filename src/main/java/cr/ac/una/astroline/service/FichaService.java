@@ -9,6 +9,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class FichaService {
 
@@ -37,8 +38,11 @@ public class FichaService {
             String cedulaCliente, boolean preferencial) {
         try {
             List<Ficha> fichasActivas = GsonUtil.leerLista(ARCHIVO_FICHAS, Ficha.class);
+            List<Ficha> fichasDeSucursal = fichasActivas.stream()
+                    .filter(f -> sucursalId != null && sucursalId.equals(f.getSucursalId()))
+                    .collect(Collectors.toList());
 
-            if (!fichasActivas.isEmpty() && esDeOtroDia(fichasActivas.get(0))) {
+            if (!fichasDeSucursal.isEmpty() && esDeOtroDia(fichasDeSucursal.get(0))) {
                 Respuesta rArchivo = archivarFichas(fichasActivas);
                 if (!rArchivo.getEstado()) {
                     return rArchivo;
@@ -46,7 +50,7 @@ public class FichaService {
                 fichasActivas = new ArrayList<>();
             }
 
-            int[] posicion = calcularPosicionGlobal(fichasActivas);
+            int[] posicion = calcularPosicionGlobal(fichasDeSucursal);
             String letra = String.valueOf(LETRAS[posicion[0]]);
             int numero = posicion[1];
 
@@ -75,6 +79,25 @@ public class FichaService {
             return new Respuesta(false,
                     "No se pudo obtener las fichas.",
                     "FichaService.obtenerFichasActivas > " + e.getMessage());
+        }
+    }
+
+    public Respuesta obtenerFichasActivasPorSucursal(String sucursalId) {
+        try {
+            if (sucursalId == null || sucursalId.isBlank()) {
+                return new Respuesta(true, "", "", "lista", new ArrayList<>());
+            }
+
+            List<Ficha> todas = GsonUtil.leerLista(ARCHIVO_FICHAS, Ficha.class);
+            List<Ficha> deSucursal = todas.stream()
+                    .filter(f -> sucursalId.equals(f.getSucursalId()))
+                    .collect(Collectors.toList());
+
+            return new Respuesta(true, "", "", "lista", deSucursal);
+        } catch (Exception e) {
+            return new Respuesta(false,
+                    "No se pudo obtener las fichas de la sucursal.",
+                    "FichaService.obtenerFichasActivasPorSucursal > " + e.getMessage());
         }
     }
 
