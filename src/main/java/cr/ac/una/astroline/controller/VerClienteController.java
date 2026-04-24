@@ -115,7 +115,6 @@ public class VerClienteController extends Controller implements Initializable {
             if (path.startsWith("file:") || path.startsWith("jar:")) {
                 return new Image(path);
             }
-
             File archivo = GsonUtil.getDataDir().resolve(path).toAbsolutePath().toFile();
             if (archivo.exists()) {
                 return new Image(archivo.toURI().toString());

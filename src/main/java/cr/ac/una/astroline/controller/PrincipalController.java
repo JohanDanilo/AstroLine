@@ -83,5 +83,4 @@ public class PrincipalController extends Controller {
         }
         getStage().close();
     }
-    
 }

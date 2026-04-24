@@ -58,7 +58,7 @@ public class Mensaje {
             return controller.getResultado();
 
         } catch (IOException ex) {
-            System.err.println("[Mensaje] No se pudo cargar ConfirmacionDialog: " + ex.getMessage());
+            System.err.println("[Mensaje] No se pudo cargar vista Dialogo: " + ex.getMessage());
             Alert alert = new Alert(AlertType.CONFIRMATION);
             alert.setTitle(titulo);
             alert.setHeaderText(null);

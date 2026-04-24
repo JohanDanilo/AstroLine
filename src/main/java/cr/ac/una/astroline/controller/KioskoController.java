@@ -65,8 +65,6 @@ public class KioskoController extends Controller implements Initializable {
     private final Mensaje utilMensaje = new Mensaje();
     private final Empresa empresa = EmpresaService.getInstancia().getEmpresa();
     
-    
-    
     private String pinAdminCorrecto;
     private boolean preferencialPorPin = false;
 

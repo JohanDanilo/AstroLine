@@ -12,7 +12,6 @@ import java.util.List;
 
 public class ConfiguracionService {
 
-    private static final String ARCHIVO_JSON = "configuracion.json";
     private static ConfiguracionService instancia;
     private ConfiguracionLocal configuracion;
 
@@ -51,6 +50,7 @@ public class ConfiguracionService {
         }
         return configuracion.isPreferencial();
     }
+
 
     public List<String> getTramitesConfigurados() {
         if (configuracion == null || configuracion.getTramiteIds() == null) {

@@ -18,7 +18,6 @@ import javafx.scene.layout.BorderPane;
 public class AdminController extends Controller implements Initializable {
 
     private EmpresaService empresaService = EmpresaService.getInstancia();
-    ;
     
     @FXML
     private BorderPane root;
@@ -40,7 +39,7 @@ public class AdminController extends Controller implements Initializable {
     private Empresa empresa = empresaService.getEmpresa();;
     @FXML
     private MFXButton btnSucursales;
-    
+
     @Override
     public void initialize() {
         setNombreVista("Administrador");
@@ -119,5 +118,4 @@ public class AdminController extends Controller implements Initializable {
             e.printStackTrace();
         }
     }
-    
 }

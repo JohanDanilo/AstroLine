@@ -23,8 +23,6 @@ import javafx.scene.layout.AnchorPane;
 import javafx.util.StringConverter;
 
 public class ConfiguracionController extends Controller implements Initializable {
-
-    // ── FXML ─────────────────────────────────────────────────────────────────
     @FXML
     private AnchorPane root;
     @FXML
@@ -34,57 +32,37 @@ public class ConfiguracionController extends Controller implements Initializable
     @FXML
     private MFXCheckbox checkPreferencial;
 
-    // ── Estado interno ────────────────────────────────────────────────────────
     private boolean cargandoConfig = false;
 
-    // ── Listener nombrado (para poder removerlo en cada reload) ───────────────
     private ChangeListener<Estacion> listenerEstacion;
 
-    // ── Initializable (JavaFX) ────────────────────────────────────────────────
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        // Solo se configura lo que no depende de datos: los converters de texto.
-        // Los listeners se registran en initialize() para poder limpiarlos
-        // correctamente en cada reload.
         configurarConverters();
     }
 
-    // ── initialize() del FlowController ──────────────────────────────────────
     @Override
     public void initialize() {
         setNombreVista("Configuración local");
-        limpiarEstadoInterno();          // ① limpiar estado y listener viejo
+        limpiarEstadoInterno();
         cargarSucursales();
-        configurarListeners();           // ② registrar listener nombrado fresco
+        configurarListeners();
         javafx.application.Platform.runLater(this::cargarConfiguracionActual);
     }
 
-    // ── Limpieza de estado interno ────────────────────────────────────────────
-
-    /**
-     * Resetea la UI y remueve el listener de cmbEstacion antes de que se
-     * configure la vista de nuevo. Se llama al inicio de initialize() para que
-     * cada apertura/recarga parta de cero y no acumule listeners duplicados.
-     */
     private void limpiarEstadoInterno() {
-        // 1. Remover listener anterior para no acumularlo en cada reload
         if (listenerEstacion != null) {
             cmbEstacion.valueProperty().removeListener(listenerEstacion);
             listenerEstacion = null;
         }
 
-        // 2. Limpiar selecciones y listas de los combos
         cmbSucursal.getSelectionModel().clearSelection();
         cmbSucursal.getItems().clear();
         cmbEstacion.getSelectionModel().clearSelection();
         cmbEstacion.getItems().clear();
-
-        // 3. Resetear controles al estado inicial
         checkPreferencial.setSelected(false);
         cargandoConfig = false;
     }
-
-    // ── Manejadores FXML ──────────────────────────────────────────────────────
 
     @FXML
     private void onCmbSucursal(ActionEvent event) {
@@ -131,7 +109,6 @@ public class ConfiguracionController extends Controller implements Initializable
         if (!pedirConfirmacion(titulo, mensaje)) {
             return;
         }
-
         boolean preferencialNuevo = checkPreferencial.isSelected();
         if (estacion.isPreferencial() != preferencialNuevo) {
             estacion.setPreferencial(preferencialNuevo);
@@ -176,14 +153,7 @@ public class ConfiguracionController extends Controller implements Initializable
     @FXML
     private void onCheckPreferencial(ActionEvent event) {
     }
-
-    // ── Configuración de componentes ──────────────────────────────────────────
-
-    /**
-     * Configura los converters de texto de los combos. Se llama desde
-     * initialize(URL, ResourceBundle) porque solo se necesita hacerlo una vez
-     * y no depende de datos externos.
-     */
+    
     private void configurarConverters() {
         cmbSucursal.setConverter(new StringConverter<>() {
             @Override
@@ -210,11 +180,6 @@ public class ConfiguracionController extends Controller implements Initializable
         });
     }
 
-    /**
-     * Registra el listener de cmbEstacion como campo nombrado para poder
-     * removerlo limpiamente en el próximo reload. Se llama desde initialize()
-     * del FlowController, después de limpiarEstadoInterno().
-     */
     private void configurarListeners() {
         listenerEstacion = (obs, vieja, nueva) -> {
             if (nueva != null) {
@@ -226,7 +191,6 @@ public class ConfiguracionController extends Controller implements Initializable
         cmbEstacion.valueProperty().addListener(listenerEstacion);
     }
 
-    // ── Carga de datos ────────────────────────────────────────────────────────
 
     private void cargarSucursales() {
         cmbSucursal.getItems().setAll(SucursalService.getInstancia().getListaDeSucursales());
@@ -245,7 +209,6 @@ public class ConfiguracionController extends Controller implements Initializable
         try {
             ConfiguracionLocal configuracion = ConfiguracionService.getInstancia().getConfiguracion();
 
-            // Sin configuración previa: deseleccionar todo limpiamente
             if (configuracion == null || configuracion.getSucursalId() == null) {
                 seleccionarSucursal(null);
                 cargarEstacionesDeSucursal(null);
@@ -253,10 +216,7 @@ public class ConfiguracionController extends Controller implements Initializable
                 return;
             }
 
-            Sucursal sucursal = SucursalService.getInstancia()
-                    .buscarSucursal(configuracion.getSucursalId());
-
-            // La sucursal guardada ya no existe: limpiar igualmente
+            Sucursal sucursal = SucursalService.getInstancia().buscarSucursal(configuracion.getSucursalId());
             if (sucursal == null) {
                 seleccionarSucursal(null);
                 cargarEstacionesDeSucursal(null);
@@ -269,18 +229,16 @@ public class ConfiguracionController extends Controller implements Initializable
 
             if (configuracion.getEstacionId() != null) {
                 Estacion estacion = sucursal.buscarEstacion(configuracion.getEstacionId());
-                seleccionarEstacion(estacion); // acepta null sin problema
+                if (estacion != null) {
+                    cmbEstacion.setValue(estacion);
+                }
+                seleccionarEstacion(estacion);
             }
         } finally {
             cargandoConfig = false;
         }
     }
 
-    /**
-     * Selecciona una sucursal en cmbSucursal usando selectIndex para que MFX
-     * sincronice correctamente su estado visual. Si sucursal es null, limpia
-     * la selección.
-     */
     private void seleccionarSucursal(Sucursal sucursal) {
         if (sucursal == null) {
             cmbSucursal.getSelectionModel().clearSelection();
@@ -291,12 +249,7 @@ public class ConfiguracionController extends Controller implements Initializable
             cmbSucursal.getSelectionModel().selectIndex(index);
         }
     }
-
-    /**
-     * Selecciona una estación en cmbEstacion usando selectIndex para que MFX
-     * sincronice correctamente su estado visual. Si estacion es null, limpia
-     * la selección.
-     */
+    
     private void seleccionarEstacion(Estacion estacion) {
         if (estacion == null) {
             cmbEstacion.getSelectionModel().clearSelection();
@@ -307,9 +260,6 @@ public class ConfiguracionController extends Controller implements Initializable
             cmbEstacion.getSelectionModel().selectIndex(index);
         }
     }
-
-    // ── Utilidades ────────────────────────────────────────────────────────────
-
     private boolean pedirConfirmacion(String titulo, String mensaje) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle(titulo);

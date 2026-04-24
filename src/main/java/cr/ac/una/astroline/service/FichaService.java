@@ -71,10 +71,6 @@ public class FichaService {
         }
     }
 
-    /**
-     * Devuelve TODAS las fichas activas del archivo (sin filtrar por sucursal).
-     * Usar solo cuando se necesita acceso global (ej: archivado, proyección general).
-     */
     public Respuesta obtenerFichasActivas() {
         try {
             List<Ficha> lista = GsonUtil.leerLista(ARCHIVO_FICHAS, Ficha.class);
@@ -86,13 +82,6 @@ public class FichaService {
         }
     }
 
-    /**
-     * Devuelve solo las fichas activas pertenecientes a la sucursal indicada.
-     * Usar en la VentanaFuncionario y cualquier vista que deba operar
-     * exclusivamente sobre la sucursal configurada en la sesión actual.
-     *
-     * @param sucursalId ID de la sucursal a filtrar; si es null devuelve lista vacía.
-     */
     public Respuesta obtenerFichasActivasPorSucursal(String sucursalId) {
         try {
             if (sucursalId == null || sucursalId.isBlank()) {

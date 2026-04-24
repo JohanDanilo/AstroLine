@@ -179,7 +179,9 @@ public class RegistroClienteController extends Controller implements Initializab
 
     @FXML
     private void onBtnTomarFoto(ActionEvent event) {
-        if (!camaraActiva.get() || webcam == null) return;
+        if (!camaraActiva.get() || webcam == null) {
+            return;
+        }
 
         BufferedImage frame = webcam.getImage();
         if (frame == null) {
@@ -212,7 +214,6 @@ public class RegistroClienteController extends Controller implements Initializab
                 && !fotoPathSeleccionado.startsWith("file:")
                 && !fotoPathSeleccionado.startsWith("jar:")) {
             try {
-                // ✅ resolve(path) — maneja "fotos/foto.png" en todas las plataformas
                 Path fotoPath = GsonUtil.getDataDir().resolve(fotoPathSeleccionado).toAbsolutePath();
                 Path fotoDir  = GsonUtil.getDataDir().resolve(FOTOS_SUBDIR).toAbsolutePath();
                 if (fotoPath.startsWith(fotoDir)) {
@@ -287,6 +288,7 @@ public class RegistroClienteController extends Controller implements Initializab
     }
 
     private void mostrarImagenLocal(String path) {
+        
     if (path == null || path.isEmpty()) return;
     try {
         if (path.startsWith("file:") || path.startsWith("jar:")) {

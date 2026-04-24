@@ -15,7 +15,7 @@ module cr.ac.una.astroline {
     
     requires org.apache.pdfbox;
     requires java.desktop;
-    
+
     opens cr.ac.una.astroline to javafx.fxml;
 
     opens cr.ac.una.astroline.controller to javafx.fxml;

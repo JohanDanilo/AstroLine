@@ -11,6 +11,7 @@
 [![Maven](https://img.shields.io/badge/Maven-3.8-red?style=flat-square&logo=apachemaven)](https://maven.apache.org/)
 [![MaterialFX](https://img.shields.io/badge/MaterialFX-11.16.1-purple?style=flat-square)](https://github.com/palexdev/MaterialFX)
 [![AtlantaFX](https://img.shields.io/badge/AtlantaFX-2.1.0-teal?style=flat-square)](https://github.com/mkpaz/atlantafx)
+[![PDFBox](https://img.shields.io/badge/PDFBox-3.x-red?style=flat-square)](https://pdfbox.apache.org/)
 [![License](https://img.shields.io/badge/Licencia-Académica-green?style=flat-square)]()
 
 *Tarea Programada — Programación II · Universidad Nacional de Costa Rica*  
@@ -28,12 +29,50 @@ AstroLine es una aplicación de escritorio desarrollada en JavaFX que permite la
 
 ## 🎭 Módulos del sistema
 
-| Módulo | Descripción |
-|---|---|
-| 🛡️ **Administrador** | Gestión de parámetros, trámites, sucursales, estaciones, clientes e indicadores |
-| 🖥️ **Kiosko** | Asignación de fichas táctil con generación de PDF y atención preferencial |
-| 👔 **Funcionario** | Gestión de llamados de fichas por estación en tiempo real |
-| 📺 **Proyección** | Pantalla pública con historial de fichas, audio de llamado y avisos en scroll |
+| Módulo | Argumento de arranque | Descripción |
+|---|---|---|
+| 🛡️ **Administrador** | `admin` | Gestión completa de empresa, funcionarios, trámites, sucursales, estaciones y estadísticas. Login con credenciales de administrador. |
+| 🖥️ **Kiosko** | `kiosko` | Pantalla táctil de autoatención. Teclado numérico integrado, selección de trámite, identificación opcional por cédula, atención preferencial por PIN y generación automática de ficha en PDF. |
+| 👔 **Funcionario** | `funcionario` | Pantalla del agente de atención. Llamado de siguiente ficha, ficha preferencial, repetir llamado, marcar ausente y selección manual de ficha. Muestra foto y datos del cliente identificado. Login con credenciales de funcionario o admin. |
+| 📺 **Proyección** | `proyeccion` | Pantalla pública. Muestra la ficha actual siendo atendida, historial de las 4 anteriores, reloj en tiempo real, texto de aviso configurable en scroll animado y anuncio de voz (TTS nativo del SO). |
+
+> Si se ejecuta **sin argumentos**, se muestra la pantalla de selección de rol.
+
+---
+
+## ✨ Funcionalidades destacadas
+
+**Sistema de fichas**
+- Ciclo de 50 fichas diarias (letras A–E × números 001–010). Al completar el ciclo reinicia en A-001 automáticamente.
+- Archivado automático al historial al iniciar un nuevo día.
+- Detección automática de atención preferencial para mayores de 65 años (por cédula).
+- Atención preferencial manual mediante PIN de administrador en el Kiosko.
+
+**PDF de ficha (Kiosko)**
+- Generado con Apache PDFBox 3.x en formato ticket compacto (3.5" × 5.3").
+- Diseño cosmos: fondo oscuro con franja cian, constelación decorativa, número de ficha grande, sección de cliente y badge preferencial.
+- Logo de la empresa cargado dinámicamente desde `data/logoEmpresa/`.
+- Apertura automática en el visor del sistema operativo con envío a impresora.
+
+**Sincronización P2P (LAN)**
+- Descubrimiento de equipos por **UDP broadcast** (puerto 9090) sin configuración manual.
+- Servidor HTTP embebido (puerto 8080) para transferencia de archivos JSON e imágenes.
+- Merge con resolución de conflictos basada en `lastModified` (gana el cambio más reciente).
+- Tombstones para eliminaciones: los registros borrados se propagan a todos los peers antes de limpiarse localmente.
+- Polling automático cada 15 segundos + redescubrimiento de peers cada 60 segundos.
+- El archivo `configuracion.json` está **excluido** del P2P: es por equipo, no compartido.
+
+**Módulo Administrador**
+- CRUD completo de empresa, funcionarios, trámites, sucursales y estaciones.
+- Asignación de trámites a estaciones por **drag and drop** entre dos tablas.
+- Búsqueda en vivo en todas las listas.
+- Registro de clientes con foto: subida desde archivo o captura directa por **cámara web**.
+- Pantalla de estadísticas con LineChart, PieChart y rankings de clientes y trámites (filtro por período y por sucursal).
+
+**Módulo Proyección**
+- Anuncio de voz con TTS nativo: PowerShell en Windows, `say` en macOS, `espeak-ng` en Linux.
+- Texto de aviso en scroll horizontal (marquee) animado con velocidad configurable.
+- Polling de fichas cada 1 segundo para actualización en tiempo real.
 
 ---
 
@@ -49,13 +88,14 @@ AstroLine es una aplicación de escritorio desarrollada en JavaFX que permite la
 | AtlantaFX | 2.1.0 | Sistema de temas visuales |
 | Apache PDFBox | 3.x | Generación de fichas en PDF |
 | SceneBuilder | — | Diseño de vistas FXML |
+| Webcam Capture | — | Captura de foto de clientes |
 | NetBeans | — | Entorno de desarrollo |
 
 ---
 
 ## 🏗️ Arquitectura
 
-El proyecto sigue el patrón **MVC (Model-View-Controller)**:
+El proyecto sigue el patrón **MVC (Model-View-Controller)** con servicios singleton y navegación centralizada via `FlowController`.
 
 ```
 src/
@@ -66,9 +106,9 @@ src/
     │   ├── service/        ← Lógica de negocio (singletons)
     │   └── util/           ← FlowController, GsonUtil, PathManager, AppContext...
     └── resources/cr/ac/una/astroline/
-        ├── view/           ← Archivos FXML
-        ├── resource/       ← Imágenes, audio, íconos
-        └── styles/         ← Hojas de estilo CSS
+        ├── view/                  ← 17 archivos FXML
+        ├── resource/              ← Imágenes, íconos, fuentes, audio
+        └── styles/                ← Hoja de estilo CSS
 ```
 
 ### Convenciones arquitectónicas

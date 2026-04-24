@@ -37,12 +37,6 @@ public class FuncionarioSeleccionarFichaController extends Controller implements
         this.controllerPadre = padre;
     }
 
-    /**
-     * Carga en el combo solo las fichas en espera que corresponden a:
-     *   1. La sucursal configurada en la sesión actual
-     *   2. Los trámites configurados para esta estación
-     *   3. El modo preferencial si aplica
-     */
     private void cargarFichasEnEspera() {
         ConfiguracionService configuracion = ConfiguracionService.getInstancia();
         configuracion.recargarConfiguracion();

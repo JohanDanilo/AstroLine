@@ -70,8 +70,7 @@ public class ProyeccionController extends Controller implements Initializable {
     private String ultimaFichaAnunciadaId = null;
     private String ultimoTimestampAnunciado = null;
 
-    private static final DateTimeFormatter FORMATO_LLAMADO =
-            DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+    private static final DateTimeFormatter FORMATO_LLAMADO = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     @Override
     public void initialize() {
@@ -86,10 +85,6 @@ public class ProyeccionController extends Controller implements Initializable {
         iniciarPollerFichas();
         iniciarProyeccionMensaje();
     }
-
-    // -------------------------------------------------------------------------
-    // EMPRESA / LOGO
-    // -------------------------------------------------------------------------
 
     private void cargarEmpresa() {
         if (empresa == null) return;
@@ -110,10 +105,6 @@ public class ProyeccionController extends Controller implements Initializable {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // RELOJ
-    // -------------------------------------------------------------------------
-
     private void actualizarReloj() {
         DateTimeFormatter formatoFecha = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         DateTimeFormatter formatoHora  = DateTimeFormatter.ofPattern("hh:mm:ss a");
@@ -130,10 +121,6 @@ public class ProyeccionController extends Controller implements Initializable {
         reloj.play();
     }
 
-    // -------------------------------------------------------------------------
-    // POLLER DE FICHAS
-    // -------------------------------------------------------------------------
-
     private void iniciarPollerFichas() {
         Timeline pollerFichas = new Timeline(
                 new KeyFrame(Duration.seconds(1), e -> actualizarFichasEnPantalla()));
@@ -141,13 +128,6 @@ public class ProyeccionController extends Controller implements Initializable {
         pollerFichas.play();
     }
 
-    /**
-     * Actualiza la pantalla con las fichas en estado LLAMADA.
-     *
-     * CORRECCIÓN: usa obtenerFichasActivasPorSucursal() en lugar de
-     * obtenerFichasActivas(), para mostrar únicamente los llamados de la
-     * sucursal configurada en este kiosco y no los de otras sucursales.
-     */
     private void actualizarFichasEnPantalla() {
         String sucursalId = ConfiguracionService.getInstancia().getSucursalId();
         Respuesta respuesta = fichaService.obtenerFichasActivasPorSucursal(sucursalId);
@@ -165,25 +145,18 @@ public class ProyeccionController extends Controller implements Initializable {
 
         Ficha fichaActual = llamadas.isEmpty() ? null : llamadas.get(0);
 
-        List<Ficha> atendidas = activas.stream()
-                .filter(f -> f.getEstado() == Ficha.Estado.ATENDIDA
-                          && f.getFechaHoraLlamado() != null)
-                .sorted(Comparator.comparing(
-                        f -> LocalDateTime.parse(f.getFechaHoraLlamado(), FORMATO_LLAMADO),
-                        Comparator.reverseOrder()))
-                .collect(Collectors.toList());
+        List<Ficha> atendidas = activas.stream().filter(f -> f.getEstado() == 
+                Ficha.Estado.ATENDIDA && f.getFechaHoraLlamado() != null).sorted(Comparator.comparing(
+                f -> LocalDateTime.parse(f.getFechaHoraLlamado(), FORMATO_LLAMADO),
+                Comparator.reverseOrder())).collect(Collectors.toList());
 
         anunciarSiEsNueva(fichaActual);
 
         mostrarFichaActual(fichaActual);
-        mostrarFichaAnterior(lblLetraFichaAnterior1, lblNumeroFichaAnterior1, lblEstacionFichaAnterior1,
-                atendidas.size() > 0 ? atendidas.get(0) : null);
-        mostrarFichaAnterior(lblLetraFichaAnterior2, lblNumeroFichaAnterior2, lblEstacionFichaAnterior2,
-                atendidas.size() > 1 ? atendidas.get(1) : null);
-        mostrarFichaAnterior(lblLetraFichaAnterior3, lblNumeroFichaAnterior3, lblEstacionFichaAnterior3,
-                atendidas.size() > 2 ? atendidas.get(2) : null);
-        mostrarFichaAnterior(lblLetraFichaAnterior4, lblNumeroFichaAnterior4, lblEstacionFichaAnterior4,
-                atendidas.size() > 3 ? atendidas.get(3) : null);
+        mostrarFichaAnterior(lblLetraFichaAnterior1, lblNumeroFichaAnterior1, lblEstacionFichaAnterior1,atendidas.size() > 0 ? atendidas.get(0) : null);
+        mostrarFichaAnterior(lblLetraFichaAnterior2, lblNumeroFichaAnterior2, lblEstacionFichaAnterior2,atendidas.size() > 1 ? atendidas.get(1) : null);
+        mostrarFichaAnterior(lblLetraFichaAnterior3, lblNumeroFichaAnterior3, lblEstacionFichaAnterior3,atendidas.size() > 2 ? atendidas.get(2) : null);
+        mostrarFichaAnterior(lblLetraFichaAnterior4, lblNumeroFichaAnterior4, lblEstacionFichaAnterior4,atendidas.size() > 3 ? atendidas.get(3) : null);
     }
 
     private void anunciarSiEsNueva(Ficha ficha) {
@@ -236,18 +209,6 @@ public class ProyeccionController extends Controller implements Initializable {
         lblEstacion.setText(resolverNombreEstacion(ficha.getEstacionId()));
     }
 
-    /**
-     * Resuelve el nombre legible de una estación a partir de su ID.
-     *
-     * CORRECCIÓN 1: la condición era (estacion == null || estacionId.isBlank()),
-     * lo cual era incorrecto — si se encontraba la estación pero el ID llegaba
-     * en blanco, igualmente entraba al fallback. La condición correcta es solo
-     * (estacion == null).
-     *
-     * CORRECCIÓN 2: si estacionId es null, el substring del fallback
-     * lanzaba NullPointerException, bloqueando el Timeline completo.
-     * Ahora se verifica null antes de intentar parsear el número.
-     */
     private String resolverNombreEstacion(String estacionId) {
         if (estacionId == null || estacionId.isBlank()) {
             return "Estación desconocida";
@@ -263,19 +224,13 @@ public class ProyeccionController extends Controller implements Initializable {
         return "Estación " + numero;
     }
 
-    // -------------------------------------------------------------------------
-    // MENSAJE MARQUEE
-    // -------------------------------------------------------------------------
-
     private void cargarMensajeProyeccion() {
         String mensaje = "";
 
         var config = ConfiguracionService.getInstancia().getConfiguracion();
 
-        if (config != null && config.getSucursalId() != null
-                && !config.getSucursalId().isBlank()) {
-            Sucursal sucursal = SucursalService.getInstancia()
-                    .buscarSucursal(config.getSucursalId());
+        if (config != null && config.getSucursalId() != null && !config.getSucursalId().isBlank()) {
+            Sucursal sucursal = SucursalService.getInstancia().buscarSucursal(config.getSucursalId());
 
             if (sucursal != null && sucursal.getTextoAviso() != null
                     && !sucursal.getTextoAviso().isBlank()) {
@@ -292,9 +247,7 @@ public class ProyeccionController extends Controller implements Initializable {
 
     private void iniciarProyeccionMensaje() {
         lblMensajeDeProyeccion.layoutYProperty().bind(
-                paneMensaje.heightProperty()
-                        .subtract(lblMensajeDeProyeccion.heightProperty())
-                        .divide(2));
+                paneMensaje.heightProperty().subtract(lblMensajeDeProyeccion.heightProperty()).divide(2));
 
         Rectangle clip = new Rectangle();
         clip.widthProperty().bind(paneMensaje.widthProperty());
@@ -334,18 +287,11 @@ public class ProyeccionController extends Controller implements Initializable {
         double distancia        = Math.abs(posFin - posInicio);
         double duracionSegundos = distancia / velocidadPixelesPorSegundo;
 
-        tiempoMensaje = new Timeline(
-                new KeyFrame(Duration.ZERO,
-                        new KeyValue(lblMensajeDeProyeccion.translateXProperty(), posInicio)),
-                new KeyFrame(Duration.seconds(duracionSegundos),
-                        new KeyValue(lblMensajeDeProyeccion.translateXProperty(), posFin)));
+        tiempoMensaje = new Timeline(new KeyFrame(Duration.ZERO, new KeyValue(lblMensajeDeProyeccion.translateXProperty(), posInicio)),
+                new KeyFrame(Duration.seconds(duracionSegundos), new KeyValue(lblMensajeDeProyeccion.translateXProperty(), posFin)));
         tiempoMensaje.setCycleCount(Timeline.INDEFINITE);
         tiempoMensaje.play();
     }
-
-    // -------------------------------------------------------------------------
-    // API PÚBLICA
-    // -------------------------------------------------------------------------
 
     public void setVelocidadMensaje(double pixelesPorSegundo) {
         this.velocidadPixelesPorSegundo = pixelesPorSegundo;

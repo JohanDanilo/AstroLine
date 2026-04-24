@@ -12,21 +12,14 @@ import java.util.List;
 
 public class GsonUtil {
 
-    private static final Gson GSON = new GsonBuilder()
-            .setPrettyPrinting()
-            .serializeNulls()
-            .create();
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().serializeNulls().create();
 
     private GsonUtil() {}
 
-    // ── Acceso a la instancia Gson ──────────────────────────────────────────
-
-    /** Expone el Gson compartido (necesario en PathManager y donde se requiera). */
     public static Gson getGson() {
         return GSON;
     }
-
-
+    
     public static Path getDataDir() {
         return PathManager.getDataPath();
     }
@@ -41,9 +34,6 @@ public class GsonUtil {
         Files.createDirectories(getDataDir());
     }
 
-    // ── Operaciones de persistencia ─────────────────────────────────────────
-
-    /** Serializa cualquier objeto (incluidas listas) a JSON en el archivo indicado. */
     public static void guardar(Object objeto, String nombreArchivo) {
         try {
             ensureDataDir();
@@ -57,12 +47,10 @@ public class GsonUtil {
         }
     }
 
-    /** Alias semántico de guardar() para cuando el objeto es explícitamente una lista. */
     public static <T> void guardarLista(List<T> lista, String nombreArchivo) {
         guardar(lista, nombreArchivo);
     }
 
-    /** Lee un JSON y lo deserializa en un objeto del tipo indicado. */
     public static <T> T leer(String nombreArchivo, Class<T> clase) {
         Path filePath = resolveFile(nombreArchivo);
         if (!Files.exists(filePath)) return null;
@@ -75,7 +63,6 @@ public class GsonUtil {
         }
     }
 
-    /** Lee un JSON y lo deserializa como lista del tipo indicado. */
     public static <T> List<T> leerLista(String nombreArchivo, Class<T> clase) {
         Path filePath = resolveFile(nombreArchivo);
         if (!Files.exists(filePath)) return new ArrayList<>();
@@ -90,12 +77,10 @@ public class GsonUtil {
         }
     }
 
-    /** Comprueba si el archivo de datos existe. */
     public static boolean existe(String nombreArchivo) {
         return Files.exists(resolveFile(nombreArchivo));
     }
 
-    /** Serializa un objeto a String JSON (sin escribir a disco). */
     public static String toJson(Object objeto) {
         return GSON.toJson(objeto);
     }

@@ -84,9 +84,6 @@ public class VentanaFuncionarioController extends Controller implements Initiali
         ConfiguracionService cfg = ConfiguracionService.getInstancia();
         actualizarLabelsEstacion();
 
-        // FIX: Recuperar ficha que quedó en estado LLAMADA de una sesión anterior.
-        // Esto evita que el contador cuente una ficha que no puede ser obtenida
-        // por obtenerSiguienteFicha() (que solo filtra ESPERANDO).
         recuperarFichaHuerfana();
         if (fichaActual != null) {
             cargarFicha(fichaActual);
@@ -101,16 +98,6 @@ public class VentanaFuncionarioController extends Controller implements Initiali
     public void initialize(URL url, ResourceBundle rb) {
     }
 
-    // -------------------------------------------------------------------------
-    // CIERRE LIMPIO
-    // -------------------------------------------------------------------------
-
-    /**
-     * Sobrescribimos setStage() para enganchar el onCloseRequest en cuanto
-     * FlowController asigne el stage.
-     * Se consume el evento para que JavaFX no cierre la ventana por su cuenta
-     * — el cierre lo controla el diálogo de confirmación.
-     */
     @Override
     public void setStage(Stage stage) {
         super.setStage(stage);
@@ -166,16 +153,6 @@ public class VentanaFuncionarioController extends Controller implements Initiali
         }
     }
 
-    // -------------------------------------------------------------------------
-    // RECUPERACIÓN DE FICHA HUÉRFANA
-    // -------------------------------------------------------------------------
-
-    /**
-     * Al iniciar, busca si existe una ficha en estado LLAMADA asignada a esta
-     * estación. Si la encuentra, la restaura como fichaActual para que el
-     * diálogo de salida pueda detectarla y los botones de siguiente la marquen
-     * como ATENDIDA antes de llamar la próxima.
-     */
     private void recuperarFichaHuerfana() {
         String sucursalId = ConfiguracionService.getInstancia().getSucursalId();
         String estacionId = ConfiguracionService.getInstancia().getEstacionId();
@@ -190,10 +167,6 @@ public class VentanaFuncionarioController extends Controller implements Initiali
                 .findFirst()
                 .ifPresent(f -> fichaActual = f);
     }
-
-    // -------------------------------------------------------------------------
-    // CONTADORES
-    // -------------------------------------------------------------------------
 
     private void actualizarContadorDeFichasEnEspera() {
         String sucursalId = ConfiguracionService.getInstancia().getSucursalId();
@@ -224,10 +197,6 @@ public class VentanaFuncionarioController extends Controller implements Initiali
         fichasEnEspera.setText(String.valueOf(filtradas));
     }
 
-    // -------------------------------------------------------------------------
-    // EMPRESA / LOGO
-    // -------------------------------------------------------------------------
-
     private void cargarEmpresa() {
         if (empresa == null) return;
 
@@ -247,10 +216,6 @@ public class VentanaFuncionarioController extends Controller implements Initiali
             }
         }
     }
-
-    // -------------------------------------------------------------------------
-    // ACCIONES DE FICHA
-    // -------------------------------------------------------------------------
 
     @FXML
     private void onRepetirFicha(ActionEvent event) {
@@ -292,10 +257,6 @@ public class VentanaFuncionarioController extends Controller implements Initiali
         }
     }
 
-    // -------------------------------------------------------------------------
-    // SIGUIENTE FICHA (regular)
-    // -------------------------------------------------------------------------
-
     @FXML
     private void onSiguienteFicha(ActionEvent event) {
         marcarFichaActualAtendida();
@@ -307,11 +268,7 @@ public class VentanaFuncionarioController extends Controller implements Initiali
             return;
         }
 
-        // FIX: usar la ficha devuelta por registrarLlamado para tener el estado
-        // actualizado en memoria (LLAMADA), no el objeto original (ESPERANDO).
-        Respuesta rLlamado = fichaService.registrarLlamado(
-                siguiente.getId(),
-                ConfiguracionService.getInstancia().getEstacionId());
+        Respuesta rLlamado = fichaService.registrarLlamado(siguiente.getId(), ConfiguracionService.getInstancia().getEstacionId());
         if (rLlamado.getEstado()) {
             Ficha actualizada = (Ficha) rLlamado.getResultado("ficha");
             if (actualizada != null) siguiente = actualizada;
@@ -337,10 +294,6 @@ public class VentanaFuncionarioController extends Controller implements Initiali
                 .orElse(null);
     }
 
-    // -------------------------------------------------------------------------
-    // SIGUIENTE FICHA PREFERENCIAL
-    // -------------------------------------------------------------------------
-
     @FXML
     private void onSiguientePreferencial(ActionEvent event) {
         marcarFichaActualAtendida();
@@ -352,9 +305,6 @@ public class VentanaFuncionarioController extends Controller implements Initiali
             return;
         }
 
-        // FIX: usar la ficha devuelta por registrarLlamado para tener el estado
-        // actualizado en memoria (LLAMADA), no el objeto original (ESPERANDO).
-        // FIX 2: cargarFicha() solo se llama una vez (antes estaba duplicado).
         Respuesta rLlamado = fichaService.registrarLlamado(
                 siguiente.getId(),
                 siguiente.getEstacionId() != null
@@ -384,10 +334,6 @@ public class VentanaFuncionarioController extends Controller implements Initiali
                 .findFirst()
                 .orElse(null);
     }
-
-    // -------------------------------------------------------------------------
-    // DATOS DEL CLIENTE
-    // -------------------------------------------------------------------------
 
     private void cargarDatosCliente(String cedula) {
         lblNumeroCedula.setText(cedula);
@@ -420,8 +366,7 @@ public class VentanaFuncionarioController extends Controller implements Initiali
                 imagenCliente.setImage(imagen);
                 return;
             } catch (Exception ex) {
-                java.util.logging.Logger.getLogger(VentanaFuncionarioController.class.getName())
-                        .log(Level.WARNING, "No se pudo cargar la foto: " + archivo.getAbsolutePath(), ex);
+                java.util.logging.Logger.getLogger(VentanaFuncionarioController.class.getName()).log(Level.WARNING, "No se pudo cargar la foto: " + archivo.getAbsolutePath(), ex);
             }
         }
 
@@ -465,10 +410,6 @@ public class VentanaFuncionarioController extends Controller implements Initiali
                 : (estacionId != null ? estacionId : "-"));
     }
 
-    // -------------------------------------------------------------------------
-    // AUSENTE / ATENDIDA
-    // -------------------------------------------------------------------------
-
     @FXML
     private void onMarcarClienteAusente(ActionEvent event) {
         if (fichaActual == null) return;
@@ -486,10 +427,6 @@ public class VentanaFuncionarioController extends Controller implements Initiali
             fichaActual.setEstado(Ficha.Estado.ATENDIDA);
         }
     }
-
-    // -------------------------------------------------------------------------
-    // SELECCIONAR FICHA (ventana secundaria)
-    // -------------------------------------------------------------------------
 
     @FXML
     private void onSeleccionarFicha(ActionEvent event) {
@@ -523,10 +460,6 @@ public class VentanaFuncionarioController extends Controller implements Initiali
                     .log(Level.SEVERE, "Error abriendo FuncionarioSeleccionarFichaView.", ex);
         }
     }
-
-    // -------------------------------------------------------------------------
-    // NAVEGACIÓN
-    // -------------------------------------------------------------------------
 
     @FXML
     private void onRegistroClientes(ActionEvent event) {

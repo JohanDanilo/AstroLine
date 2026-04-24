@@ -129,5 +129,4 @@ public class ClienteService{
         List<Cliente> lista = GsonUtil.leerLista(ARCHIVO_JSON, Cliente.class);
         listaDeClientes.setAll(lista);
     }
-   
 }

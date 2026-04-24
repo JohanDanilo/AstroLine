@@ -547,7 +547,6 @@ public class MantenimientoSucursalController extends Controller implements Initi
         if (sucursal == null) {
             cmbSucursal.getSelectionModel().clearSelection();
         } else {
-            // MFX necesita el índice para actualizar su estado visual correctamente
             int index = cmbSucursal.getItems().indexOf(sucursal);
             if (index >= 0) {
                 cmbSucursal.getSelectionModel().selectIndex(index);

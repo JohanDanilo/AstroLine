@@ -41,6 +41,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
 public class MantenimientoParametrosGeneralesController extends Controller implements Initializable {
+//Empresa
 
     @FXML
     private AnchorPane root;
@@ -143,12 +144,11 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
         cargarTablaAdmins();
         cargarDatosEmpresa();
         cargarRutaActual();
-        empresaService.getEmpresaProperty().addListener(
-                (ObservableValue<? extends Empresa> obs, Empresa vieja, Empresa nueva) -> {
-                    if (nueva != null) {
-                        poblarFormularioEmpresa(nueva);
-                    }
-                }
+        empresaService.getEmpresaProperty().addListener((ObservableValue<? extends Empresa> obs, Empresa vieja, Empresa nueva) -> {
+            if (nueva != null) {
+                poblarFormularioEmpresa(nueva);
+            }
+        }
         );
     }
 
@@ -478,7 +478,9 @@ public class MantenimientoParametrosGeneralesController extends Controller imple
     }
 
     private void mostrarImagenLocal(String path) {
-        if (path == null || path.isEmpty()) return;
+        if (path == null || path.isEmpty()) {
+            return;
+        }
         try {
             if (path.startsWith("file:") || path.startsWith("jar:")) {
                 imgLogoEmpresa.setImage(new Image(path));

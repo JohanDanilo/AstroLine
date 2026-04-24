@@ -23,13 +23,6 @@ public class App extends Application {
 
         String modo = (acceso == null || acceso.isBlank()) ? "" : acceso.trim().toLowerCase();
         
-        System.out.println("[DEBUG] Config path absoluto: " + 
-        PathManager.getGlobalConfigPath().toAbsolutePath());
-        System.out.println("[DEBUG] Archivo existe: " + 
-        Files.exists(PathManager.getGlobalConfigPath()));
-        System.out.println("[DEBUG] sucursalId: " + 
-            ConfiguracionService.getInstancia().getSucursalId());
-
         switch (modo) {
             case "admin" -> {
                 SessionManager.getInstancia().setModoAcceso("admin");
