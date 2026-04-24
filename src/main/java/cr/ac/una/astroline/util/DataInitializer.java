@@ -13,6 +13,16 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Inicializa todos los archivos de datos al arranque si no existen.
+ *
+ * Orden de inicialización (no modificar):
+ *   1. properties.json   → ~/.astroline/           (bootstrap, no depende de nada)
+ *   2. configuracion.json → <dataPath>/             (depende de getDataPath())
+ *   3. todos los demás   → <dataPath>/              (dependen de getDataPath())
+ *
+ * @author JohanDanilo
+ */
 public class DataInitializer {
 
     private DataInitializer() {
@@ -29,14 +39,21 @@ public class DataInitializer {
         inicializarFuncionarios();
         inicializarSucursales();
     }
-    
 
+    /**
+     * Crea ~/.astroline/properties.json con la ruta de datos por defecto.
+     * Al estar en una ruta fija y absoluta, todos los módulos convergen
+     * al mismo archivo sin importar desde qué carpeta se ejecutan.
+     */
     private static void inicializarProperties() {
         Path path = PathManager.getPropertiesPath();
         if (Files.exists(path)) {
             return;
         }
         try {
+            // ~/.astroline/ puede no existir todavía
+            Files.createDirectories(path.getParent());
+
             JsonObject obj = new JsonObject();
             obj.addProperty("rutaDatos",
                     Path.of(System.getProperty("user.home"), "Documents", "AstroLine").toString());
@@ -49,12 +66,21 @@ public class DataInitializer {
         }
     }
 
+    /**
+     * Crea configuracion.json dentro del data path.
+     * Compartido entre todos los módulos → un solo archivo por instalación.
+     * Se inicializa con campos vacíos; cada módulo valida lo que necesita
+     * mediante ConfiguracionService.estaConfiguradoParaModo().
+     */
     private static void inicializarConfiguracion() {
         Path path = PathManager.getGlobalConfigPath();
         if (Files.exists(path)) {
             return;
         }
         try {
+            // El data path puede no existir aún (primer arranque antes que GsonUtil lo cree)
+            Files.createDirectories(path.getParent());
+
             ConfiguracionLocal config = new ConfiguracionLocal();
             Files.writeString(path, GsonUtil.getGson().toJson(config));
             System.out.println("[DataInitializer] configuracion.json creado en: "
@@ -91,7 +117,7 @@ public class DataInitializer {
             return;
         }
         GsonUtil.guardar(new ArrayList<>(), "clientes.json");
-        System.out.println("[DataInitializer] clientes.json creado vacío.");
+        System.out.println("[DataInitializer] clientes.json creado vacio.");
     }
 
     private static void inicializarFuncionarios() {
@@ -122,7 +148,7 @@ public class DataInitializer {
         Empresa empresa = new Empresa();
         empresa.setNombre("Astroline Corp");
         empresa.setLogoPath("assets/logo.png");
-        empresa.setPinAdmin("1234"); // pin por defecto
+        empresa.setPinAdmin("1234");
         empresa.setTelefono("");
         empresa.setCorreo("");
         empresa.setDireccion("");
@@ -136,13 +162,11 @@ public class DataInitializer {
         }
 
         List<Tramite> lista = new ArrayList<>();
-
         lista.add(new Tramite("A", "Pasaporte", "Trámites relacionados a pasaportes", true));
         lista.add(new Tramite("B", "Licencia", "Trámites relacionados a licencias", true));
         lista.add(new Tramite("C", "Cédula", "Trámites relacionados a cédulas", true));
 
         GsonUtil.guardar(lista, "tramites.json");
-
         System.out.println("[DataInitializer] tramites.json creado.");
     }
 
@@ -150,9 +174,7 @@ public class DataInitializer {
         if (GsonUtil.existe("fichas.json")) {
             return;
         }
-
         GsonUtil.guardar(new ArrayList<>(), "fichas.json");
-
         System.out.println("[DataInitializer] fichas.json creado vacío.");
     }
 
@@ -160,10 +182,7 @@ public class DataInitializer {
         if (GsonUtil.existe("historial.json")) {
             return;
         }
-
         GsonUtil.guardar(new ArrayList<>(), "historial.json");
-
         System.out.println("[DataInitializer] historial.json creado vacío.");
     }
-
 }

@@ -1,22 +1,120 @@
-Credenciales por defecto (primer arranque)
+╔══════════════════════════════════════════════════════════════════╗
+║                      ASTROLINE — GUÍA RÁPIDA                     						   ║
+║         Sistema de Gestión y Control de Fichas de Atención                             ║
+╚══════════════════════════════════════════════════════════════════╝
 
-Usuario	admin
-Contraseña	1234
-PIN de Kiosko	1234
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ CREDENCIALES POR DEFECTO (primer arranque)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Para obtener los accesos directos (.lnk) se requiere ejecutar el archivo setup.bat haciendo doble click en él. Esto porque los enlaces de Windows no pueden usar "rutas relativas" entonces el setup los construye buscando el jdk instalado y los guarda en la carpeta actual.
+  Usuario      →  admin
+  Contraseña   →  1234
+  PIN de Kiosko →  1234
 
-Adicionalmente debe tomar en cuenta que el archivo configuracion.json se crea con campos nulos después del primer inicio del app, por lo que para poder usar el app en modo funcionario se recomienda guardar y reemplazar el contenido del archivo configuracion.json en la carpeta data con este:
+  ⚠ Se recomienda cambiar estas credenciales desde el módulo Admin
+    antes de poner el sistema en uso.
 
-{
-  "sucursalId": "sucursal-1",
-  "estacionId": "E-1-1",
-  "tramiteIds": [
-    "A",
-    "B",
-    "C"
-  ],
-  "preferencial": false
-}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ ACCESOS DIRECTOS (.lnk) — SOLO WINDOWS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Ver documentación en: https://github.com/JohanDanilo/AstroLine
+  Los accesos directos no pueden usar rutas relativas por limitación
+  de Windows, por lo que deben generarse en cada equipo.
+
+  Pasos:
+    1. Asegúrese de tener el archivo AstroLine-1.0-SNAPSHOT.jar en la misma carpeta que el archivo setup.bat.
+    2. Asegúrese de tener el JDK instalado y configurado en JAVA_HOME.
+    3. Haga doble clic en setup.bat dentro de la carpeta del módulo.
+    4. Se generarán los archivos .lnk correspondientes automáticamente.
+
+  No mueva ni copie los .lnk generados a otra carpeta; si lo hace, vuelva a ejecutar setup.bat 
+  con el archivo AstroLine-1.0-SNAPSHOT.jar  al lado desde la nueva ubicación.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ ARCHIVOS DEL SISTEMA — DÓNDE VIVEN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  El sistema maneja dos ubicaciones distintas:
+
+  1. Bootstrap (por equipo):
+       Windows  →  C:\Users\<usuario>\.astroline\properties.json
+       macOS    →  /Users/<usuario>/.astroline/properties.json
+       Linux    →  /home/<usuario>/.astroline/properties.json
+
+     Este archivo indica dónde están los datos compartidos.
+     Se crea automáticamente en el primer arranque.
+     Es único por equipo; todos los módulos (Admin, Kiosko,
+     Funcionario, Proyección) lo comparten.
+
+  2. Datos compartidos (por instalación):
+       Por defecto →  <usuario>/Documents/AstroLine/
+
+     Contiene todos los archivos JSON del sistema:
+       configuracion.json   — estación y sucursal asignadas
+       empresa.json         — datos de la empresa
+       sucursales.json      — sucursales y estaciones
+       tramites.json        — tipos de trámite
+       clientes.json        — registro de clientes
+       funcionarios.json    — cuentas de funcionarios
+       fichas.json          — fichas activas del día
+       historial.json       — fichas archivadas
+
+     La ruta de datos puede cambiarse desde el módulo Admin
+     (por ejemplo, para apuntar a una carpeta de red compartida).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ CONFIGURACIÓN INICIAL DE ESTACIÓN (modo Funcionario)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Antes de usar el módulo Funcionario, cada equipo debe tener
+  asignada una sucursal y una estación. Hay dos formas de hacerlo:
+
+  Opción A — Desde la UI (recomendado):
+    Abra el módulo Admin → Configuración → asigne sucursal y estación.
+    Debe reiniciar cualquier instancia del app para que los cambios se reflejen automáticamente en todos los módulos.
+
+  Opción B — Edición manual del archivo:
+    Abra el archivo configuracion.json en la carpeta de datos
+    (ver ruta en la sección anterior) y reemplace su contenido
+    con el ejemplo a continuación, ajustando los IDs según su
+    configuración real:
+
+    {
+      "sucursalId": "sucursal-1",
+      "estacionId": "E-1-1",
+      "tramiteIds": ["A", "B", "C"],
+      "preferencial": false
+    }
+
+  ⚠ No edite configuracion.json mientras el app esté en ejecución.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ EJECUCIÓN EN RED LOCAL (múltiples equipos)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  AstroLine soporta sincronización automática entre equipos en la
+  misma red de área local (LAN).
+
+  Para configurarlo:
+    1. Defina una carpeta de red compartida accesible desde todos
+       los equipos (ej. una carpeta en el equipo servidor).
+    2. En el módulo Admin, cambie la ruta de datos a esa carpeta.
+    3. En cada equipo cliente, haga lo mismo apuntando a la misma
+       carpeta compartida.
+
+  El sistema descubrirá automáticamente los demás equipos por UDP
+  y sincronizará los archivos JSON en tiempo real.
+
+  Puertos requeridos (asegúrese de que el firewall los permita):
+    TCP 8080  →  sincronización HTTP entre pares
+    UDP 9090  →  descubrimiento automático en la red
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ DOCUMENTACIÓN Y SOPORTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Repositorio  →  https://github.com/JohanDanilo/AstroLine
+  Issues       →  https://github.com/JohanDanilo/AstroLine/issues
+
+  Desarrollado como Tarea Programada — Programación II
+  Universidad Nacional de Costa Rica · Sede Brunca · 2026

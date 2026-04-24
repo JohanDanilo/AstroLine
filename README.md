@@ -23,9 +23,7 @@
 
 ## 📋 Descripción
 
-AstroLine es una aplicación de escritorio desarrollada en JavaFX que permite la **asignación y control de fichas de atención** para empresas con múltiples sucursales y estaciones de servicio. El sistema opera en **red local (LAN)** con sincronización automática P2P entre equipos, sin necesidad de servidor central.
-
-Cada máquina puede correr en uno de cuatro modos independientes según el rol asignado: administración, kiosko de autoatención, estación de funcionario o pantalla pública de proyección.
+AstroLine es una aplicación de escritorio desarrollada en JavaFX que permite la **asignación y control de fichas de atención** para empresas con múltiples sucursales y estaciones de servicio. El sistema cuenta con 4 módulos de acceso diferenciados según el rol del usuario, con soporte para sincronización en tiempo real entre equipos en una misma red local.
 
 ---
 
@@ -89,10 +87,9 @@ Cada máquina puede correr en uno de cuatro modos independientes según el rol a
 | MaterialFX | 11.16.1 | Componentes UI modernos |
 | AtlantaFX | 2.1.0 | Sistema de temas visuales |
 | Apache PDFBox | 3.x | Generación de fichas en PDF |
-| Webcam Capture | — | Captura de foto de clientes |
-| JDK HTTP Server | (JDK) | Servidor HTTP embebido para P2P |
 | SceneBuilder | — | Diseño de vistas FXML |
-| NetBeans | — | Entorno de desarrollo recomendado |
+| Webcam Capture | — | Captura de foto de clientes |
+| NetBeans | — | Entorno de desarrollo |
 
 ---
 
@@ -104,174 +101,125 @@ El proyecto sigue el patrón **MVC (Model-View-Controller)** con servicios singl
 src/
 └── main/
     ├── java/cr/ac/una/astroline/
-    │   ├── App.java               ← Punto de entrada, lee arg de modo
-    │   ├── controller/            ← Un controller por vista FXML
-    │   ├── model/                 ← Entidades (Ficha, Cliente, Sucursal...)
-    │   │                             + DTOs para binding JavaFX
-    │   ├── service/               ← Lógica de negocio y CRUD (singletons)
-    │   │   ├── FichaService
-    │   │   ├── ClienteService
-    │   │   ├── EmpresaService
-    │   │   ├── SucursalService
-    │   │   ├── TramiteService
-    │   │   ├── FuncionarioService
-    │   │   ├── ConfiguracionService
-    │   │   ├── EstadisticasService
-    │   │   ├── PdfService
-    │   │   └── AudioService
-    │   └── util/
-    │       ├── FlowController     ← Navegación entre vistas
-    │       ├── GsonUtil           ← Lectura/escritura JSON
-    │       ├── DataInitializer    ← Inicialización de datos al primer arranque
-    │       ├── DataNotifier       ← Bus de eventos para reactividad P2P
-    │       ├── SyncManager        ← Orquestador del sistema P2P
-    │       ├── SyncServer         ← Servidor HTTP embebido
-    │       ├── SyncClient         ← Cliente HTTP para hablar con peers
-    │       ├── NetworkPeer        ← Descubrimiento UDP broadcast
-    │       ├── SessionManager     ← Sesión activa del funcionario
-    │       ├── AppContext         ← Contexto compartido entre vistas
-    │       └── Respuesta          ← Objeto de respuesta estándar de servicios
+    │   ├── controller/     ← Controllers de cada vista
+    │   ├── model/          ← Clases de datos (Ficha, Cliente, Tramite...)
+    │   ├── service/        ← Lógica de negocio (singletons)
+    │   └── util/           ← FlowController, GsonUtil, PathManager, AppContext...
     └── resources/cr/ac/una/astroline/
         ├── view/                  ← 17 archivos FXML
         ├── resource/              ← Imágenes, íconos, fuentes, audio
         └── styles/                ← Hoja de estilo CSS
 ```
 
+### Convenciones arquitectónicas
+
+- Todos los controllers extienden la clase base `Controller`.
+- `initialize(URL, ResourceBundle)` solo realiza configuración estática (bindings, listeners).
+- El hook de FlowController es `initialize()` sin argumentos, donde se lee `AppContext`.
+- Las claves de `AppContext` siguen el patrón `"entidadParaEditar"` (entrada) y `"ultimaEntidadId"` (salida).
+- Los servicios son singletons accesibles únicamente vía `getInstancia()`.
+- Sin estilos inline; toda la presentación va en clases CSS.
+
 ---
 
-## 👥 Equipo de desarrollo
+## 📁 Gestión de archivos y rutas
 
-| Desarrollador | Rol | Módulo principal |
-|---|---|---|
-| **Johan Danilo** | Líder del proyecto | Kiosko · Proyección · Arquitectura · P2P · PDF |
-| **José** (`takka_sama`) | Desarrollador | Administrador |
-| **Jessica** | Desarrolladora | Funcionario |
+El sistema maneja dos ubicaciones distintas para sus archivos, resolviendo el problema de múltiples módulos ejecutándose en la misma máquina:
 
----
+### Bootstrap (único por equipo)
 
-## 📦 Requisitos
+```
+Windows  →  C:\Users\<usuario>\.astroline\properties.json
+macOS    →  /Users/<usuario>/.astroline/properties.json
+Linux    →  /home/<usuario>/.astroline/properties.json
+```
 
-- **JDK 25**
-- **Apache NetBeans** (recomendado) o cualquier IDE compatible con Maven
-- **Maven 3.8+**
-- **SceneBuilder** (opcional, para editar vistas FXML)
+Este archivo se crea automáticamente en el primer arranque y define la ruta donde viven los datos compartidos. Al ser una ruta absoluta y fija, todos los módulos (Admin, Kiosko, Funcionario, Proyección) convergen al mismo archivo sin importar desde qué carpeta se ejecuten.
+
+### Datos compartidos
+
+Por defecto en `~/Documents/AstroLine/`. Puede cambiarse desde el módulo Admin para apuntar a una carpeta de red.
+
+```
+AstroLine/
+├── configuracion.json   — sucursal y estación asignadas al equipo
+├── empresa.json         — datos y logo de la empresa
+├── sucursales.json      — sucursales y estaciones registradas
+├── tramites.json        — tipos de trámite disponibles
+├── clientes.json        — registro de clientes
+├── funcionarios.json    — cuentas de funcionarios
+├── fichas.json          — fichas activas del día
+├── historial.json       — fichas archivadas
+├── fotos/               — fotografías de clientes
+└── logoEmpresa/         — logo cargado desde Admin
+```
 
 ---
 
 ## 🚀 Ejecución
 
-### Con Maven (modo selección de rol)
+### Desde el IDE (desarrollo)
 
 ```bash
 # Clonar el repositorio
 git clone https://github.com/JohanDanilo/AstroLine.git
 cd AstroLine
 
-# Ejecutar sin modo (muestra pantalla de selección)
+# Ejecutar desde Maven (Vista de Eleccion de modo por defecto)
 mvn javafx:run
 ```
 
-### Con JAR (modos específicos por argumento)
+### Desde JAR (distribución)
 
-```bash
-# Construir el fat JAR
-mvn package
+Cada módulo cuenta con un launcher `.lnk` (Windows):
 
-# Cada equipo arranca en su modo correspondiente:
-java -jar target/AstroLine.jar kiosko
-java -jar target/AstroLine.jar funcionario
-java -jar target/AstroLine.jar admin
-java -jar target/AstroLine.jar proyeccion
+```
+Astroline-admin.lnk
+Astroline-kiosko.lnk
+Astroline-funcionario.lnk
+Astroline-proyeccion.lnk
 ```
 
-> Los accesos directos `.lnk` son generados por `setup.bat` para facilitar la distribución en Windows sin necesidad de abrir una terminal.
+En Windows, ejecute `setup.bat` con el Archivo AstroLine-1.0-SNAPSHOT.jar al lado, dentro de la carpeta del módulo para generar los accesos directos `.lnk` adaptados a la ruta del JDK instalado en ese equipo. No borre el archivo AstroLine-1.0-SNAPSHOT.jar ya que cada lnk lo busca la misma carpeta en la que se encuentre.
 
-### Credenciales por defecto (primer arranque)
+---
 
-| Campo | Valor |
+## 🔐 Credenciales por defecto
+
+| Dato | Valor |
 |---|---|
-| Usuario | `admin` |
+| Usuario Admin | `admin` |
 | Contraseña | `1234` |
 | PIN de Kiosko | `1234` |
 
 ---
 
-## 📁 Estructura de datos
+## 👥 Equipo de desarrollo
 
-Al ejecutarse por primera vez, `DataInitializer` crea automáticamente la carpeta `data/` con todos los archivos necesarios:
-
-```
-data/
-├── empresa.json          ← Nombre, logo, teléfono, correo, PIN admin
-├── tramites.json         ← Catálogo de trámites (A, B, C...)
-├── sucursales.json       ← Sucursales y sus estaciones embebidas
-├── funcionarios.json     ← Funcionarios y administradores
-├── clientes.json         ← Clientes registrados
-├── fichas.json           ← Fichas activas del día actual
-├── historial.json        ← Fichas archivadas de días anteriores
-├── configuracion.json    ← Config local de esta máquina (no se comparte por P2P)
-├── fotos/                ← Fotos de clientes
-│   └── Cliente_<cedula>.png
-└── logoEmpresa/          ← Logo cargado desde el módulo admin
-    └── logo_empresa.png
-```
-
-Las fichas del día se archivan automáticamente en `historial.json` cuando se detecta que el día cambió y hay una nueva solicitud en el Kiosko.
-
-Los PDFs generados se guardan en:
-
-```
-files/fichas/
-└── <codigo>_<fecha>_<hora>.pdf
-```
-
----
-
-## 🌐 Sincronización en red (P2P)
-
-AstroLine no requiere servidor central. Cada equipo descubre a los demás en la LAN automáticamente al arrancar y mantiene los datos sincronizados.
-
-```
-Equipo A (Admin)          Equipo B (Kiosko)         Equipo C (Funcionario)
-      │                         │                         │
-      │── UDP broadcast ────────►│◄──────────────────── ──│
-      │                         │                         │
-      │◄─────── HTTP POST (empresa.json) ─────────────────│
-      │                         │                         │
-      │── HTTP POST (fichas.json) ──────────────────────► │
-      │                         │                         │
-      └─── polling cada 15s ────┘─────────────────────────┘
-```
-
-- Puerto UDP `9090` — descubrimiento de peers
-- Puerto TCP `8080` — transferencia de archivos JSON e imágenes
-- `configuracion.json` está excluido del P2P (es por equipo)
+| Desarrollador | Módulos |
+|---|---|
+| **Johan Danilo** (`@JohanDanilo`) | Líder · Kiosko · Proyección · Admin ·Infraestructura |
+| **Jessica** (`@JekaCordero`) | Funcionario · Proyección |
 
 ---
 
 ## 📅 Estado del proyecto
 
-El proyecto está **completado** ✅. Todos los módulos están implementados y funcionales.
-
-| Módulo | Estado |
-|---|---|
-| Arquitectura base (MVC + FlowController + GsonUtil) | ✅ Completado |
-| Modelos de datos y DTOs | ✅ Completado |
-| Módulo Administrador (empresa, funcionarios, trámites, sucursales, estadísticas) | ✅ Completado |
-| Módulo Kiosko (teclado numérico, PDF, preferencial por PIN) | ✅ Completado |
-| Módulo Funcionario (llamado de fichas, foto cliente, selección manual) | ✅ Completado |
-| Módulo Proyección (marquee, reloj, audio TTS, historial) | ✅ Completado |
-| Sistema P2P (UDP discovery + HTTP sync + merge por lastModified) | ✅ Completado |
-| Generación de PDF con PDFBox (diseño cosmos) | ✅ Completado |
-| Registro de clientes con cámara web | ✅ Completado |
-| Pantalla de estadísticas con gráficas | ✅ Completado |
-| Configuración local por equipo | ✅ Completado |
+| Issue | Descripción | Estado |
+|---|---|---|
+| #1 | Arquitectura base y estructura MVC | ✅ Completado |
+| #2 | Modelos de datos y persistencia JSON | ✅ Completado |
+| #3 | Módulo Kiosko con generación de PDF | ✅ Completado |
+| #4 | Módulo Funcionario | ✅ Completado |
+| #5 | Módulo Administrador | ✅ Completado |
+| #6 | Módulo Proyección | ✅ Completado |
+| #7 | Gestión de rutas multi-módulo (`PathManager`) | ✅ Completado |
 
 ---
 
 <div align="center">
 
 *Desarrollado con ☕ en Costa Rica*  
-*Universidad Nacional · Sede Brunca · Campus Pérez Zeledón · 2026*
+*Universidad Nacional · Sede Brunca · 2026*
 
 </div>

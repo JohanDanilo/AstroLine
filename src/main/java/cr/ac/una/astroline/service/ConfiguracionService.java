@@ -133,7 +133,6 @@ public class ConfiguracionService {
     }
     
     public boolean estaConfiguradoParaModo(String modo) {
-        // Leer directo del modelo para evitar el fallback hardcodeado de getSucursalId()
         String sucursalId = configuracion != null ? configuracion.getSucursalId() : null;
         String estacionId = configuracion != null ? configuracion.getEstacionId() : null;
 

@@ -6,14 +6,17 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane id="AnchorPane" prefHeight="150.0" prefWidth="350.0" styleClass="jfx-root" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.AvisoController">
+<AnchorPane id="AnchorPane" styleClass="jfx-root" stylesheets="@Styles.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="cr.ac.una.astroline.controller.AvisoController">
    <children>
-      <VBox alignment="CENTER" layoutX="50.0" layoutY="-50.0" prefHeight="137.0" prefWidth="257.0" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <VBox alignment="CENTER" layoutX="50.0" layoutY="-50.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <Label fx:id="lblAviso" styleClass="jfx-label-titulo" text="Advertisement" />
+            <Label fx:id="lblAviso" alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" styleClass="jfx-label-titulo" text="Advertisement" textAlignment="CENTER" wrapText="true" VBox.vgrow="ALWAYS">
+               <VBox.margin>
+                  <Insets left="20.0" right="20.0" top="20.0" />
+               </VBox.margin></Label>
             <MFXButton fx:id="btnAceptar" onAction="#onActionBtnAceptar" prefHeight="22.0" prefWidth="74.0" styleClass="jfx-btn-secundario" text="Aceptar">
                <VBox.margin>
-                  <Insets top="10.0" />
+                  <Insets bottom="10.0" top="10.0" />
                </VBox.margin></MFXButton>
          </children>
       </VBox>
